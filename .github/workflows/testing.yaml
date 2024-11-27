@@ -75,7 +75,7 @@ jobs:
         run: |
           curl -X POST https://listener.fleetoptimiser.droidsagencyai.com/webhook \
           -H "Content-Type: application/json" \
-          -H "x-hub-signature: $WEBHOOK_SECRET" \
+          -H "x-hub-signature: $WEBHOOK_KEY" \
           -d "{\"tag\": \"${{ env.VERSION }}\"}"
         env:
-          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+          WEBHOOK_KEY: ${{ secrets.WEBHOOK_KEY }}
