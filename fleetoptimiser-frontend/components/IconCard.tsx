@@ -11,7 +11,7 @@ const IconTextCard = ({ icon, text, onClick }: IconTextCardProps) => {
   return (
     <Card
       sx={{
-        width: 100,
+        width: 120,
         height: 80,
         borderRadius: 2,
         display: 'flex',

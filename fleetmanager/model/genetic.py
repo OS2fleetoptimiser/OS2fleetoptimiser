@@ -122,6 +122,8 @@ class TripHandler:
             engine=self.engine
         )
 
+        if len(trips.all_trips) == 0:
+            return trips, []
         return trips, extract_peak_day(trips.all_trips)
 
     @staticmethod

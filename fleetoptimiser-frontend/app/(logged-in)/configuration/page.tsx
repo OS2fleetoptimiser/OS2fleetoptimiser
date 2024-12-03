@@ -10,6 +10,7 @@ import { Inter } from 'next/font/google';
 import { useState } from 'react';
 import VehicleTable from './ConfigTable';
 import {useWritePrivilegeContext} from "@/app/providers/WritePrivilegeProvider";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -33,9 +34,9 @@ export default function Page() {
             ) : (
                 <div>
                     <VehicleTable dropDownData={dropDownValues.data} vehicleData={tableData.data?.vehicles} />
-                    <div className="mt-3 space-x-4 flex justify-end">
-                        <Button disabled={!hasWritePrivilege} color="primary" onClick={() => setShowDeleteRoundtripsModal(true)} variant="contained">
-                            Slet Tur
+                    <div className="mt-6 space-x-4 flex justify-end">
+                        <Button variant="outlined" startIcon={<DeleteIcon/>} disabled={!hasWritePrivilege} color="error" onClick={() => setShowDeleteRoundtripsModal(true)}>
+                            Automatisk tursletning
                         </Button>
                     </div>
                     <DeleteRoundTrips open={showDeleteRoundtripsModal} onClose={() => setShowDeleteRoundtripsModal(false)} />

@@ -12,7 +12,7 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import Power from '@mui/icons-material/Power';
 import PowerOff from '@mui/icons-material/PowerOff';
-import { Alert, Box, Button, IconButton, Snackbar, Tooltip } from '@mui/material';
+import {Alert, Box, Button, Chip, IconButton, Snackbar, Tooltip} from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -26,6 +26,8 @@ import { MRT_Localization_DA } from 'material-react-table/locales/da';
 import { useCallback, useMemo, useState } from 'react';
 import DisableVehicleDialog from './DisableVehicleDialog';
 import { useWritePrivilegeContext } from '@/app/providers/WritePrivilegeProvider';
+import ToolTip from "@/components/ToolTip";
+import DoneIcon from '@mui/icons-material/Done';
 
 const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicle[]; dropDownData: DropDownData }) => {
     const { hasWritePrivilege } = useWritePrivilegeContext();
@@ -126,85 +128,85 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
         if (hasEndedLeasing(vehicle)) return 'text-yellow-600';
     };
 
+    const getStatus = (vehicle: Vehicle) => {
+        if (hasMissingData(vehicle)) return <Chip variant="outlined" color="error" label="Manglende metadata"></Chip>;
+        if (hasEndedLeasing(vehicle)) return <Chip style={{"color": "#ca8a04", borderColor: "#ca8a04"}} variant="outlined" label="Udløbet leasing"></Chip>;
+        return <Chip variant="outlined" color="success" label="OK" deleteIcon={<DoneIcon />} onDelete={() => "render icon"}></Chip>;
+    }
+
     const columns = useMemo<MRT_ColumnDef<Vehicle>[]>(() => {
         const baseColumns: MRT_ColumnDef<Vehicle>[] = [
+            {
+                header: 'Status',
+                size: 100,
+                Cell: ({ row }) => getStatus(row.original),
+            },
             {
                 accessorFn: (row) => row.id,
                 accessorKey: 'id',
                 header: 'ID',
                 enableEditing: false, //disable editing on this column
                 size: 80,
-                muiTableBodyCellProps: ({ row }) => ({ className: getCellColor(row.original) }),
             },
             {
                 accessorFn: (row) => row.plate ?? '',
                 accessorKey: 'plate',
                 header: 'Nummerplade',
                 size: 120,
-                muiTableBodyCellProps: ({ row }) => ({ className: getCellColor(row.original) }),
             },
             {
                 accessorFn: (row) => row.make ?? '',
                 accessorKey: 'make',
                 header: 'Mærke',
                 size: 120,
-                muiTableBodyCellProps: ({ row }) => ({ className: getCellColor(row.original) }),
             },
             {
                 accessorFn: (row) => row.model,
                 accessorKey: 'model',
                 header: 'Model',
                 size: 180, //medium column
-                muiTableBodyCellProps: ({ row }) => ({ className: getCellColor(row.original) }),
             },
             {
                 accessorFn: (row) => row.type?.name,
                 accessorKey: 'type',
                 header: 'Type',
                 size: 40,
-                muiTableBodyCellProps: ({ row }) => ({ className: getCellColor(row.original) }),
             },
             {
                 accessorFn: (row) => row.wltp_fossil,
                 accessorKey: 'wltp_fossil',
                 header: 'WLTP (fossil)',
                 size: 20,
-                muiTableBodyCellProps: ({ row }) => ({ className: getCellColor(row.original) }),
             },
             {
                 accessorFn: (row) => row.wltp_el,
                 accessorKey: 'wltp_el',
                 header: 'WLTP (el)',
                 size: 20,
-                muiTableBodyCellProps: ({ row }) => ({ className: getCellColor(row.original) }),
             },
             {
                 accessorFn: (row) => row.omkostning_aar,
                 accessorKey: 'omkostning_aar',
                 header: 'Omk./år',
                 size: 80,
-                muiTableBodyCellProps: ({ row }) => ({ className: getCellColor(row.original) }),
             },
             {
                 accessorFn: (row) => row.forvaltning,
                 accessorKey: 'forvaltning',
                 header: 'Forv.',
                 size: 140,
-                muiTableBodyCellProps: ({ row }) => ({ className: getCellColor(row.original) }),
             },
             {
                 accessorFn: (row) => row.location?.address,
                 accessorKey: 'location',
                 header: 'Lokation',
                 size: 140,
-                muiTableBodyCellProps: ({ row }) => ({ className: getCellColor(row.original) }),
             },
             {
                 accessorFn: (row) => row.department,
                 accessorKey: 'department',
                 header: 'Afd.',
                 size: 80,
-                muiTableBodyCellProps: ({ row }) => ({ className: getCellColor(row.original) }),
             },
             {
                 accessorFn: (row) => {
@@ -213,7 +215,6 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                 accessorKey: 'end_leasing',
                 header: 'Slut leasing',
                 size: 80,
-                muiTableBodyCellProps: ({ row }) => ({ className: getCellColor(row.original) }),
             },
         ];
         if (hasImei) {
@@ -223,7 +224,6 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                 header: 'IMEI',
                 enableEditing: false,
                 size: 120,
-                muiTableBodyCellProps: ({ row }) => ({ className: getCellColor(row.original) }),
             };
             baseColumns.splice(1, 0, imeiColumn);
         }
@@ -260,8 +260,9 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                     density: 'compact',
                 }}
                 enableEditing
+                enableStickyHeader
                 renderRowActions={({ row }) => (
-                    <Box className="flex gap-4">
+                    <Box className="flex">
                         {hasWritePrivilege && (
                             <>
                                 <Tooltip arrow placement="left" title="Rediger">
@@ -344,14 +345,22 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                                 Importer flådedata
                             </Button>
                         </Tooltip>
+                        <ToolTip>
+                            Importering af data, er kun for køretøjer, der er forbundet via. dit flådestyringssystem. Dvs. IDet skal stemme overens med et kendt køretøj i dit flådesystem. Brug Tilføj nyt køretøj for at tilføje nye testkøretøjer.
+                        </ToolTip>
+
+
                     </div>
                 )}
                 renderBottomToolbarCustomActions={() => (
-                    <Tooltip title={hasWritePrivilege ? '' : 'Du har læserettigheder'}>
-                        <Button disabled={!hasWritePrivilege} color="primary" onClick={() => setIsCreateVehicleModalOpen(true)} variant="contained">
-                            Tilføj nyt køretøj
-                        </Button>
-                    </Tooltip>
+                    <div>
+                        <Tooltip title={hasWritePrivilege ? '' : 'Du har læserettigheder'}>
+                            <Button disabled={!hasWritePrivilege} color="primary" onClick={() => setIsCreateVehicleModalOpen(true)} variant="contained">
+                                Tilføj nyt køretøj
+                            </Button>
+                        </Tooltip>
+
+                    </div>
                 )}
             />
             {isMoveRoundTripsOpen && (
