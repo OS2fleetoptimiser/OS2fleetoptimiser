@@ -125,7 +125,7 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
     default_types = {
     }
 
-    session = ctx.obj["Session"]()
+    Session = ctx.obj["Session"]
     engine = ctx.obj["engine"]
     params = ctx.obj["params"]
     url = ctx.obj["url"]
@@ -143,7 +143,7 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
             or_(Cars.deleted == False, Cars.deleted.is_(None)),
             or_(Cars.disabled == False, Cars.disabled.is_(None))
         ).statement, engine)
-    update_cars = []
+
     if description_fields is not None:
         description_fields = description_fields.split(",")
     else:
@@ -252,32 +252,34 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
             ),
         )
 
-        update_existing_car = False
-        if id_ in current_cars.id.values:
-            if not update_car(
-                car_details, current_cars[current_cars.id == id_].iloc[0]
-            ):
-                continue
-            current_car, created = get_or_create(session, Cars, {"id": id_})
-            if created:
-                continue
-            update_existing_car = True
-
-        if update_existing_car:
-            validate_dict = compare_new_old(car_details, current_car.__dict__)
-            if not is_car_valid(validate_dict):
-                continue
-            for key, value in car_details.items():
-                if key == "id" or pd.isna(value) or current_car.__dict__.get(key) == value:
+        with Session.begin() as session:
+            if id_ in current_cars.id.values:
+                if not update_car(
+                    car_details, current_cars[current_cars.id == id_].iloc[0]
+                ):
                     continue
-                setattr(current_car, key, value)
-            update_cars.append(current_car)
-        elif is_car_valid(car_details):
-            update_cars.append(Cars(**car_details))
-    update_cars = list({car.id: car for car in update_cars}.values())
-    for car in update_cars:
-        session.merge(car)
-    session.commit()
+
+                current_car = session.query(Cars).filter(Cars.id == id_).first()
+                if not current_car:
+                    # not possible
+                    continue
+
+                validate_dict = compare_new_old(car_details, current_car.__dict__)
+                if not is_car_valid(validate_dict):
+                    continue
+
+                values_changed = False
+                for key, value in car_details.items():
+                    if key == "id" or pd.isna(value) or current_car.__dict__.get(key) == value:
+                        continue
+                    values_changed = True
+                    setattr(current_car, key, value)
+
+                if values_changed:
+                    session.add(current_car)
+
+            elif is_car_valid(car_details):
+                session.add(Cars(**car_details))
     # Cars end
 
 
@@ -626,20 +628,6 @@ def get_latlon_address(address):
     if len(response) == 0:
         return [None, None]
     return [float(response[0]["lat"]), float(response[0]["lon"])]
-
-
-def get_or_create(session, model, parameters):
-    """
-    Search for an object in the db, create it if it doesn't exist
-    return on both scenarios
-    """
-    instance = session.query(model).filter_by(id=parameters["id"]).first()
-    if not instance:
-        instance = model(**parameters)
-        session.add(instance)
-        return instance, True
-
-    return instance, False
 
 
 def update_car(vehicle, saved_car):
