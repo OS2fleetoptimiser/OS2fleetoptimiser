@@ -600,14 +600,14 @@ def get_trips(car_id, key, from_date=None):
     agent = SoapAgent(key)
 
     trips = []
-    for k, (start_month, end_month) in enumerate(
+    for k, (start_log_time, end_log_time) in enumerate(
         date_iter(from_date, current_time, week_period=52)
     ):
-        print(start_month, end_month)
+        print(start_log_time, end_log_time)
         dbook = driving_book(
             car_id,
-            start_month.isoformat(),
-            end_month.isoformat(),
+            start_log_time.isoformat(),
+            end_log_time.isoformat(),
             agent,
         )
 
@@ -645,10 +645,20 @@ def get_trips(car_id, key, from_date=None):
             else:
                 print(
                     f"Car {car_id} did not have lat, lon or StopPost_Timestamp in all "
-                    f"logs between {start_month} - {end_month}"
+                    f"logs between {start_log_time} - {end_log_time}"
                 )
                 break
-        for trip in dbook.itertuples():
+        db_length = len(dbook)
+        for idx, trip in enumerate(dbook.itertuples()):
+            # check for none types in date (will ruin the aggreagtion)
+            # allow if it's the last
+            if ((not trip.StartPos_Timestamp or not trip.StopPos_Timestamp) and
+                    (db_length != idx + 1 or current_time != end_log_time)):
+                logger.error(f"ERROR IN THE LOGS FROM SKYHOST {trip.ID } DID NOT HAVE TIMESTAMPS")
+                return pd.DataFrame()
+            elif not trip.StartPos_Timestamp or not trip.StopPos_Timestamp:
+                continue
+
             st = fix_time(
                 datetime.strptime(trip.StartPos_Timestamp, "%Y-%m-%dT%H:%M:%S")
             )
