@@ -111,7 +111,8 @@ def set_starts(ctx):
 @cli.command()
 @click.pass_context
 @click.option("-df", "--description-fields", envvar="DESCRIPTION_FIELDS", required=False)
-def set_vehicles(ctx, description_fields=None):
+@click.option("-el", "--exempt-locations", is_flag=True, default=False)
+def set_vehicles(ctx, description_fields=None, exempt_locations=False):
     fuel_to_type = {
         # benzin til fossilbil
         1: 4,
@@ -124,7 +125,7 @@ def set_vehicles(ctx, description_fields=None):
     default_types = {
     }
 
-    Session = ctx.obj["Session"]
+    session = ctx.obj["Session"]()
     engine = ctx.obj["engine"]
     params = ctx.obj["params"]
     url = ctx.obj["url"]
@@ -137,7 +138,11 @@ def set_vehicles(ctx, description_fields=None):
     vehicles_response = requests.get(url + "Api/Vehicles/get", params=params)
     cars = json.loads(vehicles_response.content)["response"]
     # get currently saved cars to update if changes and save new ones
-    current_cars = pd.read_sql(Query(Cars).statement, engine)
+    current_cars = pd.read_sql(
+        Query(Cars).filter(
+            or_(Cars.deleted == False, Cars.deleted.is_(None)),
+            or_(Cars.disabled == False, Cars.disabled.is_(None))
+        ).statement, engine)
     update_cars = []
     if description_fields is not None:
         description_fields = description_fields.split(",")
@@ -150,7 +155,7 @@ def set_vehicles(ctx, description_fields=None):
         if (
             pd.isna(car["booking"]["homeLocation"])
             or car["booking"]["homeLocation"] not in starts.id.values
-        ):
+        ) and not exempt_locations:
             print(
                 f"Car {id_} did not have any homeLocation or saved location: {car['booking']['homeLocation']}"
             )
@@ -198,7 +203,7 @@ def set_vehicles(ctx, description_fields=None):
 
         location = (
             None
-            if car["booking"]["homeLocation"] is None
+            if car["booking"]["homeLocation"] is None or exempt_locations
             else int(car["booking"]["homeLocation"])
         )
 
@@ -233,8 +238,8 @@ def set_vehicles(ctx, description_fields=None):
             plate=plate,
             make=car["info"]["make"],
             model=car["info"]["model"],
-            type=vehicle_type,
-            fuel=fuel,
+            type=None,  # for now, we're avoiding to set type and fuel - because we don't get the wltp on the api
+            fuel=None,
             # todo implement "auto fill" if the below metrics doesn't exist and similar make model exist
             wltp_fossil=None,  # todo update when we receive confirmation
             wltp_el=None,  # todo update when we receive confirmation
@@ -253,25 +258,26 @@ def set_vehicles(ctx, description_fields=None):
                 car_details, current_cars[current_cars.id == id_].iloc[0]
             ):
                 continue
-            else:
-                current_car = get_or_create(Session, Cars, {"id": id_})
-                update_existing_car = True
+            current_car, created = get_or_create(session, Cars, {"id": id_})
+            if created:
+                continue
+            update_existing_car = True
 
         if update_existing_car:
             validate_dict = compare_new_old(car_details, current_car.__dict__)
             if not is_car_valid(validate_dict):
                 continue
             for key, value in car_details.items():
-                if key == "id" or pd.isna(value):
+                if key == "id" or pd.isna(value) or current_car.__dict__.get(key) == value:
                     continue
                 setattr(current_car, key, value)
             update_cars.append(current_car)
         elif is_car_valid(car_details):
             update_cars.append(Cars(**car_details))
-    if update_cars:
-        with Session.begin() as sess:
-            sess.add_all(update_cars)
-            sess.commit()
+    update_cars = list({car.id: car for car in update_cars}.values())
+    for car in update_cars:
+        session.merge(car)
+    session.commit()
     # Cars end
 
 
@@ -622,23 +628,18 @@ def get_latlon_address(address):
     return [float(response[0]["lat"]), float(response[0]["lon"])]
 
 
-def get_or_create(Session, model, parameters):
+def get_or_create(session, model, parameters):
     """
     Search for an object in the db, create it if it doesn't exist
     return on both scenarios
     """
-    with Session.begin() as session:
-        instance = session.query(model).filter_by(id=parameters["id"]).first()
-        if instance:
-            session.expunge_all()
-    if instance:
-        return instance
-    else:
+    instance = session.query(model).filter_by(id=parameters["id"]).first()
+    if not instance:
         instance = model(**parameters)
-        with Session.begin() as session:
-            session.add(instance)
-            session.commit()
-        return instance
+        session.add(instance)
+        return instance, True
+
+    return instance, False
 
 
 def update_car(vehicle, saved_car):
