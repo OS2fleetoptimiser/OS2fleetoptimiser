@@ -528,7 +528,8 @@ def set_trackers(ctx, description_fields=None):
     else:
         description_fields = []
 
-    for key in to_list(ctx.obj["SOAP_KEY"]):
+    keys_list = to_list(ctx.obj["SOAP_KEY"])
+    for key_idx, key in enumerate(keys_list):
         agent = SoapAgent(key)
         trackers = Trackers()
 
@@ -536,6 +537,11 @@ def set_trackers(ctx, description_fields=None):
         while (r := agent.execute_action("Trackers_GetAllTrackers")).status_code != 200:
             print("Retrying Trackers_GetAllTrackers")
         trackers.parse(r.text)
+
+        if len(trackers.block) == 0 or 'Marker' not in trackers.frame.columns:
+            logger.info(f"Key no {key_idx + 1} did not return any - or accepted trackers")
+            continue
+
         with Session() as sess:
             banned_cars = (
                 sess.query(Cars.id)
