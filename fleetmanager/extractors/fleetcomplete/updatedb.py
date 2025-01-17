@@ -125,7 +125,7 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
     default_types = {
     }
 
-    Session = ctx.obj["Session"]
+    session = ctx.obj["Session"]()
     engine = ctx.obj["engine"]
     params = ctx.obj["params"]
     url = ctx.obj["url"]
@@ -258,9 +258,10 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
                 car_details, current_cars[current_cars.id == id_].iloc[0]
             ):
                 continue
-            else:
-                current_car = get_or_create(Session, Cars, {"id": id_})
-                update_existing_car = True
+            current_car, created = get_or_create(session, Cars, {"id": id_})
+            if created:
+                continue
+            update_existing_car = True
 
         if update_existing_car:
             validate_dict = compare_new_old(car_details, current_car.__dict__)
@@ -273,10 +274,10 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
             update_cars.append(current_car)
         elif is_car_valid(car_details):
             update_cars.append(Cars(**car_details))
-    if update_cars:
-        with Session.begin() as sess:
-            sess.add_all(update_cars)
-            sess.commit()
+    update_cars = list({car.id: car for car in update_cars}.values())
+    for car in update_cars:
+        session.merge(car)
+    session.commit()
     # Cars end
 
 
@@ -627,23 +628,18 @@ def get_latlon_address(address):
     return [float(response[0]["lat"]), float(response[0]["lon"])]
 
 
-def get_or_create(Session, model, parameters):
+def get_or_create(session, model, parameters):
     """
     Search for an object in the db, create it if it doesn't exist
     return on both scenarios
     """
-    with Session.begin() as session:
-        instance = session.query(model).filter_by(id=parameters["id"]).first()
-        if instance:
-            session.expunge_all()
-    if instance:
-        return instance
-    else:
+    instance = session.query(model).filter_by(id=parameters["id"]).first()
+    if not instance:
         instance = model(**parameters)
-        with Session.begin() as session:
-            session.add(instance)
-            session.commit()
-        return instance
+        session.add(instance)
+        return instance, True
+
+    return instance, False
 
 
 def update_car(vehicle, saved_car):
