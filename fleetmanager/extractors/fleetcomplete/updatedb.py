@@ -111,7 +111,8 @@ def set_starts(ctx):
 @cli.command()
 @click.pass_context
 @click.option("-df", "--description-fields", envvar="DESCRIPTION_FIELDS", required=False)
-def set_vehicles(ctx, description_fields=None):
+@click.option("-el", "--exempt-locations", is_flag=True, default=False)
+def set_vehicles(ctx, description_fields=None, exempt_locations=False):
     fuel_to_type = {
         # benzin til fossilbil
         1: 4,
@@ -137,8 +138,12 @@ def set_vehicles(ctx, description_fields=None):
     vehicles_response = requests.get(url + "Api/Vehicles/get", params=params)
     cars = json.loads(vehicles_response.content)["response"]
     # get currently saved cars to update if changes and save new ones
-    current_cars = pd.read_sql(Query(Cars).statement, engine)
-    update_cars = []
+    current_cars = pd.read_sql(
+        Query(Cars).filter(
+            or_(Cars.deleted == False, Cars.deleted.is_(None)),
+            or_(Cars.disabled == False, Cars.disabled.is_(None))
+        ).statement, engine)
+
     if description_fields is not None:
         description_fields = description_fields.split(",")
     else:
@@ -150,7 +155,7 @@ def set_vehicles(ctx, description_fields=None):
         if (
             pd.isna(car["booking"]["homeLocation"])
             or car["booking"]["homeLocation"] not in starts.id.values
-        ):
+        ) and not exempt_locations:
             print(
                 f"Car {id_} did not have any homeLocation or saved location: {car['booking']['homeLocation']}"
             )
@@ -198,7 +203,7 @@ def set_vehicles(ctx, description_fields=None):
 
         location = (
             None
-            if car["booking"]["homeLocation"] is None
+            if car["booking"]["homeLocation"] is None or exempt_locations
             else int(car["booking"]["homeLocation"])
         )
 
@@ -233,8 +238,8 @@ def set_vehicles(ctx, description_fields=None):
             plate=plate,
             make=car["info"]["make"],
             model=car["info"]["model"],
-            type=vehicle_type,
-            fuel=fuel,
+            type=None,  # for now, we're avoiding to set type and fuel - because we don't get the wltp on the api
+            fuel=None,
             # todo implement "auto fill" if the below metrics doesn't exist and similar make model exist
             wltp_fossil=None,  # todo update when we receive confirmation
             wltp_el=None,  # todo update when we receive confirmation
@@ -247,31 +252,34 @@ def set_vehicles(ctx, description_fields=None):
             ),
         )
 
-        update_existing_car = False
-        if id_ in current_cars.id.values:
-            if not update_car(
-                car_details, current_cars[current_cars.id == id_].iloc[0]
-            ):
-                continue
-            else:
-                current_car = get_or_create(Session, Cars, {"id": id_})
-                update_existing_car = True
-
-        if update_existing_car:
-            validate_dict = compare_new_old(car_details, current_car.__dict__)
-            if not is_car_valid(validate_dict):
-                continue
-            for key, value in car_details.items():
-                if key == "id" or pd.isna(value):
+        with Session.begin() as session:
+            if id_ in current_cars.id.values:
+                if not update_car(
+                    car_details, current_cars[current_cars.id == id_].iloc[0]
+                ):
                     continue
-                setattr(current_car, key, value)
-            update_cars.append(current_car)
-        elif is_car_valid(car_details):
-            update_cars.append(Cars(**car_details))
-    if update_cars:
-        with Session.begin() as sess:
-            sess.add_all(update_cars)
-            sess.commit()
+
+                current_car = session.query(Cars).filter(Cars.id == id_).first()
+                if not current_car:
+                    # not possible
+                    continue
+
+                validate_dict = compare_new_old(car_details, current_car.__dict__)
+                if not is_car_valid(validate_dict):
+                    continue
+
+                values_changed = False
+                for key, value in car_details.items():
+                    if key == "id" or pd.isna(value) or current_car.__dict__.get(key) == value:
+                        continue
+                    values_changed = True
+                    setattr(current_car, key, value)
+
+                if values_changed:
+                    session.add(current_car)
+
+            elif is_car_valid(car_details):
+                session.add(Cars(**car_details))
     # Cars end
 
 
@@ -620,25 +628,6 @@ def get_latlon_address(address):
     if len(response) == 0:
         return [None, None]
     return [float(response[0]["lat"]), float(response[0]["lon"])]
-
-
-def get_or_create(Session, model, parameters):
-    """
-    Search for an object in the db, create it if it doesn't exist
-    return on both scenarios
-    """
-    with Session.begin() as session:
-        instance = session.query(model).filter_by(id=parameters["id"]).first()
-        if instance:
-            session.expunge_all()
-    if instance:
-        return instance
-    else:
-        instance = model(**parameters)
-        with Session.begin() as session:
-            session.add(instance)
-            session.commit()
-        return instance
 
 
 def update_car(vehicle, saved_car):
