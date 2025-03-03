@@ -407,7 +407,7 @@ def set_trackers_v2(ctx, description_fields=None):
             skyhost_id = vehicle_from_skyhost.get("id")
             car_db = list(filter(lambda car: car.imei == imei, cars_in_db))
             if len(car_db) > 1:
-                logger.error(f"There are multiple cars with the same imei number {imei}")
+                logger.warning(f"There are multiple cars with the same imei number {imei}")
                 continue
             if len(car_db) == 1 and str(car_db[0].id) in banned_cars:
                 continue
@@ -658,7 +658,7 @@ def get_trips(car_id, key, from_date=None):
             # allow if it's the last
             if ((not trip.StartPos_Timestamp or not trip.StopPos_Timestamp) and
                     (db_length != idx + 1 or current_time != end_log_time)):
-                logger.error(f"ERROR IN THE LOGS FROM SKYHOST {trip.ID } DID NOT HAVE TIMESTAMPS")
+                logger.warning(f"ERROR IN THE LOGS FROM SKYHOST {trip.ID } DID NOT HAVE TIMESTAMPS")
                 return pd.DataFrame()
             elif not trip.StartPos_Timestamp or not trip.StopPos_Timestamp:
                 continue
