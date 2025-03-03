@@ -122,10 +122,8 @@ def set_vehicles(ctx, description_fields=None):
         Materiels.maskingruppe.notin_(ignore_machine_group),
     ):
         if vehicle.placeringsadresse not in known_starts.address.values:
-            print(
-                "skipping vehicle",
-                vehicle.registreringsnummer,
-                vehicle.placeringsadresse
+            logger.info(
+                f"skipping vehicle: {vehicle.registreringsnummer}, {vehicle.placeringsadresse}"
             )
             continue
 
@@ -133,7 +131,7 @@ def set_vehicles(ctx, description_fields=None):
             (cars_in_db.plate == vehicle.registreringsnummer.replace(" ", "")) | (cars_in_db.id == vehicle.nummer)
         ]
         if len(saved_vehicle) > 1:
-            print(
+            logger.warning(
                 f"skipping vehicle, found multiple for {vehicle.registreringsnummer} and {vehicle.nummer}"
             )
             continue
@@ -164,7 +162,7 @@ def set_vehicles(ctx, description_fields=None):
                     saved_vehicle_object.location_obj = location
                     obj_changed = True
                 if saved_vehicle.plate != vehicle.registreringsnummer.replace(" ", ""):
-                    print(f"updating plate for {vehicle.nummer}, from {cars_in_db.plate} to {vehicle.registreringsnummer}")
+                    logger.info(f"updating plate for {vehicle.nummer}, from {cars_in_db.plate} to {vehicle.registreringsnummer}")
                     obj_changed = True
 
                 if obj_changed:
@@ -177,11 +175,11 @@ def set_vehicles(ctx, description_fields=None):
             if not plate:
                 continue
             loop = asyncio.get_event_loop()
-            print(f"looking for {vehicle.registreringsnummer}")
+            logger.info(f"looking for {vehicle.registreringsnummer}")
             try:
                 vehicle_attributes = loop.run_until_complete(get_plate_info_from_api(plate))
             except Exception as e:
-                print(f"finding plate info from plate failed: {plate}, {e}")
+                logger.info(f"finding plate info from plate failed: {plate}, {e}")
                 continue
             if "make" not in vehicle_attributes:
                 continue
@@ -272,15 +270,15 @@ def set_roundtrips(ctx):
     load_record_path = os.getenv("LOAD_RECORD_PATH", "load_record.json")
     if os.path.exists(load_record_path):
         load_record = json.loads(open(load_record_path).read())
-        print(f"Using a load record with {len(load_record)} vehicles")
+        logger.info(f"Using a load record with {len(load_record)} vehicles")
     else:
-        print("Initiating a new load record")
+        logger.info("Initiating a new load record")
         load_record = {}
 
     for car in cars.itertuples():
         car: Cars = car
         s = time.time()
-        print(f"Start vehicle: {car.id}")
+        logger.info(f"Start vehicle: {car.id}")
 
         max_date = session.scalar(
             select(func.max(RoundTrips.end_time).label("max"))
@@ -305,12 +303,12 @@ def set_roundtrips(ctx):
             .first()
         )
         if not materiel:
-            print("could not find vehicle", car.id, car.plate)
+            logger.info(f"could not find vehicle: {car.id}, {car.plate}")
             continue
 
         logs = []
         for start, end in date_iter(max_date, now, week_period=1):
-            print(start, end, len(logs))
+            logger.info(f"{start} - {end}: {len(logs)}")
             query_results = puma_session.query(
                 Data.materielid,
                 Data.timestamp,
@@ -375,12 +373,12 @@ def set_roundtrips(ctx):
 
         load_record[str(car.id)] = now.strftime("%Y-%m-%d")
 
-    print("*****************" * 3)
-    print(
+    logger.info("*****************" * 3)
+    logger.info(
         f"Collected route count {collected_route_count},    Collected trip count {collected_trip_count}      "
         f"ratio {collected_route_count/max(collected_trip_count, 1)}"
     )
-    print(
+    logger.info(
         f"Collected route length {collected_route_length},    Collected trip length {collected_trip_length}      "
         f"ratio {collected_route_length / max(collected_trip_length, 1)}"
     )
@@ -409,7 +407,7 @@ def set_starts(ctx):
         if None in [lat, lon]:
             continue
 
-        print(q.placeringsadresse, lat, lon)
+        logger.info(f"{q.placeringsadresse}: ({lat}, {lon})")
 
         session.add(
             AllowedStarts(
@@ -436,7 +434,7 @@ def clean_roundtrips(ctx):
     remove = [int(a) for a in rt[~rt.id.isin(keep)].id.values]
     if len(remove) != 0:
         assert len(rt) > len(remove), "Did not clean"
-        print(f"Removing {len(remove)} duplicates", flush=True)
+        logger.info(f"Removing {len(remove)} duplicates")
         with Session() as sess:
             sess.query(RoundTripSegments).filter(
                 RoundTripSegments.round_trip_id.in_(remove)
@@ -471,9 +469,8 @@ def clean_roundtrips(ctx):
                 .filter(RoundTripSegments.round_trip_id.in_([r.id for r in rtr]))
                 .all()
             )
-            print(
-                f"********************* would like to delete, {len(rtrs)} roundtripsegments and {len(rtr)} roundtrips",
-                flush=True,
+            logger.info(
+                f"********************* would like to delete, {len(rtrs)} roundtripsegments and {len(rtr)} roundtrips"
             )
 
             sess.query(RoundTripSegments).filter(
@@ -562,7 +559,7 @@ def location_precision_test(
 
         logs = []
         for start, end in date_iter(start_date, now_date, week_period=1):
-            print(start, end, len(logs))
+            logger.info(f"{start}, {end}, {len(logs)}")
             query_results = puma_session.query(
                 Data.materielid,
                 Data.timestamp,

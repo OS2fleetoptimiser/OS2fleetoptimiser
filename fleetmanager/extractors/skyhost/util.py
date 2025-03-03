@@ -1,4 +1,5 @@
 import requests
+import logging
 import numpy as np
 from sqlalchemy.orm import Query, Session
 from fleetmanager.extractors.skyhost.parsers import DrivingBook, MileageLogPositions
@@ -10,6 +11,8 @@ from time import sleep
 from typing import Literal, TypedDict
 import pytz
 from fleetmanager.data_access import LeasingTypes, FuelTypes, VehicleTypes, AllowedStarts, Cars
+
+logger = logging.getLogger(__name__)
 
 cph = pytz.timezone("Europe/Copenhagen")
 utc = pytz.utc
@@ -136,7 +139,7 @@ def get_trips_v2(from_date: datetime, to_date: datetime, url: str, headers: dict
             else:
                 url = original_url
                 break
-    print("len trips from gettripsv2", len(trips))
+    logger.info("len trips from gettripsv2: {}".format(len(trips)))
     return trips
 
 
@@ -202,7 +205,7 @@ def get_coords(trip_id, agent):
             "Trackers_GetMilagePositions", params={"MilageLogID": trip_id}
         )
     ).status_code != 200:
-        print(
+        logger.info(
             "Retrying Trackers_GetMilagePositions with MilageLogId: {}".format(trip_id),
         )
     log_pos = MileageLogPositions()
@@ -224,14 +227,14 @@ def driving_book(tracker_id, start_time, end_time, agent):
             },
         )
     ).status_code != 200:
-        print(
+        logger.info(
             "Retrying Trackers_GetMilageLog with TrackerID: {} Begin: {} End: {}".format(
                 tracker_id, start_time, end_time
             )
         )
     book = DrivingBook()
     book.parse(r.text)
-    print(
+    logger.info(
         "Found {} trips for tracker with id {}".format(book.frame.shape[0], tracker_id)
     )
     if book.frame.shape[0] == 0:
@@ -484,6 +487,6 @@ def run_request(uri, params, headers):
         response = requests.get(uri, params=params, headers=headers)
         if response.status_code != 429:
             break
-        print("Too many requests retrying...")
+        logger.info("Too many requests retrying...")
         sleep(3)  # Handle too many requests
     return response

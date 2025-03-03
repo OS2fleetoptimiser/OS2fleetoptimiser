@@ -94,7 +94,7 @@ def set_starts(ctx):
             lat = place["latitude"]
             lon = place["longitude"]
         if lat is None and id_ not in id_to_latlon:
-            print(f"Failed getting lat/lon for place(id={id_}, name={place['name']})")
+            logger.info(f"Failed getting lat/lon for place(id={id_}, name={place['name']})")
             continue
         if lat is None:
             lat, lon = id_to_latlon[place["id"]]
@@ -156,7 +156,7 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
             pd.isna(car["booking"]["homeLocation"])
             or car["booking"]["homeLocation"] not in starts.id.values
         ) and not exempt_locations:
-            print(
+            logger.info(
                 f"Car {id_} did not have any homeLocation or saved location: {car['booking']['homeLocation']}"
             )
             # continue
@@ -301,7 +301,7 @@ def set_trips(ctx):
         car_trips = []
         lat, lon, address_id = None, None, None
         if not pd.isna(car.location) and int(car.location) in start_locations.id.values:
-            print(f"Pulling trips for {car.id}", flush=True)
+            logger.info(f"Pulling trips for {car.id}")
             lat, lon, address_id = start_locations[start_locations.id == car.location][
                 ["latitude", "longitude", "id"]
             ].values[0]
@@ -326,7 +326,7 @@ def set_trips(ctx):
 
             response_ = run_request(url + "Api/Vehicles/getTrips", params=params)
             response = json.loads(response_.content)["response"]
-            print(
+            logger.info(
                 f"pulled {0 if response is None else len(response)} for car id {car.id} in period {start_month} to {end_month}"
             )
             if response is None:
@@ -362,7 +362,7 @@ def set_trips(ctx):
             with session() as s:
                 s.add_all(car_trips)
                 s.commit()
-            print(f"Saved {len(car_trips)} for {car.id}", flush=True)
+            logger.info(f"Saved {len(car_trips)} for {car.id}")
 
 
 @cli.command()
@@ -426,12 +426,12 @@ def set_roundtrips(ctx):
             collected_route_length += usage_distance
             collected_trip_length += possible_distance
 
-    print("*****************" * 3)
-    print(
+    logger.info("*****************" * 3)
+    logger.info(
         f"Collected route count {collected_route_count},    Collected trip count {collected_trip_count}      "
         f"ratio {collected_route_count/max(collected_trip_count, 1)}"
     )
-    print(
+    logger.info(
         f"Collected route length {collected_route_length},    Collected trip length {collected_trip_length}      "
         f"ratio {collected_route_length / max(collected_trip_length, 1)}"
     )
@@ -451,7 +451,7 @@ def clean_roundtrips(ctx):
     remove = [int(a) for a in rt[~rt.id.isin(keep)].id.values]
     if len(remove) != 0:
         assert len(rt) > len(remove), "Did not clean"
-        print(f"Removing {len(remove)} duplicates", flush=True)
+        logger.info(f"Removing {len(remove)} duplicates")
         with Session() as sess:
             sess.query(RoundTripSegments).filter(
                 RoundTripSegments.round_trip_id.in_(remove)
@@ -481,9 +481,8 @@ def clean_roundtrips(ctx):
                 .filter(RoundTrips.start_time < delete_time)
                 .all()
             )
-            print(
-                f"********************* would like to delete, {len(rtr)} roundtrips",
-                flush=True,
+            logger.info(
+                f"********************* would like to delete, {len(rtr)} roundtrips"
             )
             chunk_size = 2000
             for i in range(0, len(rtr), chunk_size):
@@ -540,7 +539,7 @@ def get_trips(
 
         response_ = run_request(url + "Api/Vehicles/getTrips", params=params)
         response = json.loads(response_.content)["response"]
-        print(
+        logger.info(
             f"pulled {0 if response is None else len(response)} for car id {car_id} in period {start_date} to {end_date}"
         )
         if response is None:
@@ -604,7 +603,7 @@ def run_request(uri, params):
         response = requests.get(uri, params=params)
         if response.status_code != 429:
             break
-        print("Too many requests retrying...")
+        logger.info("Too many requests retrying...")
         time.sleep(3)  # Handle too many requests
     return response
 
