@@ -101,7 +101,7 @@ def clean_roundtrips(ctx):
     remove = [int(a) for a in rt[~rt.id.isin(keep)].id.values]
     if len(remove) != 0:
         assert len(rt) > len(remove), "Did not clean"
-        print(f"Removing {len(remove)} duplicates", flush=True)
+        logger.info(f"Removing {len(remove)} duplicates")
         with Session() as sess:
             sess.query(RoundTripSegments).filter(
                 RoundTripSegments.round_trip_id.in_(remove)
@@ -126,7 +126,6 @@ def clean_roundtrips(ctx):
             assert delete_time < datetime.now() - relativedelta(
                 months=6
             ), "Not allowing to delete less than 6 months old data"
-            print(delete_time)
 
             rtr = (
                 sess.query(RoundTrips.id)
@@ -138,9 +137,8 @@ def clean_roundtrips(ctx):
                 .filter(RoundTripSegments.round_trip_id.in_([r.id for r in rtr]))
                 .all()
             )
-            print(
-                f"********************* would like to delete {len(rtrs)} roundtripsegments and {len(rtr)} roundtrips",
-                flush=True,
+            logger.info(
+                f"********************* would like to delete {len(rtrs)} roundtripsegments and {len(rtr)} roundtrips"
             )
 
             sess.query(RoundTripSegments).filter(
@@ -276,12 +274,12 @@ def set_roundtrips_v2(ctx):
             collected_trip_count += possible_count
             collected_route_length += usage_distance
             collected_trip_length += possible_distance
-    print("*****************" * 3)
-    print(
+    logger.info("*****************" * 3)
+    logger.info(
         f"Collected route count {collected_route_count},    Collected trip count {collected_trip_count}      "
         f"ratio {collected_route_count / max(collected_trip_count, 1)}"
     )
-    print(
+    logger.info(
         f"Collected route length {collected_route_length},    Collected trip length {collected_trip_length}      "
         f"ratio {collected_route_length / max(collected_trip_length, 1)}"
     )
@@ -314,7 +312,7 @@ def set_roundtrips(ctx):
     for key in to_list(ctx.obj["SOAP_KEY"]):
         agent = SoapAgent(key)
         while (r := agent.execute_action("Trackers_GetAllTrackers")).status_code != 200:
-            print("Retrying Trackers_GetAllTrackers")
+            logger.info("Retrying Trackers_GetAllTrackers")
         trackers = Trackers()
         trackers.parse(r.text)
         if len(trackers.block) == 0:
@@ -370,12 +368,12 @@ def set_roundtrips(ctx):
         collected_trip_count += possible_count
         collected_route_length += usage_distance
         collected_trip_length += possible_distance
-    print("*****************" * 3)
-    print(
+    logger.info("*****************" * 3)
+    logger.info(
         f"Collected route count {collected_route_count},    Collected trip count {collected_trip_count}      "
         f"ratio {collected_route_count/max(collected_trip_count, 1)}"
     )
-    print(
+    logger.info(
         f"Collected route length {collected_route_length},    Collected trip length {collected_trip_length}      "
         f"ratio {collected_route_length / max(collected_trip_length, 1)}"
     )
@@ -535,7 +533,7 @@ def set_trackers(ctx, description_fields=None):
 
         default_cars = pd.read_sql(Query(Cars).statement, ctx.obj["engine"])
         while (r := agent.execute_action("Trackers_GetAllTrackers")).status_code != 200:
-            print("Retrying Trackers_GetAllTrackers")
+            logger.info("Retrying Trackers_GetAllTrackers")
         trackers.parse(r.text)
 
         if len(trackers.block) == 0 or 'Marker' not in trackers.frame.columns:
@@ -609,7 +607,7 @@ def get_trips(car_id, key, from_date=None):
     for k, (start_log_time, end_log_time) in enumerate(
         date_iter(from_date, current_time, week_period=52)
     ):
-        print(start_log_time, end_log_time)
+        logger.info(f"{start_log_time}, {end_log_time}")
         dbook = driving_book(
             car_id,
             start_log_time.isoformat(),
@@ -649,7 +647,7 @@ def get_trips(car_id, key, from_date=None):
                         "StartPos_Timestamp", ascending=False
                     ).iloc[1:]
             else:
-                print(
+                logger.info(
                     f"Car {car_id} did not have lat, lon or StopPost_Timestamp in all "
                     f"logs between {start_log_time} - {end_log_time}"
                 )
@@ -706,7 +704,7 @@ def set_trips(ctx):
     for key in to_list(ctx.obj["SOAP_KEY"]):
         agent = SoapAgent(key)
         while (r := agent.execute_action("Trackers_GetAllTrackers")).status_code != 200:
-            print("Retrying Trackers_GetAllTrackers")
+            logger.info("Retrying Trackers_GetAllTrackers")
         trackers = Trackers()
         trackers.parse(r.text)
         start_time = {}
@@ -759,7 +757,7 @@ def set_trips(ctx):
                     start_time.get(str(car.id), min_time), current_time, week_period=52
                 )
             ):
-                print(start_month, end_month)
+                logger.info(f"{start_month}, {end_month}")
                 dbook = driving_book(
                     car.id,
                     start_month.isoformat(),
@@ -783,7 +781,7 @@ def set_trips(ctx):
                 ]
 
                 if len(trimmed) != len(dbook):
-                    print(
+                    logger.info(
                         f"Car {car.id} did not have lat, lon or StopPost_Timestamp in all "
                         f"logs between {start_month} - {end_month}"
                     )
@@ -838,9 +836,8 @@ def set_trips(ctx):
                     for trip in trips_frame.to_dict("records")
                     if trip["id"] not in updated_trips
                 ]
-                print(
-                    f"adding {len(trips)} for car: {car.id}\nupdating {len(updated_trips)} trip with end_lat & end_lon\n",
-                    flush=True,
+                logger.info(
+                    f"adding {len(trips)} for car: {car.id}\nupdating {len(updated_trips)} trip with end_lat & end_lon\n"
                 )
                 sess.add_all(add_these)
                 sess.commit()
@@ -864,7 +861,7 @@ def location_precision_test(
             break
         agent = SoapAgent(key)
         while (r := agent.execute_action("Trackers_GetAllTrackers")).status_code != 200:
-            print("Retrying Trackers_GetAllTrackers")
+            logger.info("Retrying Trackers_GetAllTrackers")
         trackers = Trackers()
         trackers.parse(r.text)
         if len(trackers.block) == 0 or len(trackers.frame[trackers.frame.ID.isin(carids)]) == 0:
@@ -990,7 +987,6 @@ def location_precision_test_v2(
     for car in cars:
         if str(car.imei) not in carimei2key:
             logger.info(f"Car imei {car.imei} not found in trackers amongst the keys")
-            print(f"Car imei {car.imei} not found in trackers amongst the keys")
             continue
 
         vehicle_info = carimei2key[str(car.imei)]
@@ -1012,8 +1008,8 @@ def location_precision_test_v2(
                 "kilometers": 0
             }
             continue
-        print(
-            "Found {} trips for tracker with id {}".format(len(trips), car.id)
+        logger.info(
+            f"Found {len(trips)} trips for tracker with id {car.id}"
         )
         car_trips = sanitise_for_overlaps(trips, summer_times, winter_times)
         precision, total_kilometers = process_car_roundtrips(

@@ -122,7 +122,7 @@ def set_starts(ctx):
     vehicles = run_request(url, params, headers)
 
     if vehicles.status_code != 200:
-        print(f"Vehicles request returned {vehicles.status_code}")
+        logger.warning(f"Vehicles request returned {vehicles.status_code}")
         return
 
     vehicles = vehicles.json().get("Cars", [])
@@ -146,14 +146,14 @@ def set_starts(ctx):
     for address in unseen_addresses:
         latitude, longitude = get_latlon_address(address)
         if latitude is None or longitude is None:
-            print("Skipping location, could not find lat/lon: ", address)
+            logger.info(f"Skipping location, could not find lat/lon: {address}")
             continue
         new_location = AllowedStarts(
             id=None, address=address, latitude=latitude, longitude=longitude
         )
         sess.add(new_location)
         sess.commit()
-        print("Added location: ", new_location.address)
+        logger.info(f"Added location: {new_location.address}")
         sleep(2)
 
 
@@ -198,7 +198,7 @@ def set_vehicles(ctx, description_fields=None):
 
     vehicles = run_request(url, params, headers)
     if vehicles.status_code != 200:
-        print(f"Vehicles request returned {vehicles.status_code}")
+        logger.warning(f"Vehicles request returned {vehicles.status_code}")
         return
 
     if description_fields is not None:
@@ -402,7 +402,7 @@ def set_roundtrips(ctx):
         if pd.isna(car_location):
             # no associated location
             continue
-        print(car_id, last_date)
+        logger.info(f"{car_id}, {last_date}")
         trips_since_last_roundtrip = get_logs(car_id, last_date, url, headers)
         car_trips = format_trip_logs(
             trips_since_last_roundtrip, start_location_id=car_location
@@ -431,12 +431,12 @@ def set_roundtrips(ctx):
         collected_trip_count += possible_count
         collected_route_length += usage_distance
         collected_trip_length += possible_distance
-    print("*****************" * 3)
-    print(
+    logger.info("*****************" * 3)
+    logger.info(
         f"Collected route count {collected_route_count},    Collected trip count {collected_trip_count}      "
         f"ratio {collected_route_count/max(collected_trip_count, 1)}"
     )
-    print(
+    logger.info(
         f"Collected route length {collected_route_length},    Collected trip length {collected_trip_length}      "
         f"ratio {collected_route_length / max(collected_trip_length, 1)}"
     )
@@ -456,7 +456,7 @@ def clean_roundtrips(ctx):
     remove = [int(a) for a in rt[~rt.id.isin(keep)].id.values]
     if len(remove) != 0:
         assert len(rt) > len(remove), "Did not clean"
-        print(f"Removing {len(remove)} duplicates", flush=True)
+        logger.info(f"Removing {len(remove)} duplicates", flush=True)
         with Session() as sess:
             sess.query(RoundTripSegments).filter(
                 RoundTripSegments.round_trip_id.in_(remove)
@@ -488,9 +488,8 @@ def clean_roundtrips(ctx):
             .filter(RoundTripSegments.round_trip_id.in_([r.id for r in rtr]))
             .all()
         )
-        print(
-            f"********************* would like to delete, {len(rtrs)} roundtripsegments and {len(rtr)} roundtrips",
-            flush=True,
+        logger.info(
+            f"********************* would like to delete, {len(rtrs)} roundtripsegments and {len(rtr)} roundtrips"
         )
 
         sess.query(RoundTripSegments).filter(
@@ -513,7 +512,7 @@ def get_logs(car_id: int, last_date: datetime, url: str, headers: dict):
     while True:
         response = run_request(uri=url, params=params, headers=headers)
         if response.status_code != 200:
-            print(f"Trip request returned code {response.status_code}")
+            logger.warning(f"Trip request returned code {response.status_code}")
             trips = []
             break
         trips += response.json().get("Trips", [])
@@ -570,8 +569,7 @@ def format_trip_logs(trips: list[dict], start_location_id: int = 0) -> list[rout
                 )
             )
         except ValueError as ve:
-            print(f"Had value error on parsing {ve}")
-            print("skipping record", trip["ID"])
+            logger.warning(f"Had value error on parsing {ve}\nskipping record {trip['ID']}")
 
     return parsed_trips
 
@@ -612,7 +610,7 @@ def run_request(uri, params, headers):
         response = requests.get(uri, params=params, headers=headers)
         if response.status_code != 429:
             break
-        print("Too many requests retrying...")
+        logger.info("Too many requests retrying...")
         sleep(3)  # Handle too many requests
     return response
 
