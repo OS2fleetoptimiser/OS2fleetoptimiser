@@ -456,7 +456,7 @@ def clean_roundtrips(ctx):
     remove = [int(a) for a in rt[~rt.id.isin(keep)].id.values]
     if len(remove) != 0:
         assert len(rt) > len(remove), "Did not clean"
-        logger.info(f"Removing {len(remove)} duplicates", flush=True)
+        logger.info(f"Removing {len(remove)} duplicates")
         with Session() as sess:
             sess.query(RoundTripSegments).filter(
                 RoundTripSegments.round_trip_id.in_(remove)
