@@ -1196,7 +1196,7 @@ def process_car_roundtrips(
             else:
                 commit_roundtrips(session_or_maker, car, qualified_routes)
 
-        print(
+        logger.info(
             f"Car: {car.id}, {len(qualified_routes)} roundtrips. Km utilisation "
             f"{usage_distance / possible_distance}"
             f". Ratio log {usage_count / possible_count}, "
