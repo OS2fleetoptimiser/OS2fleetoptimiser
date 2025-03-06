@@ -138,11 +138,7 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
     vehicles_response = requests.get(url + "Api/Vehicles/get", params=params)
     cars = json.loads(vehicles_response.content)["response"]
     # get currently saved cars to update if changes and save new ones
-    current_cars = pd.read_sql(
-        Query(Cars).filter(
-            or_(Cars.deleted == False, Cars.deleted.is_(None)),
-            or_(Cars.disabled == False, Cars.disabled.is_(None))
-        ).statement, engine)
+    current_cars = {car.id: car.to_dict() for _, car in pd.read_sql(Query(Cars).statement, engine).iterrows()}
 
     if description_fields is not None:
         description_fields = description_fields.split(",")
@@ -152,6 +148,9 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
     for car in cars:
         id_ = car["id"]
 
+        current_car = current_cars.get(id_, {})
+        if current_car and (current_car.get("disabled", False) or current_car.get("deleted", False)):
+            continue
         if (
             pd.isna(car["booking"]["homeLocation"])
             or car["booking"]["homeLocation"] not in starts.id.values
@@ -253,30 +252,30 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
         )
 
         with Session.begin() as session:
-            if id_ in current_cars.id.values:
+            if current_car:
                 if not update_car(
-                    car_details, current_cars[current_cars.id == id_].iloc[0]
+                    car_details, current_car
                 ):
                     continue
 
-                current_car = session.query(Cars).filter(Cars.id == id_).first()
-                if not current_car:
+                db_current_car = session.query(Cars).filter(Cars.id == id_).first()
+                if not db_current_car:
                     # not possible
                     continue
 
-                validate_dict = compare_new_old(car_details, current_car.__dict__)
+                validate_dict = compare_new_old(car_details, current_car)
                 if not is_car_valid(validate_dict):
                     continue
 
                 values_changed = False
                 for key, value in car_details.items():
-                    if key == "id" or pd.isna(value) or current_car.__dict__.get(key) == value:
+                    if key == "id" or pd.isna(value) or current_car.get(key) == value:
                         continue
                     values_changed = True
-                    setattr(current_car, key, value)
+                    setattr(db_current_car, key, value)
 
                 if values_changed:
-                    session.add(current_car)
+                    session.add(db_current_car)
 
             elif is_car_valid(car_details):
                 session.add(Cars(**car_details))
@@ -645,6 +644,9 @@ def is_car_valid(car_dict):
     validation_dict["type"] = {"id": validation_dict.get("type", None)}
     validation_dict["location"] = {"id": validation_dict.get("location", None)}
     validation_dict["leasing_type"] = {"id": validation_dict.get("leasing_type", None)}
+    for key, value in car_dict.items():
+        if pd.isna(value):
+            validation_dict[key] = None
     try:
         Vehicle(**validation_dict)
     except ValidationError as e:
