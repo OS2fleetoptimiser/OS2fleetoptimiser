@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import logging
 import os
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
@@ -31,6 +30,7 @@ from fleetmanager.extractors.skyhost.updatedb import (
     winter_times,
 )
 from fleetmanager.extractors.util import get_latlon_address, get_allowed_starts_with_additions
+from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import aggregating_score as score
 from fleetmanager.model.roundtripaggregator import (
     aggregator,

@@ -17,6 +17,7 @@ app = Celery(
     broker=os.getenv("CELERY_BROKER_URL", "amqp://localhost"),
     backend=os.getenv("CELERY_BACKEND_URL", "redis://localhost"),
 )
+app.log.already_setup = True
 app.conf.event_serializer = "pickle"
 app.conf.task_serializer = "pickle"
 app.conf.result_serializer = "pickle"

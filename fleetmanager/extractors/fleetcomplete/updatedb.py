@@ -2,7 +2,6 @@
 import ast
 import datetime
 import json
-import logging
 import os
 import time
 import urllib.parse
@@ -30,6 +29,7 @@ from fleetmanager.data_access import (
 )
 from fleetmanager.data_access.dbschema import RoundTripSegments
 from fleetmanager.extractors.util import get_allowed_starts_with_additions
+from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import aggregator, process_car_roundtrips
 from fleetmanager.model.roundtripaggregator import aggregating_score as score
 

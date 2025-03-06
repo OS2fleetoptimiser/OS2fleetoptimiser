@@ -1,12 +1,13 @@
 import pandas as pd
-import logging
 from collections import OrderedDict
 from datetime import date, datetime
 import xmltodict
 import requests
 from tenacity import retry, wait_random_exponential, stop_after_attempt
+
 from fleetmanager.extractors.fleetcomplete.updatedb import quantize_months
 from fleetmanager.extractors.util import extract_plate
+from fleetmanager.logging import logging
 
 
 logger = logging.getLogger(__name__)

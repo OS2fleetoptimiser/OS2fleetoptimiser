@@ -1,5 +1,4 @@
 import requests
-import logging
 import numpy as np
 from sqlalchemy.orm import Query, Session
 from fleetmanager.extractors.skyhost.parsers import DrivingBook, MileageLogPositions
@@ -11,6 +10,8 @@ from time import sleep
 from typing import Literal, TypedDict
 import pytz
 from fleetmanager.data_access import LeasingTypes, FuelTypes, VehicleTypes, AllowedStarts, Cars
+from fleetmanager.logging import logging
+
 
 logger = logging.getLogger(__name__)
 

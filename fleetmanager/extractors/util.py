@@ -2,7 +2,6 @@ import ast
 import asyncio
 import json
 import urllib.parse
-import logging
 
 import pandas as pd
 import regex as re
@@ -13,6 +12,7 @@ from sqlalchemy.orm import Session, selectinload
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 
 from fleetmanager.data_access import AllowedStarts
+from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import calc_distance
 import httpx
 

@@ -1,5 +1,4 @@
 import json
-import logging
 import math
 import operator
 import os
@@ -11,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from fleetmanager.data_access import RoundTripSegments, RoundTrips, Cars
+from fleetmanager.logging import logging
 
 logger = logging.getLogger(__name__)
 

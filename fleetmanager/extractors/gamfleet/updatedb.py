@@ -4,7 +4,6 @@ import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta, date, time as dttime
 from dateutil.relativedelta import relativedelta
-import logging
 
 import click
 import pandas as pd
@@ -27,6 +26,7 @@ from fleetmanager.extractors.mileagebook.updatedb import CarModel
 from fleetmanager.extractors.skyhost.updatedb import summer_times, winter_times
 
 from fleetmanager.extractors.util import extract_plate, get_allowed_starts_with_additions
+from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import aggregating_score as score, sanitise_for_overlaps
 from fleetmanager.model.roundtripaggregator import aggregator, process_car_roundtrips
 
