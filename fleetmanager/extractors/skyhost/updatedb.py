@@ -554,7 +554,7 @@ def set_trackers(ctx, description_fields=None):
                 continue
             plate = tracker.Marker if tracker.Marker is not None and re.match(r"\w{2}\d{5}", str(tracker.Marker)) else None
             if plate is None:
-                description_plate_pattern = re.match(r"\w{2}\d{5}", str(tracker.Description))
+                description_plate_pattern = re.search(r"\w{2}\d{5}", str(tracker.Description))
                 plate = None if description_plate_pattern is None else description_plate_pattern.group()
             # some times plate is in tracker.Marker
             car = dict(
