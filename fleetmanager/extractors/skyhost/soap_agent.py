@@ -1,11 +1,13 @@
 from importlib.resources import files
-import logging
 import time
 from uuid import uuid4
 
 import lxml.etree as et
 import requests
 import xmltodict
+
+from fleetmanager.logging import logging
+
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import asyncio
 import json
-import logging
 import os
 from datetime import datetime, timedelta, date, time as dttime
 import time
@@ -37,6 +36,7 @@ from fleetmanager.extractors.util import (
     logs_to_trips,
     to_list, get_plate_info_from_api, get_allowed_starts_with_additions,
 )
+from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import (
     aggregator,
     car_model,

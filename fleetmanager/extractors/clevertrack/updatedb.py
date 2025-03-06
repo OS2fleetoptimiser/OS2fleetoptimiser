@@ -3,7 +3,6 @@ import json
 import os
 import pickle
 from datetime import datetime, timedelta
-import logging
 
 import click
 import pandas as pd
@@ -26,6 +25,7 @@ from fleetmanager.extractors.skyhost.updatedb import (
     summer_times,
     winter_times,
 )
+from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import aggregating_score as score
 from fleetmanager.model.roundtripaggregator import (
     aggregator,

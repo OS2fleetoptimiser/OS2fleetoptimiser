@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import json
-import logging
 import os
 import re
 from datetime import date, datetime, timedelta
@@ -30,6 +29,7 @@ from fleetmanager.data_access.dbschema import RoundTripSegments
 from fleetmanager.extractors.fleetcomplete.updatedb import is_car_valid
 from fleetmanager.extractors.gamfleet.util import get_splate_info_from_api
 from fleetmanager.extractors.util import get_allowed_starts_with_additions
+from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import (
     aggregator,
     sanitise_for_overlaps,

@@ -1,9 +1,10 @@
-import logging
 import requests
 from time import sleep
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+
+from fleetmanager.logging import logging
 
 
 logger = logging.getLogger(__name__)

@@ -13,6 +13,7 @@ from fleetmanager.data_access import (
     engine_creator,
     RoundTripSegments,
 )
+from fleetmanager.logging import logging
 from fleetmanager.model import vehicle
 from fleetmanager.model.dashfree_utils import get_emission
 from fleetmanager.model.qampo import qampo_simulation
@@ -23,7 +24,6 @@ from fleetmanager.model.tco_calculator import TCOCalculator
 from fleetmanager.model.trip_generator import shiftify, get_kilometer_per_hour
 from fleetmanager.model.vehicle import Bike, ElectricBike
 
-import logging
 
 logger = logging.getLogger(__name__)
 
