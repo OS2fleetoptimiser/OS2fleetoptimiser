@@ -1,6 +1,6 @@
 'use client';
 
-import CarTable from '@/app/(logged-in)/(setup)/CarTable';
+import CarTable from '@/app/(logged-in)/setup/CarTable';
 import ApiError from '@/components/ApiError';
 import { VehicleWithStatus, fetchVehiclesByLocation, useGetForvaltninger, useGetLocations } from '@/components/hooks/useGetVehiclesByLocation';
 import { useAppDispatch, useAppSelector } from '@/components/redux/hooks';
