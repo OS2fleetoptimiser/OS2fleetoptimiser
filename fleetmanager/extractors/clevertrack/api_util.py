@@ -4,8 +4,13 @@ from datetime import date, datetime
 import xmltodict
 import requests
 from tenacity import retry, wait_random_exponential, stop_after_attempt
+
 from fleetmanager.extractors.fleetcomplete.updatedb import quantize_months
 from fleetmanager.extractors.util import extract_plate
+from fleetmanager.logging import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class DuplicatePlateCleverTrack(Exception):
@@ -71,7 +76,7 @@ def patch_trips(token: str, ids: list[int]):
                 f"Returned number of patched ids: {len(confirmation)} did not match the requested: {len(ids)}"
             )
 
-        print(f"Patched {len(ids)} ids.")
+        logger.info(f"Patched {len(ids)} ids.")
         return
     raise TripIdPatchError(
         f"Request did not return 200 response, but {response.status_code} and response {response.content}"
@@ -142,7 +147,7 @@ def collect_trips(
     collected_trips = []
 
     for start, stop in quantize_months(start_time, stop_time, days=day_delta):
-        print(start, stop)
+        logger.info(f"{start} - {stop}")
         trips_for_period = parse_trips(get_trips(token=token, start=start, stop=stop))
         collected_trips += [
             trip for car_trips in trips_for_period.values() for trip in car_trips

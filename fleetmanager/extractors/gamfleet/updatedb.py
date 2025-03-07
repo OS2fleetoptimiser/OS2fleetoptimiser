@@ -4,7 +4,6 @@ import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta, date, time as dttime
 from dateutil.relativedelta import relativedelta
-import logging
 
 import click
 import pandas as pd
@@ -27,6 +26,7 @@ from fleetmanager.extractors.mileagebook.updatedb import CarModel
 from fleetmanager.extractors.skyhost.updatedb import summer_times, winter_times
 
 from fleetmanager.extractors.util import extract_plate, get_allowed_starts_with_additions
+from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import aggregating_score as score, sanitise_for_overlaps
 from fleetmanager.model.roundtripaggregator import aggregator, process_car_roundtrips
 
@@ -110,7 +110,7 @@ def set_starts(ctx):
     vehicles = run_request(url, params)
 
     if vehicles.status_code != 200:
-        print(f"Vehicles request for set starts failed with: {vehicles.status_code}")
+        logger.warning(f"Vehicles request for set starts failed with: {vehicles.status_code}")
 
     vehicles = vehicles.json()
     unique_district_names = set([v.get("DistrictName") for v in vehicles if v.get("DistrictName") not in ["Udfasede", "", None]])
@@ -138,7 +138,7 @@ def set_vehicles(ctx, description_fields=None):
     # hent all køretøejr fra gam
     vehicles = run_request(url, params)
     if vehicles.status_code != 200:
-        print(f"Vehicles request for set vehicles failed with: {vehicles.status_code}")
+        logger.warning(f"Vehicles request for set vehicles failed with: {vehicles.status_code}")
     vehicles = vehicles.json()
 
     # få de gemte køretøjer
@@ -160,7 +160,7 @@ def set_vehicles(ctx, description_fields=None):
     for vehicle in vehicles:
         vehicle_id = vehicle.get("VehicleId")
         if vehicle_id is None or len(vehicle_id) == 0:
-            print("Skipping a vehicle without an ID")
+            logger.info("Skipping a vehicle without an ID")
             continue
         vehicle_id = int(vehicle_id)
         saved_vehicle = None
@@ -172,7 +172,7 @@ def set_vehicles(ctx, description_fields=None):
             db_car = sess.get(Cars, vehicle_id)
             db_car.disabled = 1
             sess.commit()
-            print(f"Disabled vehicle {vehicle_id}")
+            logger.info(f"Disabled vehicle {vehicle_id}")
             continue
         elif int(vehicle.get("IsActive")) == 0:
             # skip vehicle all along
@@ -181,7 +181,7 @@ def set_vehicles(ctx, description_fields=None):
         district_name = vehicle.get("DistrictName")
         if district_name in [None, "", "Udfasede"]:
             # we assume that the vehicle will also be put on IsActive if moved to udfasede
-            print(f"Skipping Udfasede/None DistrictName vehicle {vehicle_id}")
+            logger.info(f"Skipping Udfasede/None DistrictName vehicle {vehicle_id}")
             continue
 
         # only need to collect this again if we have no information on the vehicle
@@ -218,7 +218,7 @@ def set_vehicles(ctx, description_fields=None):
 
             # determine if it's worth saving, should location flagged?
             if motor_register_car.get("location") is None:
-                print(f"New district {district_name} not saved")
+                logger.info(f"New district {district_name} not saved")
 
             if motor_register_car.get("location") is not None:
                 motor_register_car["location_obj"] = sess.get(
@@ -299,7 +299,7 @@ def set_vehicles(ctx, description_fields=None):
             if saved_location.address != district_name:
                 new_location = sess.query(AllowedStarts).filter(AllowedStarts.address == district_name).first()
                 if new_location is None:
-                    print(f"New district name does not exist: {district_name}, skipping update on vehicle id {vehicle_id}")
+                    logger.info(f"New district name does not exist: {district_name}, skipping update on vehicle id {vehicle_id}")
                     continue
 
                 db_car = sess.get(Cars, vehicle_id)
@@ -320,7 +320,7 @@ def set_roundtrips(ctx):
     params["IsActive"] = 1
     vehicles = run_request(ctx.obj["url"] + "GetHelsingorVehicles", params)
     if vehicles.status_code != 200:
-        print(f"Vehicles request for set roundtrips failed with: {vehicles.status_code}")
+        logger.warning(f"Vehicles request for set roundtrips failed with: {vehicles.status_code}")
         return
     vehicle_ids = [int(a.get("VehicleId")) for a in vehicles.json()]
 
@@ -356,9 +356,9 @@ def set_roundtrips(ctx):
     load_record_path = os.getenv("LOAD_RECORD_PATH", "load_record.json")
     if os.path.exists(load_record_path):
         load_record = json.loads(open(load_record_path).read())
-        print(f"Using a load record with {len(load_record)} vehicles")
+        logger.info(f"Using a load record with {len(load_record)} vehicles")
     else:
-        print("Initiating a new load record")
+        logger.info("Initiating a new load record")
         load_record = {}
 
     for car_id, car_location, last_date in query_vehicles:
@@ -377,7 +377,7 @@ def set_roundtrips(ctx):
         elif last_date != max_date:
             last_date = max(last_date, now - relativedelta(weeks=4))
 
-        print(car_id, last_date)
+        logger.info(f"Updating car: {car_id}, last seen: {last_date}")
 
         car_trips = get_logs(vehicle_id=car_id, from_date=last_date, to_date=now, url=url, params=params)
         if len(car_trips) == 0:
@@ -413,12 +413,12 @@ def set_roundtrips(ctx):
 
         load_record[str(car_id)] = now.strftime("%Y-%m-%d")
 
-    print("*****************" * 3)
-    print(
+    logger.info("*****************" * 3)
+    logger.info(
         f"Collected route count {collected_route_count},    Collected trip count {collected_trip_count}      "
         f"ratio {collected_route_count/max(collected_trip_count, 1)}"
     )
-    print(
+    logger.info(
         f"Collected route length {collected_route_length},    Collected trip length {collected_trip_length}      "
         f"ratio {collected_route_length / max(collected_trip_length, 1)}"
     )
@@ -440,7 +440,7 @@ def clean_roundtrips(ctx):
     remove = [int(a) for a in rt[~rt.id.isin(keep)].id.values]
     if len(remove) != 0:
         assert len(rt) > len(remove), "Did not clean"
-        print(f"Removing {len(remove)} duplicates", flush=True)
+        logger.warning(f"Removing {len(remove)} duplicates")
         with Session() as sess:
             sess.query(RoundTripSegments).filter(
                 RoundTripSegments.round_trip_id.in_(remove)
@@ -465,7 +465,6 @@ def clean_roundtrips(ctx):
             assert delete_time < datetime.now() - relativedelta(
                 months=6
             ), "Not allowing to delete less than 6 months old data"
-            print(delete_time)
 
             rtr = (
                 sess.query(RoundTrips.id)
@@ -477,9 +476,8 @@ def clean_roundtrips(ctx):
                 .filter(RoundTripSegments.round_trip_id.in_([r.id for r in rtr]))
                 .all()
             )
-            print(
-                f"********************* would like to delete {len(rtrs)} roundtripsegments and {len(rtr)} roundtrips",
-                flush=True,
+            logger.info(
+                f"********************* would like to delete {len(rtrs)} roundtripsegments and {len(rtr)} roundtrips"
             )
 
             sess.query(RoundTripSegments).filter(

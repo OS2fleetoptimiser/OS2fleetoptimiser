@@ -1,5 +1,4 @@
 import json
-import logging
 import math
 import operator
 import os
@@ -11,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from fleetmanager.data_access import RoundTripSegments, RoundTrips, Cars
+from fleetmanager.logging import logging
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +176,7 @@ def returns_to_home(
     future_trips = trips.iloc[current_trip_index + 1 :].copy()
     future_trips = future_trips[future_trips.end_time <= search_time]
     if len(locations_to_look_for) == 0:
-        logger.error(
+        logger.warning(
             f"There was no location to look for, car id: {trips.car_id.unique()}, home location: {home}, "
             f"no of allowed starts:  {len(allowed_starts)}, start: {trips.start_time.max()}, end: "
             f"{trips.end_time.max()}"
@@ -1056,16 +1056,16 @@ def sanitise_for_overlaps(
                     car_routes_frame.loc[overlaps.index].id.values
                 )
             ].copy()
-            logger.error(
+            logger.warning(
                 f"Overlap error from fleet system provider, removing {len(overlaps)} trips, check the trips\n"
                 f" from {overlaps.start_time.values[0]} to {overlaps.end_time.values[-1]}"
             )
-            logger.error("Continuing aggregation without the overlap logs")
+            logger.warning("Continuing aggregation without the overlap logs")
     realistic_gps_logs_mask = get_realistic_mask(car_routes_frame)
     if not all(realistic_gps_logs_mask):
         removing = np.where(realistic_gps_logs_mask == False)
 
-        logger.error(
+        logger.warning(
             f"Unrealistically long trip duration, removing {len(removing)} trips\n"
             f"{', '.join([f'{a.start_time} - {a.end_time}' for a in car_routes_frame.iloc[removing].itertuples()])} "
         )
@@ -1196,7 +1196,7 @@ def process_car_roundtrips(
             else:
                 commit_roundtrips(session_or_maker, car, qualified_routes)
 
-        print(
+        logger.info(
             f"Car: {car.id}, {len(qualified_routes)} roundtrips. Km utilisation "
             f"{usage_distance / possible_distance}"
             f". Ratio log {usage_count / possible_count}, "

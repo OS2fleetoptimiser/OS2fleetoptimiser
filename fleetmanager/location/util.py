@@ -1,4 +1,3 @@
-import logging
 import os
 from datetime import date, datetime
 
@@ -23,6 +22,7 @@ from fleetmanager.extractors.mileagebook.updatedb import location_precision_test
 from fleetmanager.extractors.gamfleet.updatedb import location_precision_test as precision_test_gamfleet
 from fleetmanager.extractors.fleetcomplete.updatedb import location_precision_test as precision_test_fleetcomplete
 from fleetmanager.extractors.puma.updatedb import location_precision_test as precision_test_puma
+from fleetmanager.logging import logging
 
 
 logger = logging.getLogger(__name__)

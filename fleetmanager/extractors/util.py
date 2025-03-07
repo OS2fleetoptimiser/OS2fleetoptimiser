@@ -2,7 +2,6 @@ import ast
 import asyncio
 import json
 import urllib.parse
-import logging
 
 import pandas as pd
 import regex as re
@@ -13,6 +12,7 @@ from sqlalchemy.orm import Session, selectinload
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 
 from fleetmanager.data_access import AllowedStarts
+from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import calc_distance
 import httpx
 
@@ -104,11 +104,11 @@ async def load_content(plate: str) -> str:
         ],
     )
     page = await browser.newPage()
-    print("looking for ", plate)
+    logger.info(f"looking for {plate}")
     try:
         await page.goto(url, timeout=60000)
     except TimeoutError:
-        print("timeout")
+        logger.info("timeout")
         return ""
     try:
         await page.waitForFunction(
@@ -170,10 +170,10 @@ async def get_plate_info_from_api(plate: str) -> dict:
             if "basic" not in result:
                 return {}
         except asyncio.InvalidStateError as e:
-            print(f"something went wrong {plate}, \n{e}")
+            logger.info(f"something went wrong {plate}, \n{e}")
             return {}
     for p in pending:
-        print(f"timeout for plate {plate}")
+        logger.info(f"timeout for plate {plate}")
         p.cancel()
     basic = result.get("basic", {})
 
@@ -225,7 +225,7 @@ def get_latlon_address(address):
     }
     response = requests.get(osm_url, headers=headers)
     if response.status_code != 200:
-        logger.error(f"calling {address} for OSM failed with error code {response.status_code},\nurl: {osm_url}")
+        logger.warning(f"calling {address} for OSM failed with error code {response.status_code},\nurl: {osm_url}")
         return None, None
     response = response.json()
     if len(response) == 0:

@@ -13,6 +13,7 @@ from fleetmanager.data_access import (
     engine_creator,
     RoundTripSegments,
 )
+from fleetmanager.logging import logging
 from fleetmanager.model import vehicle
 from fleetmanager.model.dashfree_utils import get_emission
 from fleetmanager.model.qampo import qampo_simulation
@@ -23,6 +24,8 @@ from fleetmanager.model.tco_calculator import TCOCalculator
 from fleetmanager.model.trip_generator import shiftify, get_kilometer_per_hour
 from fleetmanager.model.vehicle import Bike, ElectricBike
 
+
+logger = logging.getLogger(__name__)
 
 class Trips:
     """Trips class for containing and manipulating trips of the simulation.
@@ -57,18 +60,18 @@ class Trips:
         if isinstance(dataset, pd.DataFrame):
             self.all_trips = dataset
         else:
-            print(location, dates)
+            logger.info(f"locations: {location} date-period: {dates}")
 
             self.all_trips = self.load_trips(dates, vehicles, location)
             if len(self.all_trips) == 0:
                 return
 
         if shifts is not None and len(shifts) > 0:
-            print(f"*** aggregating on shifts, going from {len(self.all_trips)}")
+            logger.info(f"*** aggregating on shifts, going from {len(self.all_trips)}")
             self.all_trips = shiftify(self.all_trips, shifts).sort_values(
                 ["start_time"], ascending=True
             )
-            print(f"to {len(self.all_trips)} trips")
+            logger.info(f"to {len(self.all_trips)} trips")
 
         if not isinstance(dataset, pd.DataFrame):
             self.set_assignment()
@@ -87,7 +90,7 @@ class Trips:
                 / ((row.end_time - row.start_time).total_seconds() / 3600),
                 axis=1,
             )
-        print("cars in simulation trips", self.trips.car_id.unique(), flush=True)
+        logger.info(f"cars in simulation trips {self.trips.car_id.unique()}")
         self.distance_range = (
             self.trips.distance.min(),
             self.trips.distance.max(),
@@ -888,9 +891,8 @@ class Simulation:
                 else:
                     # the car that drove the trip in real life is not part of the selected "current" fleet.
                     if t.car_id not in flagged:
-                        print(
-                            f"********** car id from trips not in {str(t.car_id)}",
-                            flush=True,
+                        logger.info(
+                            f"********** car id from trips not in {str(t.car_id)}"
                         )
                         flagged.append(t.car_id)
 

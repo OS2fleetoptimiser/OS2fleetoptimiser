@@ -25,12 +25,16 @@ from fleetmanager.extractors.skyhost.updatedb import (
     summer_times,
     winter_times,
 )
+from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import aggregating_score as score
 from fleetmanager.model.roundtripaggregator import (
     aggregator,
     calc_distance,
     process_car_roundtrips,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 class CarObject:
@@ -102,7 +106,7 @@ def set_vehicles(ctx, description_fields=None):
         try:
             entry = find_item_plate_list(plate, vehicles)
         except DuplicatePlateCleverTrack as e:
-            print(e)
+            logger.warning(e)
             continue
 
         # assume plate is unique in database
@@ -201,10 +205,10 @@ def set_roundtrips(ctx):
     all_trips = collect_trips(
         token=ctx.obj["token"], start_time=overall_min_date, stop_time=datetime.now()
     )
-    print(f"len of all trips before patching {len(all_trips)}")
+    logger.info(f"len of all trips before patching {len(all_trips)}")
     # todo get rid of simulation of patched
     all_trips = all_trips[~all_trips.id.isin(all_visited_ids)].copy()
-    print(f"len of all trips after patching {len(all_trips)}")
+    logger.info(f"len of all trips after patching {len(all_trips)}")
 
     collected_trip_length = 0
     collected_trip_count = 0
@@ -253,7 +257,6 @@ def set_roundtrips(ctx):
         collected_trip_count += possible_count
         collected_route_length += usage_distance
         collected_trip_length += possible_distance
-        print()
 
         if usage_count > 0:
             # continue
@@ -298,13 +301,11 @@ def patch_roundtrips(ctx):
         except RetryError as e:
             original_exception = e.last_attempt.exception()
             if isinstance(original_exception, TripIdPatchError):
-                print(f"Could not patch the ids from car: {car}")
-                print(e.last_attempt.exception())
-                print(car_trip_ids)
+                logger.warning(f"Could not patch the ids from car: {car}\n{e.last_attempt.exception()}\n{car_trip_ids}")
                 continue
             else:
-                print(
-                    "Retries failed due to a different exception:", original_exception
+                logger.warning(
+                    f"Retries failed due to a different exception: {original_exception}"
                 )
 
 # todo create clean-roundtrips for clevertrack

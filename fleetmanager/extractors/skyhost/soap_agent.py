@@ -6,6 +6,11 @@ import lxml.etree as et
 import requests
 import xmltodict
 
+from fleetmanager.logging import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 class SoapAgent:
     """
@@ -192,7 +197,7 @@ class SoapAgent:
             self.total_used += 100
         ready_min, ready_sec = self.prune_calls()
         if ready_min is False:
-            print("Sleeping 60 sec")
+            logger.info("Sleeping 60 sec")
             time.sleep(60)
             # if self.total_used >= self.minut_cap:
             #     print('Sleeping 240 sec')

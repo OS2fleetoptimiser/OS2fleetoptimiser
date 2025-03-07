@@ -4,6 +4,11 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
+from fleetmanager.logging import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 def load_dmr_request(plate: str):
     url = f"https://www.tjekbil.dk/api/v3/dmr/regnr/{plate}"
@@ -67,7 +72,7 @@ def run_request(uri, params, headers=None):
         response = requests.get(uri, params=params, headers=headers)
         if response.status_code != 429:
             break
-        print("Too many requests retrying...")
+        logger.info("Too many requests retrying...")
         sleep(3)  # Handle too many requests
     return response
 
@@ -102,14 +107,14 @@ def get_logs(vehicle_id: int | str, from_date: datetime, to_date: datetime, url:
     trips = []
 
     for start, end in date_iter(from_date, to_date, week_period=weeks):
-        print(f"     Pulling        {start}    -      {end}")
+        logger.info(f"     Pulling        {start}    -      {end}")
         params["StartDateYYYYMMDDHHMMSS"] = start.strftime("%Y%m%d%H%M%S")
         params["EndDateYYYYMMDDHHMMSS"] = end.strftime("%Y%m%d%H%M%S")
         params["VehicleId"] = vehicle_id
         response = run_request(uri=url, params=params)
 
         if response.status_code != 200:
-            print(f"Trip request returned code {response.status_code}")
+            logger.warning(f"Trip request returned code {response.status_code}")
             trips = []
             break
 
@@ -120,15 +125,15 @@ def get_logs(vehicle_id: int | str, from_date: datetime, to_date: datetime, url:
 
 def format_trip_logs(trips: list, vehicle_id: int):
     trips = pd.DataFrame(trips)
-    print(f"going from {len(trips)}")
+    logger.info(f"going from {len(trips)}")
     trips["TripEndDate"] = trips["TripEndDate"].replace('19700101010000', np.nan)
     trips["TripEndLatitude"] = trips["TripEndLatitude"].replace('', np.nan)
     trips["TripStartLongitude"] = trips["TripStartLongitude"].replace('', np.nan)
     trips.dropna(subset=["TripEndDate", "TripEndLatitude", "TripStartLongitude"], axis=0, inplace=True)
     if len(trips) == 0:
-        print(f"to no correct logs for vehicle {vehicle_id}")
+        logger.info(f"to no correct logs for vehicle {vehicle_id}")
         return []
-    print(f"to {len(trips)}")
+    logger.info(f"to {len(trips)}")
     trips["start_latitude"] = trips.TripStartLatitude.astype(float)
     trips["start_longitude"] = trips.TripStartLongitude.astype(float)
     trips["end_latitude"] = trips.TripEndLatitude.astype(float)
