@@ -1,6 +1,12 @@
 import { AuthOptions } from 'next-auth';
 import KeycloakProvider from 'next-auth/providers/keycloak';
 import jwt_decode from 'jwt-decode';
+import { updateUserLogin } from "@/components/hooks/patchLogin";
+
+interface DecodedToken {
+  privileges_b64: string;
+  [key: string]: any;
+}
 
 export const authOptions: AuthOptions = {
   session: {
@@ -14,63 +20,55 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    jwt({ token, user, account }) {
-    // If initial sign-in, extract roleValue from account.id_token
-    if (account && account.id_token) {
-      const decoded = jwt_decode(account.id_token);
-      // @ts-ignore
-      token.roleValue = decoded.privileges_b64;
-    }
-
-    // Proceed only if roleValue is available
-    // @ts-ignore
-    if (token.roleValue) {
-      // @ts-ignore
-      const decodedRoles = Buffer.from(token.roleValue, 'base64').toString('utf8');
-
-      // Check for write privilege
-      if (process.env.ROLE_CHECK) {
-        // @ts-ignore
-        token.role_valid = decodedRoles.includes(process.env.ROLE_CHECK);
-        // @ts-ignore
-        token.write_privilege = token.role_valid;
+    jwt({ token, account }) {
+      if (account?.providerAccountId) {
+        token.providerAccountId = account.providerAccountId;
       }
-      // @ts-ignore
-      if (process.env.ROLE_CHECK_READ && !token.role_valid) {
-        // Check for read privilege if write privilege is not granted
-        // @ts-ignore
-        token.role_valid = decodedRoles.includes(process.env.ROLE_CHECK_READ);
-        // @ts-ignore
+
+      if (account?.id_token) {
+        const decoded = jwt_decode<DecodedToken>(account.id_token);
+
+        try {
+          if (token.providerAccountId) {
+            updateUserLogin(token.providerAccountId);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+
+        token.roleValue = decoded.privileges_b64;
+      }
+
+      if (token.roleValue) {
+        const decodedRoles = Buffer.from(token.roleValue, 'base64').toString('utf8');
+
+        if (process.env.ROLE_CHECK) {
+          token.role_valid = decodedRoles.includes(process.env.ROLE_CHECK);
+          token.write_privilege = token.role_valid;
+        }
+
+        if (process.env.ROLE_CHECK_READ && !token.role_valid) {
+          token.role_valid = decodedRoles.includes(process.env.ROLE_CHECK_READ);
+          token.write_privilege = false;
+        }
+
+        if (!process.env.ROLE_CHECK && !process.env.ROLE_CHECK_READ) {
+          token.role_valid = true;
+          token.write_privilege = true;
+        }
+      } else {
+        token.role_valid = false;
         token.write_privilege = false;
       }
-
-      if (!process.env.ROLE_CHECK && !process.env.ROLE_CHECK_READ){
-        // Default to true if no role checks are specified
-        // @ts-ignore
-        token.role_valid = true;
-        // @ts-ignore
-        token.write_privilege = true;
-      }
-    } else {
-      // If roleValue is not available, set privileges to false
-      // @ts-ignore
-      token.role_valid = false;
-      // @ts-ignore
-      token.write_privilege = false;
-    }
 
       return token;
     },
     session({ session, token }) {
-      // @ts-ignore
-      if (token.roleValue) {
-        // @ts-ignore
-        session.user.roleValue = token.roleValue;
-        // @ts-ignore
-        session.user.role_valid = token.role_valid;
-        // @ts-ignore
-        session.user.write_privilege = token.write_privilege;
-      }
+      session.user.roleValue = token.roleValue;
+      session.user.role_valid = token.role_valid;
+      session.user.write_privilege = token.write_privilege ?? false;
+      session.user.providerAccountId = token.providerAccountId;
+
       return session;
     },
   },
