@@ -1,8 +1,9 @@
 from datetime import date
 from json.decoder import JSONDecodeError
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 import pandas as pd
+from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from pydantic.error_wrappers import ValidationError
@@ -18,7 +19,11 @@ from fleetmanager.statistics import (
     group_by_vehicle_location,
     to_plot_data,
     grouped_driving_data_to_excel,
-    get_availability
+    get_availability,
+    eligible_saved_vehicles,
+    active_vehicles,
+    get_non_fossil_km_share,
+    get_number_of_simulations
 )
 
 from ..dependencies import get_session
@@ -29,6 +34,7 @@ from .schemas import (
     StatisticOverview,
     TimeSeriesData,
     shift_dict,
+    KPIs,
 )
 from ...statistics.util import calculate_timeactivity
 
@@ -305,3 +311,20 @@ async def get_vehicle_availability(
         session=session, start_date=start_date, end_date=end_date, locations=locations, departments=departments, forvaltninger=forvaltninger, vehicles=vehicles)
 
     return result
+
+
+@router.get("/kpis")
+async def get_landing_page_kpi(metrics: List[KPIs] = Query(None), session: Session = Depends(get_session)) -> Dict[str, Any]:
+    since_date = date.today() - relativedelta(months=1)
+
+    kpi_functions = {
+        "total_saved_vehicles": eligible_saved_vehicles,
+        "active_vehicles_last_month": active_vehicles,
+        "total_simulations_last_month": get_number_of_simulations,
+        "non_fossil_share_last_month": get_non_fossil_km_share
+    }
+
+    if metrics:
+        return {metric: kpi_functions[metric](since_date, session) for metric in metrics}
+
+    return {key: func(since_date, session) for key, func in kpi_functions.items()}

@@ -1,5 +1,7 @@
 import datetime
 import io
+import os
+import pickle
 import time
 from ast import literal_eval
 from dataclasses import dataclass
@@ -7,9 +9,10 @@ from typing import List, Optional
 
 import numpy as np
 import pandas as pd
+import redis
 from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel
-from sqlalchemy import DATE, and_, cast, func, or_, select
+from sqlalchemy import DATE, and_, cast, distinct, func, or_, select
 from sqlalchemy.orm import Session
 from xlsxwriter.utility import xl_range, xl_rowcol_to_cell
 
@@ -1660,3 +1663,66 @@ def get_availability(
         maxAvailability=max_availability,
         averageAvailability=average_availability
     )
+
+
+def eligible_saved_vehicles(since_date: datetime.date, session: Session):
+    total_eligible_cars = session.query(
+        func.count(Cars.id).label("count")
+    ).filter(
+        and_(
+            or_(Cars.disabled.is_(None), Cars.disabled == False),
+            or_(Cars.deleted.is_(None), Cars.deleted == False)
+        ),
+        Cars.id < 1000000  # exclude test vehicles
+    ).scalar()
+    return total_eligible_cars
+
+
+def active_vehicles(since_date: datetime.date, session: Session):
+    total_active_vehicles = session.query(
+        func.count(
+            distinct(RoundTrips.car_id)
+        )
+    ).filter(
+        RoundTrips.start_time > since_date
+    ).scalar()
+    return total_active_vehicles
+
+
+def get_non_fossil_km_share(since_date: datetime.date, session: Session):
+    total_km_query = (
+        session.query(func.sum(RoundTrips.distance))
+        .filter(RoundTrips.start_time > since_date)
+        .scalar()
+    )
+
+    non_fossil_km_query = (
+        session.query(func.sum(RoundTrips.distance))
+        .join(Cars, Cars.id == RoundTrips.car_id)
+        .filter(
+            RoundTrips.start_time > since_date,
+            Cars.fuel.in_([3, 7, 8, 10]),
+        )
+        .scalar()
+    )
+
+    if not total_km_query or total_km_query == 0:
+        return 0
+
+    return non_fossil_km_query / total_km_query if non_fossil_km_query else 0
+
+
+def get_number_of_simulations(since_date: datetime.date, session: Session):
+    r = redis.Redis(host="redis", port=6379)
+    all_keys = r.keys("*")  # todo pull in proper key pattern scanning when #87 is implemented
+    simulation_count = 0
+    for key in all_keys:
+        unpickled = pickle.loads(r.get(key))
+        sim_date = unpickled.get("date_done")
+        if sim_date and unpickled.get("name") in [
+            "fleetmanager.tasks.celery.run_fleet_simulation",
+            "fleetmanager.tasks.celery.run_goal_simulation"
+        ] and unpickled.get("queue") == os.getenv("CELERY_QUEUE") and datetime.datetime.fromisoformat(sim_date).date() > since_date:
+            simulation_count += 1
+
+    return simulation_count
