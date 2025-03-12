@@ -21,6 +21,15 @@ import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
 import CommuteIcon from '@mui/icons-material/Commute';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import HighlightIcon from '@mui/icons-material/Highlight';
+import DateRangeIcon from '@mui/icons-material/DateRange';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
+import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
+import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
+
 import { signOut } from 'next-auth/react';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
@@ -239,42 +248,60 @@ const DashboardNavWithParams = ({ isSelected }: { isSelected: (s: string) => boo
         <List component="div" disablePadding>
             <Link className="no-underline" href={{ pathname: '/dashboard', query: searchParams.toString() }}>
                 <ListItem disablePadding>
-                    <ListItemButton className="pl-16" selected={isSelected('/dashboard')}>
+                    <ListItemButton selected={isSelected('/dashboard')}>
+                        <ListItemIcon className="ml-4">
+                            <HighlightIcon/>
+                        </ListItemIcon>
                         <ListItemText className="text-black" primary="Overblik" />
                     </ListItemButton>
                 </ListItem>
             </Link>
             <Link className="no-underline" href={{ pathname: '/dashboard/driving', query: searchParams.toString() }}>
                 <ListItem disablePadding>
-                    <ListItemButton className="pl-16" selected={isSelected('/dashboard/driving')}>
+                    <ListItemButton selected={isSelected('/dashboard/driving')}>
+                        <ListItemIcon className="ml-4">
+                            <DateRangeIcon/>
+                        </ListItemIcon>
                         <ListItemText className="text-black" primary="Kørsel" />
                     </ListItemButton>
                 </ListItem>
             </Link>
             <Link className="no-underline" href={{ pathname: '/dashboard/activity', query: searchParams.toString() }}>
                 <ListItem disablePadding>
-                    <ListItemButton className="pl-16" selected={isSelected('/dashboard/activity')}>
+                    <ListItemButton selected={isSelected('/dashboard/activity')}>
+                        <ListItemIcon className="ml-4">
+                            <TableChartIcon/>
+                        </ListItemIcon>
                         <ListItemText className="text-black" primary="Køretøjsaktivitet" />
                     </ListItemButton>
                 </ListItem>
             </Link>
             <Link className="no-underline" href={{ pathname: '/dashboard/timeactivity', query: searchParams.toString() }}>
                 <ListItem disablePadding>
-                    <ListItemButton className="pl-16" selected={isSelected('/dashboard/timeactivity')}>
+                    <ListItemButton selected={isSelected('/dashboard/timeactivity')}>
+                        <ListItemIcon className="ml-4">
+                            <TableChartOutlinedIcon/>
+                        </ListItemIcon>
                         <ListItemText className="text-black" primary="Tidsaktivitet" />
                     </ListItemButton>
                 </ListItem>
             </Link>
             <Link className="no-underline" href={{ pathname: '/dashboard/trip-segments', query: searchParams.toString() }}>
                 <ListItem disablePadding>
-                    <ListItemButton className="pl-16" selected={isSelected('/dashboard/trip-segments')}>
+                    <ListItemButton selected={isSelected('/dashboard/trip-segments')}>
+                        <ListItemIcon className="ml-4">
+                            <TroubleshootIcon/>
+                        </ListItemIcon>
                         <ListItemText className="text-black" primary="Turoverblik" />
                     </ListItemButton>
                 </ListItem>
             </Link>
             <Link className="no-underline" href={{ pathname: '/dashboard/availability', query: searchParams.toString() }}>
                 <ListItem disablePadding>
-                    <ListItemButton className="pl-16" selected={isSelected('/dashboard/availability')}>
+                    <ListItemButton selected={isSelected('/dashboard/availability')}>
+                        <ListItemIcon className="ml-4">
+                            <TimelineIcon/>
+                        </ListItemIcon>
                         <ListItemText className="text-black" primary="Ledighed" />
                     </ListItemButton>
                 </ListItem>
@@ -288,29 +315,61 @@ const DashBoardNavNoParams = ({ isSelected }: { isSelected: (s: string) => boole
         <List component="div" disablePadding>
             <Link className="no-underline" href={{ pathname: '/dashboard' }}>
                 <ListItem disablePadding>
-                    <ListItemButton className="pl-16" selected={isSelected('/dashboard')}>
+                    <ListItemButton selected={isSelected('/dashboard')}>
+                        <ListItemIcon className="ml-4">
+                            <HighlightIcon/>
+                        </ListItemIcon>
                         <ListItemText className="text-black" primary="Overblik" />
                     </ListItemButton>
                 </ListItem>
             </Link>
             <Link className="no-underline" href={{ pathname: '/dashboard/driving' }}>
                 <ListItem disablePadding>
-                    <ListItemButton className="pl-16" selected={isSelected('/dashboard/driving')}>
+                    <ListItemButton selected={isSelected('/dashboard/driving')}>
+                        <ListItemIcon className="ml-4">
+                            <DateRangeIcon/>
+                        </ListItemIcon>
                         <ListItemText className="text-black" primary="Kørsel" />
                     </ListItemButton>
                 </ListItem>
             </Link>
             <Link className="no-underline" href={{ pathname: '/dashboard/activity' }}>
                 <ListItem disablePadding>
-                    <ListItemButton className="pl-16" selected={isSelected('/dashboard/activity')}>
+                    <ListItemButton selected={isSelected('/dashboard/activity')}>
+                        <ListItemIcon className="ml-4">
+                            <TableChartIcon/>
+                        </ListItemIcon>
                         <ListItemText className="text-black" primary="Køretøjsaktivitet" />
+                    </ListItemButton>
+                </ListItem>
+            </Link>
+            <Link className="no-underline" href={{ pathname: '/dashboard/timeactivity' }}>
+                <ListItem disablePadding>
+                    <ListItemButton selected={isSelected('/dashboard/timeactivity')}>
+                        <ListItemIcon className="ml-4">
+                            <TableChartOutlinedIcon/>
+                        </ListItemIcon>
+                        <ListItemText className="text-black" primary="Tidsaktivitet" />
                     </ListItemButton>
                 </ListItem>
             </Link>
             <Link className="no-underline" href={{ pathname: '/dashboard/trip-segments' }}>
                 <ListItem disablePadding>
-                    <ListItemButton className="pl-16" selected={isSelected('/dashboard/trip-segments')}>
+                    <ListItemButton selected={isSelected('/dashboard/trip-segments')}>
+                        <ListItemIcon className="ml-4">
+                            <TroubleshootIcon/>
+                        </ListItemIcon>
                         <ListItemText className="text-black" primary="Turoverblik" />
+                    </ListItemButton>
+                </ListItem>
+            </Link>
+            <Link className="no-underline" href={{ pathname: '/dashboard/availability'}}>
+                <ListItem disablePadding>
+                    <ListItemButton selected={isSelected('/dashboard/availability')}>
+                        <ListItemIcon className="ml-4">
+                            <TimelineIcon/>
+                        </ListItemIcon>
+                        <ListItemText className="text-black" primary="Ledighed" />
                     </ListItemButton>
                 </ListItem>
             </Link>
