@@ -362,17 +362,14 @@ def delete_running_file(path):
 def load_goal_simulation_history(
     session: Session, redis: redis.Redis
 ) -> list[GoalSimulationHistory]:
-    all_keys = redis.keys("*")
     previous_simulations: list[GoalSimulationHistory] = []
-    for key in all_keys:
+    pattern = f"celery-task-meta-{os.getenv('CELERY_QUEUE')}:goal_simulation:*"
+    for key in redis.scan_iter(match=pattern, count=100):
         task = redis.get(key)
         if task is not None:
             unpickled = pickle.loads(task)
             if (
                 unpickled.get("status") == "SUCCESS"
-                and unpickled.get("name")
-                == "fleetmanager.tasks.celery.run_goal_simulation"
-                and unpickled.get("queue") == os.getenv("CELERY_QUEUE")
             ):
                 simulation_options = dict(unpickled.get("result").get("simulation_options"))
                 location_id = simulation_options.get("location_id")
