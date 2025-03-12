@@ -13,6 +13,6 @@ def get_task_id(task_name: str, queue_name: str = None):
     uid = uuid4().hex
     now = datetime.now()
     if queue_name is None:
-        queue_name = os.getenv("CELERY_QUEUE")
+        queue_name = os.getenv("CELERY_QUEUE", "default")
 
     return f"{queue_name}:{task_name}:{now.isoformat()}:{uid}"
