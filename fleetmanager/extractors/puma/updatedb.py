@@ -392,12 +392,12 @@ def set_starts(ctx):
     puma_sessionmaker = ctx.obj["puma_session"]
     fo_sessionmaker = ctx.obj["Session"]
 
-    with fo_sessionmaker.begin() as fo_session:
+    with fo_sessionmaker() as fo_session:
         known_addresses = [
             allowed_start.address for allowed_start in fo_session.query(AllowedStarts.address)
         ]
 
-    with puma_sessionmaker.begin() as puma_session:
+    with puma_sessionmaker() as puma_session:
         distinct_addresses = puma_session.query(
             distinct(Materiels.placeringsadresse).label("placeringsadresse")
         ).where(
