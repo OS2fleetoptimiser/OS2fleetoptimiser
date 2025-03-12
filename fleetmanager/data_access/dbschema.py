@@ -69,7 +69,7 @@ class AllowedStarts(Base):
     longitude: Mapped[Optional[float]]
     id: Mapped[Optional[int]] = mapped_column(primary_key=True, nullable=False, default=None)
     addition_date: Mapped[Optional[datetime]] = mapped_column(
-        DateTime, default=datetime.now, nullable=False
+        DateTime, default_factory=datetime.now
     )
     cars: Mapped[List["Cars"]] = relationship(
         back_populates="location_obj", default_factory=list
