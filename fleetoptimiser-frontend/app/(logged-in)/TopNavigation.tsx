@@ -22,13 +22,15 @@ import CommuteIcon from '@mui/icons-material/Commute';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { signOut } from 'next-auth/react';
-
+import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
+import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 
 type Props = {
     logoutRedirect: string;
 };
 
 const TopNavigation = ({ logoutRedirect }: Props) => {
+    const [showNavBar, setShowNavBar] = useState<boolean>(false);
     const pathname = usePathname();
 
     const isSelected = (path: string, contains: boolean = false) => {
@@ -78,8 +80,25 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
         setSimDropDownOpen(!simDropDownOpen);
     }
 
+    const toggleNavBar = () => {
+        setShowNavBar(!showNavBar)
+    }
     return (
-        <nav className="hidden md:visible md:flex flex-col w-76 h-screen fixed top-0 left-0 custom-nav">
+        <>
+        <div className="top-0 left-0 p-4 fixed z-[50] md:hidden sm:visible w-76 flex">
+            {
+                !showNavBar && <MenuOutlinedIcon className="hover:scale-103 cursor-pointer" fontSize="large" onClick={toggleNavBar}/>
+            }
+            {
+                showNavBar && <div className="ml-auto cursor-pointer flex" onClick={toggleNavBar}>
+                    <span>Skjul</span>
+                    <KeyboardDoubleArrowLeftIcon className="hover:scale-103" fontSize="medium"/>
+                </div>
+            }
+        </div>
+        <nav className={`fixed top-0 left-0 w-76 h-screen z-[49] custom-nav overflow-auto pt-8 md:pt-0 md:flex flex-col transition-all duration-300 ease-in-out 
+        ${showNavBar ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full pointer-events-none md:opacity-100 md:translate-x-0 md:pointer-events-auto'}`}
+        >
             <div className="p-4 flex items-center mb-4 mt-2">
                 <Image alt="logo" src="/logo_shadows_transparent.png" width={47} height={35} quality={100} />
                 <Typography variant="h3">
@@ -209,6 +228,7 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
                 </ListItem>
             </List>
         </nav>
+        </>
     );
 };
 
