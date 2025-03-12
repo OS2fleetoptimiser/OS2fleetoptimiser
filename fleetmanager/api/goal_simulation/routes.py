@@ -18,7 +18,7 @@ from fleetmanager.configuration import (
     validate_settings,
 )
 from fleetmanager.goal_simulation.util import load_goal_simulation_history
-from fleetmanager.tasks import run_goal_simulation
+from fleetmanager.tasks import get_task_id, run_goal_simulation
 
 from ..configuration.schemas import (
     BikeSettings,
@@ -103,7 +103,7 @@ async def goal_simulate(
             )
         ]
     sim_start = datetime.now()
-    r = run_goal_simulation.delay(simulation_in, sim_start)
+    r = run_goal_simulation.apply_async(args=(simulation_in, sim_start,), task_id=get_task_id("goal_simulation"))
     if os.path.exists("/fleetmanager/running_tasks"):
         with open(f"/fleetmanager/running_tasks/{sim_start}.txt", "w") as f:
             f.write("running")
@@ -160,47 +160,3 @@ async def get_goal_simulation(
 async def get_goal_simulation_history(session: Session = Depends(get_session)):
     r = redis.Redis(host="redis", port=6379)
     return load_goal_simulation_history(session, r)
-
-
-@router.websocket("/simulation/{simulation_id}/ws")
-async def get_goal_simulation_ws(websocket: WebSocket, simulation_id: str):
-    task = AsyncResult(simulation_id)
-    try:
-        await websocket.accept()
-        if task.successful():
-            await websocket.send_text(
-                GoalSimulationOut(
-                    id=task.id, progress=1, status=task.status, result=task.get()
-                ).json()
-            )
-        else:
-            connection = task.backend.result_consumer._pubsub.connection
-            async with redisAsync.Redis(
-                host=connection.host, port=connection.port, db=connection.db
-            ) as redis_client, redis_client.pubsub() as pubsub:
-                await pubsub.subscribe("celery-task-meta-{}".format(simulation_id))
-                while True:
-                    if (message := await pubsub.get_message()) and isinstance(
-                        message["data"], bytes
-                    ):
-                        r = pickle.loads(message["data"])["result"]
-                        if "progress" in r:
-                            progress = r["progress"]
-                            result = None
-                        else:
-                            progress = 1.0
-                            result = r
-                        await websocket.send_text(
-                            GoalSimulationOut(
-                                id=task.id,
-                                progress=progress,
-                                status=task.status,
-                                result=result,
-                            ).json()
-                        )
-                        if task.successful():
-                            break
-    except ConnectionClosedError:
-        pass
-    finally:
-        await websocket.close()

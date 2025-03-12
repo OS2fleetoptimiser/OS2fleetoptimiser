@@ -16,7 +16,7 @@ from fleetmanager.location import (
     update_location_complete,
 )
 
-from fleetmanager.tasks import run_precision_location_test
+from fleetmanager.tasks import get_task_id, run_precision_location_test
 
 from ..dependencies import get_session
 
@@ -133,15 +133,15 @@ async def location_precision_test(
             f.write("running")
     extractors = os.getenv("EXTRACTORS")
     extractors = [] if extractors is None else extractors.split(",")
-    r = run_precision_location_test.delay(
-        settings=PrecisionTestOptions(
+    r = run_precision_location_test.apply_async(args=(
+        PrecisionTestOptions(
             location=precision_test_config.location,
             test_specific_start=precision_test_config.test_specific_start,
             start_date=precision_test_config.start_date.replace(tzinfo=None),
             extractors=extractors,
             test_name=test_name
-        )
-    )
+        ),
+    ), task_id=get_task_id("precision_location"))
     return PrecisionTestOut(id=r.id, status=r.status, progress={"progress": 0, "test_name": test_name}, result=None)
 
 

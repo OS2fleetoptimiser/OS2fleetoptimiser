@@ -15,7 +15,7 @@ from fleetmanager.configuration import (
     validate_settings,
 )
 from fleetmanager.fleet_simulation import fleet_simulator, simulation_results_to_excel, load_fleet_simulation_history
-from fleetmanager.tasks import run_fleet_simulation, app
+from fleetmanager.tasks import get_task_id, run_fleet_simulation
 
 from ..configuration.schemas import (
     BikeSettings,
@@ -102,8 +102,7 @@ async def simulate_start(
                 ],
             )
         ]
-
-    r = run_fleet_simulation.delay(simulation_in)
+    r = run_fleet_simulation.apply_async(args=(simulation_in,), task_id=get_task_id("fleet_simulation"))
     return FleetSimulationOut(id=r.id, status=r.status, result=None)
 
 

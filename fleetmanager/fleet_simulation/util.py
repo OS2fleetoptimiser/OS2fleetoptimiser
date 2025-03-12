@@ -488,17 +488,14 @@ def simulation_results_to_excel(results, session: Session = None):
 def load_fleet_simulation_history(
     session: Session, redis: redis.Redis
 ) -> list[FleetSimulationHistory]:
-    all_keys = redis.keys("*")
+    pattern = f"celery-task-meta-{os.getenv('CELERY_QUEUE')}:fleet_simulation:*"
     previous_simulations: list[FleetSimulationHistory] = []
-    for key in all_keys:
+    for key in redis.scan_iter(match=pattern, count=100):
         task = redis.get(key)
         if task is not None:
             unpickled = pickle.loads(task)
             if (
                 unpickled.get("status") == "SUCCESS"
-                and unpickled.get("name")
-                == "fleetmanager.tasks.celery.run_fleet_simulation"
-                and unpickled.get("queue") == os.getenv("CELERY_QUEUE")
             ):
                 simulation_options = dict(unpickled.get("result").get("simulation_options"))
                 location_id = simulation_options.get("location_id")
