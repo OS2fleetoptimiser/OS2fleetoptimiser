@@ -389,35 +389,43 @@ def set_roundtrips(ctx):
 @cli.command()
 @click.pass_context
 def set_starts(ctx):
-    puma_session = ctx.obj["puma_session"]()
-    session = ctx.obj["Session"]()
+    puma_sessionmaker = ctx.obj["puma_session"]
+    fo_sessionmaker = ctx.obj["Session"]
 
-    saved_starts = pd.read_sql(Query(AllowedStarts).statement, ctx.obj["engine"])
-    known_addresses = saved_starts.address.unique().astype(str)
+    with fo_sessionmaker() as fo_session:
+        known_addresses = [
+            allowed_start.address for allowed_start in fo_session.query(AllowedStarts.address)
+        ]
 
-    for q in puma_session.query(
-        distinct(Materiels.placeringsadresse).label("placeringsadresse")
-    ).where(Materiels.forvaltning.in_(forvaltninger)):
-        if type(q.placeringsadresse) is not str or len(q.placeringsadresse) <= 3:
-            continue
-        if q.placeringsadresse in known_addresses:
-            continue
+    with puma_sessionmaker() as puma_session:
+        distinct_addresses = puma_session.query(
+            distinct(Materiels.placeringsadresse).label("placeringsadresse")
+        ).where(
+            Materiels.forvaltning.in_(forvaltninger),
+            Materiels.placeringsadresse.notin_(known_addresses)
+        ).all()
+        new_eligible_puma_addresses = [
+            puma_address.placeringsadresse for puma_address in distinct_addresses
+            if isinstance(puma_address.placeringsadresse, str) and len(puma_address.placeringsadresse) > 3
+        ]
 
-        lat, lon = get_latlon_address(q.placeringsadresse + ", København")
+    for new_address in new_eligible_puma_addresses:
+        lat, lon = get_latlon_address(new_address + ", København")
         if None in [lat, lon]:
             continue
 
-        logger.info(f"{q.placeringsadresse}: ({lat}, {lon})")
-
-        session.add(
-            AllowedStarts(
-                id=None,
-                address=q.placeringsadresse,
-                latitude=lat,
-                longitude=lon,
-            )
+        new_entry = AllowedStarts(
+            id=None,
+            address=new_address,
+            latitude=lat,
+            longitude=lon,
         )
-        session.commit()
+        logger.info(f"{new_address}: ({lat}, {lon})")
+        with fo_sessionmaker.begin() as fo_session:
+            fo_session.add(
+                new_entry
+            )
+            fo_session.commit()
 
 
 @cli.command()
