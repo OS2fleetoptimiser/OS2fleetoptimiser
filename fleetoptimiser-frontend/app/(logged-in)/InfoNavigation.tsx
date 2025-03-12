@@ -18,7 +18,7 @@ const InfoNav = () => {
         dashboard: 'Dashboard',
         settings: 'Settings',
         profile: 'Profile',
-        '/': 'Simuleringssetup',
+        setup: 'Simuleringssetup',
         configuration: 'Konfiguration / Køretøjer',
         fleet: 'Manuel simulering',
         goal: 'Automatisk simulering',

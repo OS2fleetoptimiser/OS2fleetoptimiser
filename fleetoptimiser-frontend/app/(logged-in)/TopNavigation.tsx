@@ -29,10 +29,8 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
-
+import HomeIcon from '@mui/icons-material/Home';
 import { signOut } from 'next-auth/react';
-import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
-import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 
 type Props = {
     logoutRedirect: string;
@@ -55,7 +53,7 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
     }
 
     const isSimSelect = () => {
-        return pathname.includes('goal') || pathname.includes('fleet') || pathname === '/' || pathname.includes('simulation-history')
+        return pathname.includes('goal') || pathname.includes('fleet') || pathname.includes('setup') || pathname.includes('simulation-history')
     }
 
     const router = useRouter();
@@ -115,6 +113,16 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
                 </Typography>
             </div>
             <List>
+                <Link className="no-underline" href={'/'}>
+                    <ListItem disablePadding>
+                        <ListItemButton selected={isSelected('/')}>
+                            <ListItemIcon>
+                                <HomeIcon/>
+                            </ListItemIcon>
+                            <ListItemText className="text-black" primary="Forside" />
+                        </ListItemButton>
+                    </ListItem>
+                </Link>
                 <ListItem disablePadding>
                     <ListItemButton onClick={handleSimClick} selected={isSimSelect()}>
                         <ListItemIcon>
@@ -127,9 +135,9 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
 
                 <Collapse in={simDropDownOpen} timeout="auto" unmountOnExit>
                     <Suspense>
-                        <Link className="no-underline" href={'/'}>
+                        <Link className="no-underline" href={'/setup'}>
                             <ListItem disablePadding>
-                                <ListItemButton selected={isSelected('/')}>
+                                <ListItemButton selected={isSelected('/setup')}>
                                     <ListItemIcon className="ml-4">
                                         <FormatListBulletedIcon />
                                     </ListItemIcon>
