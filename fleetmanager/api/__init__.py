@@ -9,6 +9,7 @@ from fleetmanager.api.goal_simulation.routes import router as goal_simulation_ro
 from fleetmanager.api.location.routes import router as location_routes
 from fleetmanager.api.simulation_setup.routes import router as simulation_setup_routes
 from fleetmanager.api.statistics.routes import router as statistics_routes
+from fleetmanager.api.user.routes import router as user_routes
 
 app = FastAPI(
     title="FleetOptimiser",
@@ -23,6 +24,7 @@ app.include_router(fleet_simulation_routes)
 app.include_router(goal_simulation_routes)
 app.include_router(statistics_routes)
 app.include_router(location_routes)
+app.include_router(user_routes)
 
 origins = ["*"]
 

@@ -173,6 +173,12 @@ class SimulationSettings(Base):
     type: Mapped[str] = mapped_column(String(128))
 
 
+class UserLogin(Base):
+    __tablename__ = 'user_login'
+    user_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    last_seen_date: Mapped[datetime] = mapped_column(DateTime)
+
+
 def get_default_leasing_types():
     return [
         LeasingTypes(id=1, name="operationel"),
