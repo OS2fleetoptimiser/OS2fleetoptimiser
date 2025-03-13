@@ -1,15 +1,19 @@
 import datetime
 import io
+import os
+import pickle
 import time
 from ast import literal_eval
 from dataclasses import dataclass
 from typing import List, Optional
+import regex as re
 
 import numpy as np
 import pandas as pd
+import redis
 from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel
-from sqlalchemy import DATE, and_, cast, func, or_, select
+from sqlalchemy import DATE, and_, cast, distinct, func, or_, select
 from sqlalchemy.orm import Session
 from xlsxwriter.utility import xl_range, xl_rowcol_to_cell
 
@@ -23,8 +27,11 @@ from fleetmanager.data_access import (
     SimulationSettings,
     get_default_fuel_types,
 )
+from fleetmanager.logging import logging
 from fleetmanager.model.tco_calculator import TCOCalculator
 from fleetmanager.model.trip_generator import alternate
+
+logger = logging.getLogger(__name__)
 
 dayDelta = datetime.timedelta(days=1)
 weekDelta = datetime.timedelta(weeks=1)
@@ -1660,3 +1667,72 @@ def get_availability(
         maxAvailability=max_availability,
         averageAvailability=average_availability
     )
+
+
+def eligible_saved_vehicles(since_date: datetime.date, session: Session):
+    # since_date is an input to keep consistent callable from kpis endpoint
+    total_eligible_cars = session.query(
+        func.count(Cars.id).label("count")
+    ).filter(
+        and_(
+            or_(Cars.disabled.is_(None), Cars.disabled == False),
+            or_(Cars.deleted.is_(None), Cars.deleted == False)
+        ),
+        Cars.id < 1000000  # exclude test vehicles
+    ).scalar()
+    return total_eligible_cars
+
+
+def active_vehicles(since_date: datetime.date, session: Session):
+    total_active_vehicles = session.query(
+        func.count(
+            distinct(RoundTrips.car_id)
+        )
+    ).filter(
+        RoundTrips.start_time > since_date
+    ).scalar()
+    return total_active_vehicles
+
+
+def get_non_fossil_km_share(since_date: datetime.date, session: Session):
+    total_km_query = (
+        session.query(func.sum(RoundTrips.distance))
+        .filter(RoundTrips.start_time > since_date)
+        .scalar()
+    )
+
+    non_fossil_km_query = (
+        session.query(func.sum(RoundTrips.distance))
+        .join(Cars, Cars.id == RoundTrips.car_id)
+        .filter(
+            RoundTrips.start_time > since_date,
+            Cars.fuel.in_([3, 7, 8, 10]),
+        )
+        .scalar()
+    )
+
+    if not total_km_query or total_km_query == 0:
+        return 0
+
+    return non_fossil_km_query / total_km_query if non_fossil_km_query else 0
+
+
+def get_number_of_simulations(since_date: datetime.date, session: Session):
+    # session is an input to keep consistent callable from kpis endpoint
+    pattern = f"celery-task-meta-{os.getenv('CELERY_QUEUE', 'default')}:*simulation*"
+    r = redis.Redis.from_url(os.getenv('CELERY_BACKEND_URL'))
+    simulation_count = 0
+    for key in r.scan_iter(match=pattern, count=100):
+        task_date = re.search("\d{4}-\d{2}-\d{2}", key.decode())
+        if not task_date:
+            logger.warning(
+                f"Some celery keys do not follow expected format: "
+                f"celery-task-meta-<queue>:<task_name>:<datetime>:<uid>: {key}"
+            )
+            continue
+
+        task_date = datetime.date.fromisoformat(task_date.group())
+        if task_date > since_date:
+            simulation_count += 1
+
+    return simulation_count
