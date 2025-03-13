@@ -32,12 +32,11 @@ class TripIdPatchError(Exception):
 @retry(wait=wait_random_exponential(min=1, max=20), stop=stop_after_attempt(6))
 def get_vehicles(token: str):
     url = "https://ctpublic.azurewebsites.net/api/vehicles"
-    header = {"token": token}
+    header = {"token": token, "Accept": "application/json"}
     response = requests.get(url, headers=header)
     vehicles = None
     if response.status_code == 200:
-        vehicles = xmltodict.parse(response.content).get("ArrayOfVehicle_item")
-        return vehicles.get("vehicle_item")
+        vehicles = response.json()
     return vehicles
 
 
@@ -46,11 +45,11 @@ def get_trips(token: str, start: str, stop: str = None):
     if stop is None:
         stop = date.today()
     url = f"https://ctpublic.azurewebsites.net/api/triplist?start={start}&stop={stop}"
-    header = {"token": token}
+    header = {"token": token, "Accept": "application/json"}
     response = requests.get(url, headers=header)
     trips = None
     if response.status_code == 200:
-        trips = xmltodict.parse(response.content).get("tripListe_answer")
+        trips = response.json()
         return trips.get("trips")
     return trips
 
@@ -103,14 +102,14 @@ def find_item_plate_list(plate: str, vehicles_list: OrderedDict) -> dict:
     return car
 
 
-def parse_trips(trips_list: OrderedDict) -> dict:
+def parse_trips(trips_list: list) -> dict:
     car_to_trips = {}
     maschine_to_plate = {}
     visited = set()
     if trips_list is None:
         return car_to_trips
 
-    for trip in trips_list.get("trip_item", []):
+    for trip in trips_list:
         maschine = trip.get("maschine")  # they spell it like "maschine"
         if maschine not in visited:
             visited.add(maschine)
@@ -166,5 +165,4 @@ def collect_trips(
     collected_trips["end_longitude"] = collected_trips.end_longitude.astype(float)
     collected_trips["distance"] = collected_trips.distance.astype(float)
     collected_trips.drop_duplicates(["id"], inplace=True)
-    collected_trips.to_csv(f"{start_time}-{stop_time}.tsv", "\t")
     return collected_trips
