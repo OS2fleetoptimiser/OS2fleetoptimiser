@@ -1,6 +1,6 @@
 import json
 from datetime import date, datetime
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 from fastapi import Query
 from pydantic import BaseModel, Field, validator
@@ -139,3 +139,27 @@ class VehicleAvailability(BaseModel):
     leastAvailability: int
     averageAvailability: int
     data: list[dict]
+
+
+class BaseView(BaseModel):
+    address: str
+    location_id: int
+    car_count: int
+
+
+class LocationUsage(BaseView):
+    location_usage: int
+    usage_ratio: Optional[float] = None  # convert to computed_field if migrating to pydantic v2
+    total_available_time: Optional[int] = None
+
+
+class WeekLocationActivity(BaseModel):
+    week_name: str
+    activity: float
+    average_activity: Optional[float] = None # convert to computed_field if migrating to pydantic v2
+
+
+class LocationActivity(BaseView):
+    total_average_activity: Optional[float] = 0
+    total_activity: Optional[float] = 0
+    weeks: Optional[List[WeekLocationActivity]] = []
