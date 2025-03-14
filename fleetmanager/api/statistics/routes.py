@@ -1,3 +1,4 @@
+import os
 from datetime import date
 from json.decoder import JSONDecodeError
 from typing import List, Optional, Dict, Any
@@ -6,6 +7,8 @@ import pandas as pd
 from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
+from fleetmanager.statistics.util import get_usage_on_locations, get_activity_on_locations
+from fleetmanager.tasks.cache_utils import get_cached_data, set_cached_data
 from pydantic.error_wrappers import ValidationError
 from sqlalchemy.orm import Session
 
@@ -30,6 +33,8 @@ from ..dependencies import get_session
 from .schemas import (
     DrivingDataResult,
     GroupedDrivingDataResult,
+    LocationActivity,
+    LocationUsage,
     OverviewInput,
     StatisticOverview,
     TimeSeriesData,
@@ -328,3 +333,49 @@ async def get_landing_page_kpi(metrics: List[KPIs] = Query(None), session: Sessi
         return {metric: kpi_functions[metric](since_date, session) for metric in metrics}
 
     return {key: func(since_date, session) for key, func in kpi_functions.items()}
+
+
+@router.get("/locations/usage", response_model=List[LocationUsage])
+async def get_location_usage(
+        since_date: date = None,
+        session: Session = Depends(get_session)
+):
+    today = date.today()
+    if since_date is None:
+        since_date = today - relativedelta(months=1)
+    total_selected_time = (date.today() - since_date).total_seconds()
+
+    key = f"cache:{os.getenv('CELERY_QUEUE', 'default')}:locations_usage:{since_date.isoformat()}:{today.isoformat()}"
+
+    usage_on_location = get_cached_data(key)
+    if not usage_on_location:
+        usage_on_location = get_usage_on_locations(
+            session=session,
+            total_selected_time=total_selected_time,
+            since_date=since_date
+        )
+        set_cached_data(key, usage_on_location)
+
+    return usage_on_location
+
+
+@router.get("/locations/activity", response_model=List[LocationActivity])
+async def get_location_activity(
+        since_date: date = None,
+        session: Session = Depends(get_session)
+):
+    today = date.today()
+    if since_date is None:
+        since_date = today - relativedelta(months=1)
+
+    key = f"cache:{os.getenv('CELERY_QUEUE', 'default')}:locations_activity:{since_date.isoformat()}:{today.isoformat()}"
+
+    activity_on_location = get_cached_data(key)
+    if not activity_on_location:
+        activity_on_location = get_activity_on_locations(
+            session=session,
+            since_date=since_date
+        )
+        set_cached_data(key, activity_on_location)
+
+    return activity_on_location
