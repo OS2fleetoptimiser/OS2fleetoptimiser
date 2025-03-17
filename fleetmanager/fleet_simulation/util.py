@@ -3,6 +3,7 @@ import os
 import pickle
 from datetime import date, datetime
 from typing import List, TypedDict, Dict
+import regex as re
 
 import numpy as np
 import pandas as pd
@@ -13,9 +14,15 @@ from sqlalchemy.orm import Session
 from fleetmanager.api.fleet_simulation.schemas import (
     FleetSimulationHistory,
     FleetSimulationOptions,
+    FleetSimulationResult,
+    SimulationHighlight
 )
+from fleetmanager.api.goal_simulation.schemas import GoalSimulationResult
 from fleetmanager.data_access.dbschema import AllowedStarts
 from fleetmanager.model.model import Model
+
+
+datetime_regex = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
 
 single_trip = TypedDict(
     "single_trip",
@@ -532,3 +539,96 @@ def load_fleet_simulation_history(
                     )
                 )
     return previous_simulations
+
+
+def get_datetime_from_key(key: str) -> datetime:
+    task_date = datetime_regex.search(key)
+    return datetime.fromisoformat(task_date.group()) if task_date else datetime.fromtimestamp(0)
+
+
+def get_fleet_simulation_highlights(simulation):
+    unparsed_simulation_results = simulation.get("result")
+    if unparsed_simulation_results is None:
+        return None
+    simulation_results = FleetSimulationResult.parse_obj(unparsed_simulation_results)
+    simulation_options: FleetSimulationOptions = simulation.get("result", {}).get("simulation_options")
+
+    results = {
+        "unallocated": simulation_results.unallocated,
+        "fleet_change": sum(
+            map(
+                lambda sim_vehicle_type: sim_vehicle_type.simulation_count,
+                simulation_options.simulation_vehicles
+            )
+        ) - len(simulation_options.current_vehicles),
+        "financial_savings": simulation_results.financial_savings,
+        "co2e_savings": simulation_results.co2e_savings,
+        "location_ids": simulation_options.location_ids,
+        "simulation_type": "fleet"
+    }
+
+    return results
+
+
+def get_goal_simulation_highlights(simulation):
+    goal_results = GoalSimulationResult(**simulation.get("result", {}))
+    if len(goal_results.solutions) == 0:
+        return None
+    best_solution = goal_results.solutions[0]  # a goal simulation highlight only returns the first best ranked solution
+    results = {
+        "unallocated": best_solution.unallocated,
+        "fleet_change": sum(map(lambda vehicle_set: vehicle_set.count_difference, best_solution.vehicles)),
+        "financial_savings": best_solution.current_expense - best_solution.simulation_expense,
+        "co2e_savings": best_solution.current_co2e - best_solution.simulation_co2e,
+        "location_ids": goal_results.simulation_options.location_ids,
+        "simulation_type": "goal"
+    }
+    return results
+
+
+def load_simulation_highlights(r: redis.Redis, session: Session, n: int = 5) -> list[SimulationHighlight]:
+    """
+    Function to load both fleet - and goal simulation highlights for displaying on the landing page.
+    Sorts by date to return the n recent simulations. Session is only used to pull the address name of locations
+
+    r: redis client
+    session: db session
+    n: number of simulation to take highlights from
+    """
+    pattern = f"celery-task-meta-{os.getenv('CELERY_QUEUE', 'default')}:*simulation*"
+    simulations = [
+        (get_datetime_from_key(sim_key.decode()), sim_key.decode())
+        for sim_key in r.scan_iter(pattern, count=100)
+    ]
+    simulations.sort(reverse=True)
+    simulation_highlights = []
+    for sim_date, key in simulations:
+        task_result = r.get(key)
+        if not task_result:
+            continue
+        simulation = pickle.loads(task_result)
+        if simulation.get("status") != "SUCCESS":
+            continue
+
+        sim_highlight = {}
+        if "fleet_simulation" in key:
+            sim_highlight = get_fleet_simulation_highlights(simulation)
+        elif "goal_simulation" in key:
+            sim_highlight = get_goal_simulation_highlights(simulation)
+        if not sim_highlight:
+            continue
+        sim_highlight["addresses"] = [
+            location.address for location in session.query(
+                AllowedStarts.address
+            ).filter(
+                AllowedStarts.id.in_(sim_highlight["location_ids"])
+            )
+        ]
+        sim_highlight["id"] = key
+        sim_highlight["simulation_date"] = sim_date.isoformat()
+        simulation_highlights.append(SimulationHighlight(**sim_highlight))
+
+        if n == len(simulation_highlights):
+            break
+
+    return simulation_highlights

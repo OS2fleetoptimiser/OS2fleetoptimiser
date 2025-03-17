@@ -14,7 +14,12 @@ from fleetmanager.configuration import (
     load_simulation_settings,
     validate_settings,
 )
-from fleetmanager.fleet_simulation import fleet_simulator, simulation_results_to_excel, load_fleet_simulation_history
+from fleetmanager.fleet_simulation import (
+    fleet_simulator,
+    load_fleet_simulation_history,
+    load_simulation_highlights,
+    simulation_results_to_excel
+)
 from fleetmanager.tasks import get_task_id, run_fleet_simulation
 
 from ..configuration.schemas import (
@@ -29,7 +34,8 @@ from .schemas import (
     FleetSimulationOptions,
     FleetSimulationOut,
     FleetSimulationResult,
-    FleetSimulationHistory
+    FleetSimulationHistory,
+    SimulationHighlight
 )
 
 router = APIRouter(
@@ -137,3 +143,9 @@ async def get_simulation(
 async def get_fleet_simulation_history(session: Session = Depends(get_session)):
     r = redis.Redis(host="redis", port=6379)
     return load_fleet_simulation_history(session, r)
+
+
+@router.get("/highlights/latest", response_model=list[SimulationHighlight])
+async def get_fleet_simulation_history_latest(n_simulations: int = 5, session: Session = Depends(get_session)):
+    r = redis.Redis.from_url(os.getenv("CELERY_BACKEND_URL"))
+    return load_simulation_highlights(r=r, session=session, n=n_simulations)
