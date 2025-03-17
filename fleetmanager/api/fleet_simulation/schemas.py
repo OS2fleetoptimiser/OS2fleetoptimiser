@@ -90,3 +90,15 @@ class FleetSimulationHistory(BaseModel):
     location: str
     locations: str | None
     simulation_date: str
+
+
+class SimulationHighlight(BaseModel):
+    id: str
+    unallocated: int
+    financial_savings: float
+    co2e_savings: float
+    location_ids: list[int]
+    simulation_type: Literal["fleet", "goal"]
+    addresses: list[str]
+    simulation_date: str
+    fleet_change: int

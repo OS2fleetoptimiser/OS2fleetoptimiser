@@ -2,7 +2,7 @@ import os
 
 from celery import Celery
 from kombu import Queue, serialization
-from datetime import datetime, date
+from datetime import datetime, timedelta
 from uuid import uuid4
 
 from fleetmanager.api.fleet_simulation.schemas import FleetSimulationOptions
@@ -28,7 +28,7 @@ serialization.register_pickle()
 serialization.enable_insecure_serializers()
 
 app.conf.task_queues = [Queue(queue)]
-
+app.conf.result_expires = timedelta(days=int(os.getenv("TTL", 30))).total_seconds()  # 30 day default TTL
 
 @app.task(queue=queue)
 def run_fleet_simulation(settings: FleetSimulationOptions):
