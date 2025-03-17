@@ -11,5 +11,9 @@ from .util import (
     date_duration_getter,
     group_by_vehicle_location,
     to_plot_data,
-    get_availability
+    get_availability,
+    eligible_saved_vehicles,
+    active_vehicles,
+    get_non_fossil_km_share,
+    get_number_of_simulations
 )

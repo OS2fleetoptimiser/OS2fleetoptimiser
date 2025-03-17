@@ -139,3 +139,11 @@ class VehicleAvailability(BaseModel):
     leastAvailability: int
     averageAvailability: int
     data: list[dict]
+
+
+KPIs = Literal[
+    "total_saved_vehicles",
+    "active_vehicles_last_month",
+    "total_simulations_last_month",
+    "non_fossil_share_last_month"
+]
