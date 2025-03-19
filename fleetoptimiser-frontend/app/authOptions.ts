@@ -27,15 +27,6 @@ export const authOptions: AuthOptions = {
 
       if (account?.id_token) {
         const decoded = jwt_decode<DecodedToken>(account.id_token);
-
-        try {
-          if (token.providerAccountId) {
-            updateUserLogin(token.providerAccountId);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-
         token.roleValue = decoded.privileges_b64;
       }
 
@@ -64,7 +55,6 @@ export const authOptions: AuthOptions = {
       return token;
     },
     session({ session, token }) {
-      session.user.roleValue = token.roleValue;
       session.user.role_valid = token.role_valid;
       session.user.write_privilege = token.write_privilege ?? false;
       session.user.providerAccountId = token.providerAccountId;
