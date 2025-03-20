@@ -13,11 +13,17 @@ import pandas as pd
 import redis
 from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel
-from sqlalchemy import DATE, and_, cast, distinct, func, or_, select
+from sqlalchemy import DATE, BigInteger, and_, cast, distinct, func, literal_column, or_, select, text
 from sqlalchemy.orm import Session
 from xlsxwriter.utility import xl_range, xl_rowcol_to_cell
 
-from fleetmanager.api.statistics.schemas import StatisticOverview, VehicleAvailability
+from fleetmanager.api.statistics.schemas import (
+    LocationActivity,
+    LocationUsage,
+    StatisticOverview,
+    VehicleAvailability,
+    WeekLocationActivity,
+)
 from fleetmanager.configuration.util import load_name_settings
 from fleetmanager.data_access import (
     AllowedStarts,
@@ -1736,3 +1742,170 @@ def get_number_of_simulations(since_date: datetime.date, session: Session):
             simulation_count += 1
 
     return simulation_count
+
+
+def get_usage_on_locations(session: Session, total_selected_time: float | int, since_date: datetime.date) -> List[LocationUsage]:
+    """
+     Calculate and return usage statistics for each location based on car round trips since a given date.
+
+     Args:
+         sessions: A callable that returns a SQLAlchemy session context.
+         total_selected_time: The total time available per car, used to compute available time.
+         since_date: The starting date from which round trips are considered.
+
+     Returns:
+         A list of LocationUsage objects with computed usage, car counts, total available time, and usage ratio.
+     """
+    dialect = session.bind.engine.dialect.name
+    if dialect == "sqllite":
+        time_function = func.strftime("%s", RoundTrips.end_time) - func.strftime("%s", RoundTrips.start_time)
+    elif dialect == "mysql":
+        time_function = func.timestampdiff(text("SECOND"), RoundTrips.start_time, RoundTrips.end_time)
+    else:
+        time_function = cast(
+            func.datediff(literal_column("SECOND"), RoundTrips.start_time, RoundTrips.end_time),
+            BigInteger
+        )
+
+    car_usage = (
+        session.query(
+            Cars.id.label("car_id"),
+            Cars.location.label("location_id"),
+            (
+                func.coalesce(
+                    func.sum(time_function),
+                    0
+                )
+            ).label("usage")
+        )
+        .outerjoin(
+            RoundTrips,
+            and_(
+                Cars.id == RoundTrips.car_id,
+                RoundTrips.start_time >= since_date
+            )
+        )
+        .filter(
+            and_(
+                or_(Cars.disabled.is_(None), Cars.disabled == False),
+                or_(Cars.deleted.is_(None), Cars.deleted == False)
+            )
+        )
+        .group_by(Cars.id, Cars.location)
+        .subquery()
+    )
+
+    location_usage = (
+        session.query(
+            AllowedStarts.address,
+            car_usage.c.location_id,
+            func.count(car_usage.c.car_id).label("car_count"),
+            func.sum(car_usage.c.usage).label("location_usage")
+        )
+        .group_by(car_usage.c.location_id, AllowedStarts.address)
+        .join(AllowedStarts, AllowedStarts.id == car_usage.c.location_id)
+    )
+    location_details = []
+    for row in location_usage:
+        location_specifics = LocationUsage(**row._asdict())
+        location_specifics.total_available_time = total_selected_time * location_specifics.car_count
+        location_specifics.usage_ratio = location_specifics.location_usage / location_specifics.total_available_time
+        location_details.append(location_specifics)
+    return location_details
+
+
+def get_activity_on_locations(session: Session, since_date: datetime.date) -> List[LocationActivity]:
+    """
+    Returns weekly summaries containing total distance (activity) and car counts per location since a specified date.
+
+    Args:
+        session: Database session object.
+        since_date (datetime/date): Starting date to include roundtrip data.
+
+    Returns:
+        List of records grouped by location and week, each including car count and total activity distance.
+
+    Considerations on subqueries
+    The first (subq) gathers roundtrip distances per car, location, and week.
+    The second (car_count_subq) independently calculates the total cars available per location, regardless of trips in
+    order to "penalise" inactive veicles.
+    The final query combines these two to correctly match car counts with trip activities without inflating distances
+    or miscounting cars.
+    """
+    dialect = session.bind.engine.dialect.name
+
+    if isinstance(since_date, datetime.date):
+        since_date = datetime.datetime.combine(since_date, datetime.datetime.min.time())
+
+    if dialect == "sqlite":
+        week_function = func.strftime('%Y', func.coalesce(RoundTrips.start_time, since_date)) + "-" + func.strftime(
+            '%W', func.coalesce(RoundTrips.start_time, since_date))
+    elif dialect == "mysql":
+        week_function = func.concat(func.year(func.coalesce(RoundTrips.start_time, since_date)), "-",
+                                    func.week(func.coalesce(RoundTrips.start_time, since_date)))
+    else:
+        week_function = func.concat(func.year(func.coalesce(RoundTrips.start_time, since_date)), "-",
+                                    func.datepart(text("WEEK"), func.coalesce(RoundTrips.start_time, since_date)))
+
+    subq = (
+        session.query(
+            Cars.id.label("car_id"),
+            Cars.location.label("location_id"),
+            AllowedStarts.address,
+            func.coalesce(RoundTrips.start_time, since_date).label("start_time"),
+            func.coalesce(RoundTrips.distance, 0).label("distance"),
+            week_function.label("week_name"),
+        ).filter(
+            Cars.location.isnot(None)
+        )
+        .outerjoin(
+            RoundTrips, and_(RoundTrips.start_time >= since_date, Cars.id == RoundTrips.car_id)
+        )
+        .outerjoin(AllowedStarts, and_(AllowedStarts.id == Cars.location))
+        .subquery()
+    )
+
+    car_count_subq = (
+        session.query(
+            Cars.location.label("location_id"),
+            func.count(distinct(Cars.id)).label("car_count")
+        )
+        .filter(
+            Cars.location.isnot(None),
+            or_(Cars.disabled.is_(None), Cars.disabled == False),
+            or_(Cars.deleted.is_(None), Cars.deleted == False)
+        )
+        .group_by(Cars.location)
+    ).subquery()
+
+    car_activity = (
+        session.query(
+            car_count_subq.c.car_count,
+            subq.c.location_id,
+            subq.c.address,
+            func.coalesce(func.sum(subq.c.distance), 0).label("activity"),
+            subq.c.week_name
+        )
+        .join(car_count_subq, car_count_subq.c.location_id == subq.c.location_id)
+        .group_by(subq.c.location_id, subq.c.address, subq.c.week_name, car_count_subq.c.car_count)
+        .all()
+    )
+
+    location_details = {}
+    for row in car_activity:
+        location_id = row.location_id
+
+        if location_id not in location_details:
+            location_details[location_id] = LocationActivity(**row._asdict())
+
+        location_details[location_id].weeks.append(
+            WeekLocationActivity(
+                week_name=row.week_name,
+                activity=row.activity,
+                average_activity=row.activity / row.car_count
+            )
+        )
+        location_details[location_id].total_activity += row.activity
+        location_details[location_id].total_average_activity = location_details[location_id].total_activity / row.car_count
+
+    return list(location_details.values())
