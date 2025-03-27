@@ -24,11 +24,11 @@ export default function Home() {
     return (
         <div className="pt-4 space-y-12 flex flex-col max-w-[1105px] mx-auto">
             <LoginHeader lastLogin={lastLogin} isLoading={loginIsLoading} />
-            {!isKPIsLoading && kpiData && <LandingPageKPIs data={kpiData} />}
-            {!isKPIsLoading && !kpiData && <NoConnectionError />}
+            {!isKPIsLoading && kpiData && Object.keys(kpiData).length > 0 && <LandingPageKPIs data={kpiData} />}
+            {!isKPIsLoading && (!kpiData || Object.keys(kpiData).length === 0) && <NoConnectionError />}
             {isKPIsLoading && <CircularProgress />}
             <div className="w-full">
-                {!simulationsIsLoading && latestSimulations && (
+                {!simulationsIsLoading && latestSimulations && latestSimulations.length > 0 && (
                     <div>
                         <SimulationHighlights simulations={latestSimulations} />
                     </div>
@@ -50,7 +50,7 @@ export default function Home() {
                 )}
             </div>
             <div className="graphs">
-                {usageGraphData && activityGraphData && <LandingPageGraphs activityData={activityGraphData} usageData={usageGraphData} />}
+                {usageGraphData && activityGraphData && usageGraphData.length > 0 && <LandingPageGraphs activityData={activityGraphData} usageData={usageGraphData} />}
                 {/*  if we don't get this data, we won't get KPI data either, so we stick to one error message at the top  */}
             </div>
         </div>
