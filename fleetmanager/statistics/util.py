@@ -5,7 +5,7 @@ import pickle
 import time
 from ast import literal_eval
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import regex as re
 
 import numpy as np
@@ -1814,13 +1814,38 @@ def get_usage_on_locations(session: Session, total_selected_time: float | int, s
     return location_details
 
 
+def get_week_dates(since_date: datetime.date) -> List[Tuple[datetime.date, datetime.date]]:
+    """
+    will take the since_date and return the start/end date pairs that bounds the week
+    returns a list of tuples where first and second index is the start and end respectively
+    """
+
+    if isinstance(since_date, datetime.datetime):
+        since_date = since_date.date()
+    today = datetime.date.today()
+    since_date_week_info = since_date.isocalendar()
+    since_date_week_start = since_date - datetime.timedelta(days=since_date_week_info.weekday - 1)
+
+    week_dates = []
+    if today <= since_date_week_start:
+        return week_dates
+    start_date = since_date_week_start
+    while start_date < today:
+        week_dates.append(
+            (start_date, start_date + weekDelta)
+        )
+        start_date += weekDelta
+
+    return week_dates
+
+
 def get_activity_on_locations(session: Session, since_date: datetime.date) -> List[LocationActivity]:
     """
     Returns weekly summaries containing total distance (activity) and car counts per location since a specified date.
 
     Args:
         session: Database session object.
-        since_date (datetime/date): Starting date to include roundtrip data.
+        since_date (datetime/date): Starting date to include roundtrip data - will be calculated to week of the since_date
 
     Returns:
         List of records grouped by location and week, each including car count and total activity distance.
@@ -1834,32 +1859,40 @@ def get_activity_on_locations(session: Session, since_date: datetime.date) -> Li
     """
     dialect = session.bind.engine.dialect.name
 
-    if isinstance(since_date, datetime.date):
-        since_date = datetime.datetime.combine(since_date, datetime.datetime.min.time())
+    week_dates = get_week_dates(since_date)
+    if not week_dates:
+        return []
+    first_date = sorted(week_dates)[0][0]
 
     if dialect == "sqlite":
-        week_function = func.strftime('%Y', func.coalesce(RoundTrips.start_time, since_date)) + "-" + func.strftime(
-            '%W', func.coalesce(RoundTrips.start_time, since_date))
+        week_function = func.strftime('%Y', func.coalesce(RoundTrips.start_time, first_date)) + "-" + func.strftime(
+            '%W', func.coalesce(RoundTrips.start_time, first_date))
     elif dialect == "mysql":
-        week_function = func.concat(func.year(func.coalesce(RoundTrips.start_time, since_date)), "-",
-                                    func.week(func.coalesce(RoundTrips.start_time, since_date)))
+        week_function = func.concat(
+            func.year(func.coalesce(RoundTrips.start_time, first_date)),
+            "-",
+            func.date_format(func.coalesce(RoundTrips.start_time, first_date), '%v')
+        )
     else:
-        week_function = func.concat(func.year(func.coalesce(RoundTrips.start_time, since_date)), "-",
-                                    func.datepart(text("WEEK"), func.coalesce(RoundTrips.start_time, since_date)))
+        week_function = func.concat(
+            func.year(func.coalesce(RoundTrips.start_time, first_date)),
+            "-",
+            func.datepart(text("ISO_WEEK"), func.coalesce(RoundTrips.start_time, first_date))
+        )
 
     subq = (
         session.query(
             Cars.id.label("car_id"),
             Cars.location.label("location_id"),
             AllowedStarts.address,
-            func.coalesce(RoundTrips.start_time, since_date).label("start_time"),
+            func.coalesce(RoundTrips.start_time, first_date).label("start_time"),
             func.coalesce(RoundTrips.distance, 0).label("distance"),
             week_function.label("week_name"),
         ).filter(
             Cars.location.isnot(None)
         )
         .outerjoin(
-            RoundTrips, and_(RoundTrips.start_time >= since_date, Cars.id == RoundTrips.car_id)
+            RoundTrips, and_(RoundTrips.start_time >= first_date, Cars.id == RoundTrips.car_id)
         )
         .outerjoin(AllowedStarts, and_(AllowedStarts.id == Cars.location))
         .subquery()
@@ -1891,21 +1924,40 @@ def get_activity_on_locations(session: Session, since_date: datetime.date) -> Li
         .all()
     )
 
+    week_mapping = {f"{start.year}-{start.isocalendar().week}": (start, end) for start, end in week_dates}
     location_details = {}
     for row in car_activity:
-        location_id = row.location_id
-
-        if location_id not in location_details:
-            location_details[location_id] = LocationActivity(**row._asdict())
-
-        location_details[location_id].weeks.append(
-            WeekLocationActivity(
-                week_name=row.week_name,
-                activity=row.activity,
-                average_activity=row.activity / row.car_count
-            )
+        loc = location_details.setdefault(
+            row.location_id,
+            LocationActivity(**row._asdict(), weeks=[], total_activity=0)
         )
-        location_details[location_id].total_activity += row.activity
-        location_details[location_id].total_average_activity = location_details[location_id].total_activity / row.car_count
+        week_name = re.sub(r'(\d{4})-0(\d)', r'\1-\2', row.week_name)  # dialects differ in month zero-padding
+        if week_name not in week_mapping:
+            continue
+        start_date, end_date = week_mapping[week_name]
+        loc.weeks.append(WeekLocationActivity(
+            week_name=week_name,
+            activity=row.activity,
+            average_activity=row.activity / row.car_count,
+            start_date=start_date,
+            end_date=end_date
+        ))
+
+        loc.total_activity += row.activity
+        loc.total_average_activity = loc.total_activity / row.car_count / len(week_mapping)
+
+    # ensure all weeks are present
+    for loc in location_details.values():
+        existing_weeks = {week.week_name for week in loc.weeks}
+        missing_weeks = set(week_mapping) - existing_weeks
+        for week_name in missing_weeks:
+            start_date, end_date = week_mapping[week_name]
+            loc.weeks.append(WeekLocationActivity(
+                week_name=week_name,
+                activity=0,
+                average_activity=0,
+                start_date=start_date,
+                end_date=end_date
+            ))
 
     return list(location_details.values())
