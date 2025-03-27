@@ -10,8 +10,10 @@ from fastapi.responses import StreamingResponse
 from fleetmanager.statistics.util import get_usage_on_locations, get_activity_on_locations
 from fleetmanager.tasks.cache_utils import get_cached_data, set_cached_data
 from pydantic.error_wrappers import ValidationError
+from redis.exceptions import ConnectionError
 from sqlalchemy.orm import Session
 
+from fleetmanager.logging import logging
 from fleetmanager.statistics import (
     carbon_neutral_share,
     driving_data_to_excel,
@@ -42,6 +44,9 @@ from .schemas import (
     KPIs,
 )
 from ...statistics.util import calculate_timeactivity
+
+logger = logging.getLogger(__name__)
+
 
 router = APIRouter(
     prefix="/statistics",
@@ -329,10 +334,14 @@ async def get_landing_page_kpi(metrics: List[KPIs] = Query(None), session: Sessi
         "non_fossil_share_last_month": get_non_fossil_km_share
     }
 
-    if metrics:
-        return {metric: kpi_functions[metric](since_date, session) for metric in metrics}
+    try:
+        if metrics:
+            return {metric: kpi_functions[metric](since_date, session) for metric in metrics}
 
-    return {key: func(since_date, session) for key, func in kpi_functions.items()}
+        return {key: func(since_date, session) for key, func in kpi_functions.items()}
+    except ConnectionError as con_error:
+        logger.error("Redis connection error, from kpis\n{}".format(con_error))
+        return {}
 
 
 @router.get("/locations/usage", response_model=List[LocationUsage])
@@ -347,16 +356,19 @@ async def get_location_usage(
 
     key = f"cache:{os.getenv('CELERY_QUEUE', 'default')}:locations_usage:{since_date.isoformat()}:{today.isoformat()}"
 
-    usage_on_location = get_cached_data(key)
-    if not usage_on_location:
-        usage_on_location = get_usage_on_locations(
-            session=session,
-            total_selected_time=total_selected_time,
-            since_date=since_date
-        )
-        set_cached_data(key, usage_on_location)
-
-    return usage_on_location
+    try:
+        usage_on_location = get_cached_data(key)
+        if not usage_on_location:
+            usage_on_location = get_usage_on_locations(
+                session=session,
+                total_selected_time=total_selected_time,
+                since_date=since_date
+            )
+            set_cached_data(key, usage_on_location)
+        return usage_on_location
+    except ConnectionError as con_error:
+        logger.error("Redis connection error, from locations/usage\n{}".format(con_error))
+        return []
 
 
 @router.get("/locations/activity", response_model=List[LocationActivity])
@@ -369,13 +381,15 @@ async def get_location_activity(
         since_date = today - relativedelta(months=1)
 
     key = f"cache:{os.getenv('CELERY_QUEUE', 'default')}:locations_activity:{since_date.isoformat()}:{today.isoformat()}"
-
-    activity_on_location = get_cached_data(key)
-    if not activity_on_location:
-        activity_on_location = get_activity_on_locations(
-            session=session,
-            since_date=since_date
-        )
-        set_cached_data(key, activity_on_location)
-
-    return activity_on_location
+    try:
+        activity_on_location = get_cached_data(key)
+        if not activity_on_location:
+            activity_on_location = get_activity_on_locations(
+                session=session,
+                since_date=since_date
+            )
+            set_cached_data(key, activity_on_location)
+        return activity_on_location
+    except ConnectionError as con_error:
+        logger.error("Redis connection error, from locations/activity\n{}".format(con_error))
+        return []
