@@ -5,6 +5,7 @@ from fastapi.responses import StreamingResponse
 import os
 from sqlalchemy.orm import Session
 import redis
+from redis.exceptions import ConnectionError
 import pickle
 
 from fleetmanager.configuration import (
@@ -20,6 +21,7 @@ from fleetmanager.fleet_simulation import (
     load_simulation_highlights,
     simulation_results_to_excel
 )
+from fleetmanager.logging import logging
 from fleetmanager.tasks import get_task_id, run_fleet_simulation
 
 from ..configuration.schemas import (
@@ -37,6 +39,8 @@ from .schemas import (
     FleetSimulationHistory,
     SimulationHighlight
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/fleet-simulation",
@@ -147,5 +151,9 @@ async def get_fleet_simulation_history(session: Session = Depends(get_session)):
 
 @router.get("/highlights/latest", response_model=list[SimulationHighlight])
 async def get_fleet_simulation_history_latest(n_simulations: int = 5, session: Session = Depends(get_session)):
-    r = redis.Redis.from_url(os.getenv("CELERY_BACKEND_URL"))
-    return load_simulation_highlights(r=r, session=session, n=n_simulations)
+    try:
+        r = redis.Redis.from_url(os.getenv("CELERY_BACKEND_URL"))
+        return load_simulation_highlights(r=r, session=session, n=n_simulations)
+    except ConnectionError as con_error:
+        logger.error("Redis connection error, from highlights/latest\n{}".format(con_error))
+        return []
