@@ -24,7 +24,7 @@ const UsageBarChart = ({ data, showKeys = true }: { data: BarData[]; showKeys?: 
                 axisBottom={{
                     tickSize: 5,
                     tickPadding: 5,
-                    renderTick: ({ value, x, y, textAnchor }) => (
+                    renderTick: ({ value, x, y }) => (
                         <g className={`${showKeys ? 'inline' : 'hidden'}`} transform={`translate(${x},${y + 10})`}>
                             <title>{value}</title>
                             <text textAnchor="middle" dominantBaseline="middle" style={{ fontSize: 11, fill: '#333' }}>

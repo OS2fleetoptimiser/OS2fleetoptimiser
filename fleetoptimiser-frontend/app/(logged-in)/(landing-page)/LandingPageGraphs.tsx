@@ -6,13 +6,13 @@ import { Button } from '@mui/material';
 import { useMediaQuery } from 'react-responsive';
 
 export default function LandingPageGraphs({ usageData, activityData }: { usageData: LocationUsage[]; activityData: LocationActivity[] }) {
-    const isLargerThan1348 = useMediaQuery({ minWidth: 1348 });
-    const isBetween520And766 = useMediaQuery({ minWidth: 520, maxWidth: 765 });
-    const showKeys = isLargerThan1348 || isBetween520And766;
+    const isWide = useMediaQuery({ minWidth: 1348 });
+    const isMedium = useMediaQuery({ minWidth: 520, maxWidth: 767 });
+    const showKeys = isWide || isMedium;
 
     const sortedUsageData = usageData
         .filter((locationData) => locationData.location_usage !== 0)
-        .sort((a, b) => (a.usage_ratio < b.usage_ratio ? -1 : 1))
+        .sort((a, b) => (a.usage_ratio - b.usage_ratio))
         .slice(0, 5);
     const sortedActivityData = activityData
         .filter((locationData) => locationData.total_activity !== 0)

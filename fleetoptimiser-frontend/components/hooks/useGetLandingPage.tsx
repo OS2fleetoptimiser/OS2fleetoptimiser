@@ -45,7 +45,9 @@ export function useGetLandingPageKPIs(metrics?: KPIKeys[]) {
     return useQuery(
         ['landingpagekpis', metrics],
         async () => {
-            const queryString = metrics?.length ? `?${metrics.map((metric) => `metrics=${encodeURIComponent(metric)}`).join('&')}` : '';
+            const params = new URLSearchParams();
+            metrics?.forEach(metric => params.append('metrics', metric));
+            const queryString = params.toString() ? `?${params.toString()}` : '';
             return await AxiosBase.get<KPIs>(`/statistics/kpis${queryString}`).then((res) => res.data);
         },
         {
@@ -58,7 +60,8 @@ export function useGetSimulationHighlights(n_simulations: number = 5) {
     return useQuery(
         ['simulationhighlights', n_simulations],
         async () => {
-            const response = await AxiosBase.get<SimulationHighlight[]>(`fleet-simulation/highlights/latest?n_simulations=${n_simulations}`);
+            const params = new URLSearchParams({ n_simulations: n_simulations.toString() });
+            const response = await AxiosBase.get<SimulationHighlight[]>(`fleet-simulation/highlights/latest?${params}`);
             return response.data;
         },
         {
@@ -71,7 +74,12 @@ export function useGetUsageGraphData(since_date?: Date) {
     return useQuery(
         ['usagegraphdata', since_date],
         async () => {
-            const response = await AxiosBase.get<LocationUsage[]>(`/statistics/locations/usage${since_date ? `?since_date=${since_date}` : ''}`);
+            const params = new URLSearchParams();
+            if (since_date) {
+                params.append('since_date', since_date.toISOString());
+            }
+            const queryString = params.toString() ? `?${params}` : '';
+            const response = await AxiosBase.get<LocationUsage[]>(`/statistics/locations/usage${queryString}`);
             return response.data;
         },
         {
@@ -84,7 +92,12 @@ export function useGetActivityGraphData(since_date?: Date) {
     return useQuery(
         ['activitygraphdata', since_date],
         async () => {
-            const response = await AxiosBase.get<LocationActivity[]>(`/statistics/locations/activity${since_date ? `?since_date=${since_date}` : ''}`);
+            const params = new URLSearchParams();
+            if (since_date) {
+                params.append('since_date', since_date.toISOString());
+            }
+            const queryString = params.toString() ? `?${params}` : '';
+            const response = await AxiosBase.get<LocationActivity[]>(`/statistics/locations/activity${queryString}`);
             return response.data;
         },
         {
