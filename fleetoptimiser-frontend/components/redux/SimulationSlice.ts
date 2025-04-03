@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import dayjs from 'dayjs';
 import { Vehicle } from '../hooks/useGetVehicles';
 import { VehicleWithStatus } from '../hooks/useGetVehiclesByLocation';
+import { SelectedLocation } from "@/app/(logged-in)/setup/LocationPicker";
 import { reduceDuplicateVehicles } from '../DuplicateReducer';
 import { bike_settings, settings, shift_settings, simulation_settings } from '../hooks/useGetSettings';
 import AxiosBase from '../AxiosBase';
@@ -31,6 +32,7 @@ type Simulation = {
     location_id: number;
     location_ids: number[];
     forvaltninger: Record<string, any>;
+    locationForvaltning: SelectedLocation[];
     intelligent_allocation: boolean;
     limit_km: boolean;
     settings: settings;
@@ -45,6 +47,7 @@ const initialCars: Simulation = {
     location_id: 0,
     location_ids: [],
     forvaltninger: [],
+    locationForvaltning: [],
     intelligent_allocation: false,
     limit_km: false,
     settings: {
@@ -199,6 +202,14 @@ export const simulationSlice = createSlice({
                 }
             });
         },
+        setLocationForvaltning: (state, action: PayloadAction<SelectedLocation[]>) => {
+            state.locationForvaltning = action.payload;
+            state.location_ids = action.payload.map(loc => loc.id);
+            state.forvaltninger = action.payload.reduce((acc, loc) => {
+                (acc[loc.forvaltning] ||= []).push(loc.id);
+                return acc;
+            }, {} as Record<string, number[]>);
+        },
         addExtraVehicle: (state, action: PayloadAction<Vehicle>) => {
             const existing = state.fleetSimulationSettings.extraVehicles.findIndex((v) => v.id === action.payload.id);
             if (existing === -1) {
@@ -319,6 +330,7 @@ export const {
     setCO2eSavings,
     setExtraExpense,
     setexpenseEmissionPrioritisation,
+    setLocationForvaltning,
     setGoalSimulationVehicles,
     setSimulationVehicles,
     setAllSettings,
