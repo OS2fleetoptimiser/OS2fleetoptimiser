@@ -15,6 +15,8 @@ import {fetchSimulationSettings, setCars, setEndDate, setLocationForvaltning, se
 import { useQueries } from '@tanstack/react-query';
 import VehiclePicker from './VehiclePicker';
 import { exportDrivingData } from '../setup/DrivingDataDownload';
+import NoConnectionError from "@/app/(logged-in)/setup/NoConnectionError";
+import NoSelectableVehicles from "@/app/(logged-in)/setup/NoSelectableVehicles";
 
 export default function Home() {
     const dispatch = useAppDispatch();
@@ -72,6 +74,7 @@ export default function Home() {
         exportDrivingData(startPeriod.format('YYYY-MM-DD'), endPeriod.format('YYYY-MM-DD'), locationForvaltning.map(loc => loc.id));
     };
 
+    const isLoadingVehicles = vehicles.some(q => q.isLoading)
     return (
         <div className="space-y-6">
             <DateRangePicker range={range} onChange={handleDateChange} />
@@ -84,12 +87,17 @@ export default function Home() {
                     onSelectionChange={handleLocationChange}
                 />
             )}
+            {/*todo replace with component from landing page no connection*/}
+            {/*no onlyLocs implies no connection */}
+            {!locationsLoading && !onlyLocs && <NoConnectionError/>}
+            {!isLoadingVehicles && allVehicles.length === 0 && locationForvaltning.length > 0 && <NoSelectableVehicles/>}
+            {vehicles.some(q => q.isError) && <NoConnectionError/>}
             {allVehicles.length > 0 && (
                 <VehiclePicker
                     vehicles={allVehicles}
                     selectedVehicleIds={selectedVehicleIds}
                     onSelectionChange={handleVehicleChange}
-                    isLoading={vehicles.some(q => q.isLoading)}
+                    isLoading={isLoadingVehicles}
                     simulationDisabled={simulationDisabled}
                     onDownload={handleDownload}
                 />
