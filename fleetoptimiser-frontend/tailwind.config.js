@@ -21,7 +21,11 @@ module.exports = {
                 moerkeblaa: '#003d7a',
                 primary: '#4f7c64',
                 secondary: '#70ea33',
-                explanation: 'rgba(0,0,0,0.5)'
+                explanation: 'rgba(0,0,0,0.5)',
+                'red-25': '#dd333308',
+                'green-25': '#44ce7708',
+                'blue-25': '#224bb408',
+                'indigo-25': '#6366f108'
             },
             scale: {
                 101: '1.01',
