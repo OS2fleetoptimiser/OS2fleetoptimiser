@@ -13,7 +13,6 @@ import {
     InputLabel,
     Button,
     Select,
-    Box,
     Chip,
     SelectChangeEvent,
     ButtonGroup,
@@ -53,8 +52,8 @@ const DepartmentVehicleFilter = ({ allDepartments, selectedDepartment, setSelect
     };
 
     return (
-        <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
-            <InputLabel id="department-filter-label" sx={{ fontSize: '0.875rem', color: 'gray' }}>
+        <FormControl variant="outlined" size="small" className="min-w-[150px]">
+            <InputLabel id="department-filter-label" className="text-[0.875rem] text-gray-600">
                 Afdeling
             </InputLabel>
             <Select
@@ -62,11 +61,10 @@ const DepartmentVehicleFilter = ({ allDepartments, selectedDepartment, setSelect
                 value={selectedDepartment}
                 onChange={handleChange}
                 label="Afdeling"
+                className="text-[0.875rem] text-gray-600"
                 renderValue={(selected) => <Chip label={selected || 'Alle'} size="small" className="bg-gray-50 text-gray-500 text-sm font-bold" />}
                 sx={{
                     '& .MuiSelect-select': { padding: '8px' },
-                    fontSize: '0.875rem',
-                    color: 'gray',
                 }}
             >
                 <MenuItem value="">
@@ -170,7 +168,7 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
     const allDepartments = Array.from(new Set(vehicles.map((vehicle) => vehicle.department || 'Ingen afdeling')));
     return (
         <div className="pr">
-            <Box mt={2}>
+            <div className="mt-2">
                 <div className="flex flex-row">
                     <label className="block mb-2 text-lg font-semibold text-black">Vælg køretøjer til simulering</label>
                     {onDownload && (
@@ -181,11 +179,7 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
                 </div>
                 <TableContainer
                         component={Paper}
-                        className="relative my-4 shadow-sm border border-gray-100 rounded-md"
-                        sx={{
-                            maxHeight: 'calc(100vh - 450px)',
-                            overflow: 'auto',
-                        }}
+                        className={`relative my-4 shadow-sm border border-gray-100 rounded-md max-h-[calc(100vh-450px)] ${isLoading ? 'overflow-hidden' : 'overflow-auto'}`}
                     >
                         {isLoading && (
                             <div className="absolute inset-0 flex justify-center items-center bg-white bg-opacity-70 z-10" style={{ pointerEvents: 'auto' }}>
@@ -279,7 +273,7 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
                                 })}
                         </TableBody>
                     </Table>
-                    <Box className="sticky bottom-0 bg-white border-t border-gray-100 flex justify-between items-center sm:flex-row space-y-2 sm:space-y-0 flex-col p-2 py-4">
+                    <div className="sticky bottom-0 bg-white border-t border-gray-100 flex justify-between items-center sm:flex-row space-y-2 sm:space-y-0 flex-col p-2 py-4">
                         <ButtonGroup>
                             <Button variant="outlined" size="small" onClick={selectAll}>
                                 Vælg alle
@@ -289,7 +283,7 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
                             </Button>
                         </ButtonGroup>
 
-                        <Box className="flex space-x-2 md:flex-row md:space-y-0 space-y-2 flex-col">
+                        <div className="flex space-x-2 md:flex-row md:space-y-0 space-y-2 flex-col">
                             <Button
                                 disabled={simulationDisabled}
                                 onClick={() => router.push('/fleet')}
@@ -308,10 +302,10 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
                             >
                                 Automatisk simulering
                             </Button>
-                        </Box>
-                    </Box>
+                        </div>
+                    </div>
                 </TableContainer>
-            </Box>
+            </div>
         </div>
     );
 }

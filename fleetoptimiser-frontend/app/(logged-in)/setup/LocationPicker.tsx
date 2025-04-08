@@ -12,9 +12,7 @@ import {
     FormControlLabel,
     Collapse,
     IconButton,
-    Box,
     InputAdornment,
-    Stack,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -138,17 +136,17 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                         {selectedLocations.length === 0 || selectedLocations.length > 3 ? (
                             <Tooltip
                                 title={
-                                    <Box>
+                                    <div>
                                         {selectedLocations.map((sel, i) => {
                                             const loc = locations.find((l) => l.id === sel.id);
                                             if (!loc) return null;
                                             return (
-                                                <span key={`${sel.forvaltning}-${sel.id}-${i}`}>
+                                                <div key={`${sel.forvaltning}-${sel.id}-${i}`}>
                                                     {sel.forvaltning}: {loc.address}
-                                                </span>
+                                                </div>
                                             );
                                         })}
-                                    </Box>
+                                    </div>
                                 }
                             >
                                 <Chip
@@ -183,12 +181,13 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
 
             <Dialog open={open} fullWidth maxWidth="md">
                 <DialogTitle>Vælg lokationer</DialogTitle>
-                <DialogContent sx={{ height: 800, display: 'flex', flexDirection: 'column' }}>
+                <DialogContent className="h-[800px] flex flex-col">
                     <div className="absolute top-4 right-4 cursor-pointer">
                         <CloseIcon onClick={handleClose} fontSize="small" className="text-gray-500 hover:text-black" />
                     </div>
                     <TextField
                         fullWidth
+                        className="my-1 bg-[#F5F5F5] rounded-md px-1"
                         variant="standard"
                         placeholder="Søg i lokationer..."
                         value={searchQuery}
@@ -197,13 +196,13 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                             disableUnderline: true,
                             startAdornment: (
                                 <InputAdornment position="start">
-                                    <SearchIcon sx={{ fontSize: 18, color: '#6E6E6E' }} />
+                                    <SearchIcon fontSize="small"/>
                                 </InputAdornment>
                             ),
                             endAdornment: searchQuery && (
                                 <InputAdornment position="end">
                                     <IconButton onClick={() => setSearchQuery('')}>
-                                        <ClearIcon sx={{ fontSize: 18 }} />
+                                        <ClearIcon fontSize="small"/>
                                     </IconButton>
                                 </InputAdornment>
                             ),
@@ -219,29 +218,22 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                                 fontSize: 14,
                             },
                         }}
-                        sx={{
-                            mt: 1,
-                            mb: 1,
-                            backgroundColor: '#F5F5F5',
-                            borderRadius: '6px',
-                            paddingX: 1,
-                        }}
                     />
-                    <Stack direction="row" spacing={1} mb={2}>
+                    <div className="flex mb-2 space-y-1">
                         <span className="self-center text-sm text-gray-500 mr-2">Valgte Lokationer:</span>
                         <Tooltip
                             title={
-                                <Box>
+                                <div>
                                     {selectedLocations.map((sel, i) => {
                                         const loc = locations.find((l) => l.id === sel.id);
                                         if (!loc) return null;
                                         return (
-                                            <span key={`${sel.forvaltning}-${sel.id}-${i}`}>
+                                            <div key={`${sel.forvaltning}-${sel.id}-${i}`}>
                                                 {sel.forvaltning}: {loc.address}
-                                            </span>
+                                            </div>
                                         );
                                     })}
-                                </Box>
+                                </div>
                             }
                         >
                             <Chip
@@ -252,9 +244,9 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                                 disabled={selectedLocations.length === 0}
                             />
                         </Tooltip>
-                    </Stack>
+                    </div>
 
-                    <Stack direction="row" spacing={1} flexWrap="wrap" mb={2}>
+                    <div className="flex space-x-1 mb-2 flex-wrap">
                         <span className="self-center text-sm text-gray-500 mr-2">Forvaltninger:</span>
                         {Object.keys(locationsByForvaltning)
                             .sort((a, b) => {
@@ -271,9 +263,9 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                                     onClick={() => toggleForvaltningFilter(name)}
                                 />
                             ))}
-                    </Stack>
+                    </div>
 
-                    <Box flex={1} overflow="auto" borderRadius={1} border="1px solid #eee" p={2}>
+                    <div className="overflow-auto border-[#eee] border rounded-md p-2">
                         {filteredForvaltninger
                             .sort((a, b) => {
                                 if (a[0] === 'Ingen Forvaltning') return 1;
@@ -289,13 +281,10 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                                 );
                                 const selectedLocationsInForvaltning = selectedLocations.filter((loc) => loc.forvaltning === forvaltning).length;
                                 return (
-                                    <Box key={forvaltning} mb={2}>
-                                        <Box
+                                    <div className="mb-2" key={forvaltning}>
+                                        <div
                                             onClick={() => toggleExpand(forvaltning)}
-                                            className="bg-gray-100 cursor-pointer rounded-md pr-2 pl-6"
-                                            display="flex"
-                                            alignItems="center"
-                                            justifyContent="space-between"
+                                            className="flex items-center justify-between bg-gray-100 cursor-pointer rounded-md pr-2 pl-6"
                                         >
                                             <FormControlLabel
                                                 className="cursor-pointer"
@@ -320,9 +309,9 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                                             <IconButton onClick={() => toggleExpand(forvaltning)}>
                                                 {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                                             </IconButton>
-                                        </Box>
+                                        </div>
                                         <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                                            <FormGroup sx={{ pl: 4 }}>
+                                            <FormGroup className="pl-6">
                                                 {filteredLocs.map((location) => (
                                                     <FormControlLabel
                                                         key={`${forvaltning}-${location.id}`}
@@ -338,18 +327,18 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                                                             />
                                                         }
                                                         label={
-                                                            <Box>
+                                                            <div>
                                                                 <span className="text-sm font-medium self-baseline text-gray-600">{location.address}</span>
-                                                            </Box>
+                                                            </div>
                                                         }
                                                     />
                                                 ))}
                                             </FormGroup>
                                         </Collapse>
-                                    </Box>
+                                    </div>
                                 );
                             })}
-                    </Box>
+                    </div>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} variant="outlined">
