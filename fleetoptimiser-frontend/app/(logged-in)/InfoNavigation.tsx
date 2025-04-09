@@ -66,7 +66,7 @@ const InfoNav = () => {
     return (
         <>
             {title && (
-                <nav className="bg-white border-b border-gray-200 z-10 flex justify-between items-center p-1 px-8 md:ml-76 mb-10 mt-2 pl-6">
+                <nav className="bg-white border-b border-gray-200 z-10 flex justify-between items-center p-1 px-8 md:ml-76 mb-4 mt-2 pl-6">
                     <div className="flex items-center ml-12 md:ml-0">
                         <Typography variant="h6">{title}</Typography>
                         {description && <ToolTip>{description}</ToolTip>}

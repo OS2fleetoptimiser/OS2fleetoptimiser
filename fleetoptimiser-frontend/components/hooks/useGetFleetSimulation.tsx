@@ -4,7 +4,11 @@ import { simulation } from './useSimulateFleet';
 
 const useGetFleetSimulation = (simulationId: string) => {
     return useQuery(['simulation result', simulationId], () =>
-        AxiosBase.get<simulation>(`/fleet-simulation/simulation/${simulationId}`).then((res) => res.data)
+        AxiosBase.get<simulation>(`/fleet-simulation/simulation/${simulationId}`).then((res) => res.data),
+        {
+            refetchOnWindowFocus: false,
+            staleTime: Infinity
+        }
     );
 };
 

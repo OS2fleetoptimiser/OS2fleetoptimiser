@@ -1,29 +1,26 @@
 'use client';
-
+import FleetSimulationHandler from '@/app/(logged-in)/fleet/FleetSimulationHandler';
+import { useEffect, useState } from 'react';
 import useGetFleetSimulation from '@/components/hooks/useGetFleetSimulation';
 import useGetVehiclesByLocation from '@/components/hooks/useGetVehiclesByLocation';
+import dayjs from 'dayjs';
+import useGetVehicles from '@/components/hooks/useGetVehicles';
+import { useAppDispatch } from '@/components/redux/hooks';
 import {
     addExtraVehicles,
+    fetchSimulationSettings,
+    setAllSettings,
     setCars,
     setEndDate,
     setIntelligentAllocation,
     setLimitKm,
+    setLocationAddresses,
     setLocationId,
     setLocationIds,
-    setAllSettings,
     setSimulationVehicles,
     setStartDate,
-    fetchSimulationSettings,
 } from '@/components/redux/SimulationSlice';
-import { useAppDispatch } from '@/components/redux/hooks';
-import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
-import FleetSimulation from '../FleetSimulation';
-import { Button, Skeleton } from '@mui/material';
-import DownloadIcon from '@mui/icons-material/Download';
-import FleetResultSkeleton from '../FleetResultsSkeleton';
-import useGetVehicles from '@/components/hooks/useGetVehicles';
-import Typography from '@mui/material/Typography';
+import { CircularProgress } from '@mui/material';
 
 export default function Page({ params }: { params: { simulationId: string } }) {
     const [pageLoading, setPageLoading] = useState<boolean>(true);
@@ -32,6 +29,7 @@ export default function Page({ params }: { params: { simulationId: string } }) {
     const vehiclesByLocation = useGetVehiclesByLocation({
         startPeriod: dayjs(simulation.data?.result.simulation_options.start_date),
         endPeriod: dayjs(simulation.data?.result.simulation_options.end_date),
+        locations: simulation.data?.result.simulation_options.location_ids,
         enabled: !!simulation.data,
         selector: (data) => {
             if (simulation.data!.result.simulation_options.location_ids) {
@@ -55,6 +53,7 @@ export default function Page({ params }: { params: { simulationId: string } }) {
                 .flatMap((vehicle) => vehicle);
 
             dispatch(fetchSimulationSettings());
+            dispatch(setLocationAddresses(vehiclesByLocation.data.map((location) => ({ address: location.address, id: location.id }))));
             dispatch(setAllSettings(simulationOptions.settings));
             dispatch(setStartDate(simulationOptions.start_date));
             dispatch(setEndDate(simulationOptions.end_date));
@@ -69,32 +68,16 @@ export default function Page({ params }: { params: { simulationId: string } }) {
             setPageLoading(false);
         }
     }, [simulation, vehiclesByLocation, allVehicles]);
-
     return (
         <>
+            {!pageLoading && <FleetSimulationHandler simulationId={params.simulationId} />}
             {pageLoading && (
-                <div className="lg:flex lg:justify-between">
-                    <div className="mx-2 mb-4 w-1/3 lg:flex-shrink-0 lg:w-[500px]">
-                        <Typography variant="h4" className="mb-2">
-                            Simuleringsindstillinger
-                        </Typography>
-                        <Skeleton className="h-8 mb-2 drop-shadow-md" variant="rectangular"></Skeleton>
-                        <Skeleton className="h-96 mb-2 drop-shadow-md" variant="rectangular"></Skeleton>
-                    </div>
-                    <div className="flex-1 mx-2">
-                        <div className="mb-2">
-                            <Typography variant="h4" className="mb-2">
-                                Overblik over simuleringsresultater
-                            </Typography>
-                            <Button disabled startIcon={<DownloadIcon />} variant="contained">
-                                Download resultater
-                            </Button>
-                        </div>
-                        <FleetResultSkeleton></FleetResultSkeleton>
+                <div className="w-full h-full z-10 top-0 left-0 fixed bg-[#FFFFFF75]">
+                    <div className="top-[40%] left-[50%] absolute transform -translate-x-1/2 -translate-y-1/2">
+                        <CircularProgress />
                     </div>
                 </div>
             )}
-            {!pageLoading && <FleetSimulation initialHistoryId={params.simulationId}></FleetSimulation>}
         </>
     );
 }

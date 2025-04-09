@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { ShiftForm } from '@/components/ShiftSettingsForm';
 import { useAppSelector } from '@/components/redux/hooks';
 import { shift_settings } from '@/components/hooks/useGetSettings';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import IconTextCard from "@/components/IconCard";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 type organisedLocationShifts = Record<string, shift_settings>;
 
@@ -21,9 +20,7 @@ const ShiftModal = ({ locationId, buttonText, locationIds }: { locationId?: numb
                 shifts: [],
             }
     );
-    const locationIdsSettings = useAppSelector((state) =>
-        state.simulation.settings.shift_settings.filter((shiftLocation) => state.simulation.location_ids?.includes(shiftLocation.location_id))
-    );
+
     const locationIdssSettings = useAppSelector((state) => {
         const { location_ids, settings } = state.simulation;
 
@@ -56,7 +53,13 @@ const ShiftModal = ({ locationId, buttonText, locationIds }: { locationId?: numb
 
     return (
         <>
-            <IconTextCard icon={<ScheduleIcon/>} text="Vagtlag" onClick={handleOpen}></IconTextCard>
+            {buttonText && <Button onClick={handleOpen} variant="outlined" size="small">Indstil vagtlag</Button>}
+            {!buttonText && <div onClick={handleOpen}
+                  className="flex flex-col text-sm font-semibold text-gray-700 w-12 items-center cursor-pointer">
+                <AccessTimeIcon fontSize="large"
+                                className="text-blue-500 hover:text-blue-400 rounded-2xl p-1 bg-blue-100"/>
+                <span>Vagtlag</span>
+            </div>}
             <Modal open={open} onClose={handleClose} className="m-10 overflow-y-auto mx-auto flex items-center justify-center">
                 <div className="relative max-h-[80vh] w-[550px] bg-white rounded p-8 overflow-y-auto">
                     <div className="flex justify-between pb-2 mb-8">

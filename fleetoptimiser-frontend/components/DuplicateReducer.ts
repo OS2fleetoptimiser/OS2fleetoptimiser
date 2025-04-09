@@ -1,7 +1,6 @@
-import { CarCumulative } from '@/app/(logged-in)/fleet/CarsTable';
 import { Vehicle } from './hooks/useGetVehicles';
 
-type duplicateVehicle = {
+export type duplicateVehicle = {
     originalVehicles: number[];
     vehicle: Vehicle;
     count: number;
@@ -15,7 +14,8 @@ export const reduceDuplicateVehicles = (vehicles: Vehicle[]) =>
                 car.vehicle.model === current.model &&
                 car.vehicle.omkostning_aar === current.omkostning_aar &&
                 car.vehicle.wltp_el === current.wltp_el &&
-                car.vehicle.wltp_fossil === current.wltp_fossil
+                car.vehicle.wltp_fossil === current.wltp_fossil &&
+                car.vehicle.end_leasing === current.end_leasing
         );
         if (duplicate) {
             duplicate.originalVehicles.push(current.id);

@@ -81,11 +81,18 @@ export async function fetchVehiclesByLocation<T>(options: vehicleLocationFilters
 
 function useGetVehiclesByLocation<T = locations>(options: vehicleLocationFilters<T>) {
     return useQuery(
-        ['locations', options.startPeriod, options.endPeriod],
+        ['locations', options.startPeriod, options.endPeriod, options.locations],
         async () => {
+            const params = new URLSearchParams({
+                start_date: options.startPeriod.format('YYYY-MM-DD'),
+                end_date: options.endPeriod.format('YYYY-MM-DD')
+            });
+            if (options.locations && options.locations.length > 0){
+                options.locations.forEach((location) => params.append('locations', location.toString()))
+            }
+
             const response = await AxiosBase.get<locations>(
-                `/simulation-setup/locations-vehicles?start_date=${options.startPeriod.format('YYYY-MM-DD')}&end_date=${options.endPeriod
-                    .format('YYYY-MM-DD')}`
+                `/simulation-setup/locations-vehicles?${params}`
             ).then((res) => res.data);
             if (options.callback) options.callback(response);
             return response;

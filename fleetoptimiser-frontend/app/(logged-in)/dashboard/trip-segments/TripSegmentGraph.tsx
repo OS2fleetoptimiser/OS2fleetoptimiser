@@ -1,6 +1,6 @@
 import {generateColor, generateFromPalette} from '@/components/ColorGenerator';
 import { ResponsiveBar } from '@nivo/bar';
-import { getYTicks } from "@/app/(logged-in)/fleet/TripByVehicleType";
+import { getYTicks } from "@/app/(logged-in)/fleet/UnallocatedTripsLine";
 
 export type trip = {
     id: number;

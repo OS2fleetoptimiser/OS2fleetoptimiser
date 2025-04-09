@@ -15,6 +15,9 @@ module.exports = {
 
     theme: {
         extend: {
+             screens: {
+                'tiny': '400px',
+              },
             fontFamily: { 'body': ["Inter Tight", "Montserrat", "Helvetica", "Arial", "sans-serif"] },
             colors: {
                 blaa: '#224bb4',

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -21,6 +21,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import Tooltip from '@mui/material/Tooltip';
 import CloseIcon from '@mui/icons-material/Close';
 import { BpIcon, BpCheckedIcon } from './CheckBoxIcons';
+import { setLocationAddresses } from '@/components/redux/SimulationSlice';
+import { useAppDispatch } from '@/components/redux/hooks';
 
 interface Location {
     id: number;
@@ -43,13 +45,17 @@ interface Props {
     preSelectedLocations: SelectedLocation[];
 }
 
-
 export default function LocationPicker({ preSelectedLocations, locations, forvaltninger, onSelectionChange }: Props) {
     const [open, setOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [expandedForvaltninger, setExpandedForvaltninger] = useState<string[]>([]);
     const [selectedForvaltninger, setSelectedForvaltninger] = useState<string[]>([]);
     const [selectedLocations, setSelectedLocations] = useState<SelectedLocation[]>(preSelectedLocations); // local state that updates global when "Bekræft" is clicked
+    const dispatch = useAppDispatch();
+    useEffect(() => {
+        // to avoid pre-rendering global update state
+        dispatch(setLocationAddresses(locations || []));
+    }, [dispatch, locations]);
 
     const locationsByForvaltning = useMemo(() => {
         const grouped: { [key: string]: Location[] } = {};
@@ -196,13 +202,13 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                             disableUnderline: true,
                             startAdornment: (
                                 <InputAdornment position="start">
-                                    <SearchIcon fontSize="small"/>
+                                    <SearchIcon fontSize="small" />
                                 </InputAdornment>
                             ),
                             endAdornment: searchQuery && (
                                 <InputAdornment position="end">
                                     <IconButton onClick={() => setSearchQuery('')}>
-                                        <ClearIcon fontSize="small"/>
+                                        <ClearIcon fontSize="small" />
                                     </IconButton>
                                 </InputAdornment>
                             ),

@@ -37,7 +37,12 @@ async def locations_vehicles(
     """
 
     if locations:
-        result = get_location_vehicles_loc(session, start_date, end_date, locations)
+        location_vehicles = []
+        for location in locations:
+            # pooling (consider as one) happens in the function , hence we iterate locations list
+            location_vehicles += get_location_vehicles_loc(session, start_date, end_date, [location]).locations
+
+        result = LocationsVehicleList(locations=location_vehicles)
     else:
         result = get_location_vehicles(session, start_date, end_date)
 

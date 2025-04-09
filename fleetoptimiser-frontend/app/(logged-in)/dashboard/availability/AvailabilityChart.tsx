@@ -7,7 +7,7 @@ import { ResponsiveLineCanvas } from '@nivo/line';
 import { CircularProgress } from '@mui/material';
 import { filterProps } from '../(filters)/FilterHeader';
 import Typography from "@mui/material/Typography";
-import { getYTicks } from "@/app/(logged-in)/fleet/TripByVehicleType";
+import { getYTicks } from "@/app/(logged-in)/fleet/UnallocatedTripsLine";
 
 export default function AvailabilityChart({ start, end, locations, departments, forvaltninger, vehicles }: filterProps) {
     const vehicle_availability = useGetVehicleAvailability({

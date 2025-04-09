@@ -31,12 +31,26 @@ export type simulationOptions = {
     }[];
 };
 
+export type VehicleUsage = {
+    current: any[];
+    simulation: any[];
+};
+
+type ExtendedSimResults = {
+    current_vehicle_distribution: object[];
+    simulation_vehicle_distribution: object[];
+    unallocated_pr_day: object[];
+    vehicle_usage: VehicleUsage;
+}
+
 export type simulationResult = {
+    number_of_trips: number;
     unallocated: number;
     financial_savings: number;
     co2e_savings: number;
     driving_book: drivingBook[];
     simulation_options: simulationOptions;
+    results: ExtendedSimResults;
 };
 
 export type simulation = {
