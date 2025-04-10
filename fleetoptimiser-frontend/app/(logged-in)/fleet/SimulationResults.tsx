@@ -22,10 +22,12 @@ export const SimulationResultsPage = ({
 }) => {
     const [tabValue, setTabValue] = useState(0);
     // simulationId implies downloadable content, solutionNumber implies it's a goal simulation
+    const baseUri = AxiosBase.getUri();
+    const hasSolutionNumber = simulationResults?.solutionNumber !== undefined;
     const downloadLink = simulationId
-        ? simulationResults?.solutionNumber
-            ? `${AxiosBase.getUri()}goal-simulation/simulation/${simulationId}?download=true&solution_index=${simulationResults.solutionNumber}`
-            : `${AxiosBase.getUri()}fleet-simulation/simulation/${simulationId}?download=true`
+        ? hasSolutionNumber
+            ? `${baseUri}goal-simulation/simulation/${simulationId}?download=true&solution_index=${simulationResults.solutionNumber}`
+            : `${baseUri}fleet-simulation/simulation/${simulationId}?download=true`
         : '';
     return (
         <div>
