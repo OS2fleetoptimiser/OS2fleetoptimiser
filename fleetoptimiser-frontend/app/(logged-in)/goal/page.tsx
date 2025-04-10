@@ -1,8 +1,5 @@
-import { Inter } from 'next/font/google';
-import GoalSimulation from './GoalSimulation';
-
-const inter = Inter({ subsets: ['latin'] });
+import GoalSimulationHandler from '@/app/(logged-in)/goal/GoalSimulationHandler';
 
 export default function Page() {
-    return <GoalSimulation></GoalSimulation>;
+    return <GoalSimulationHandler />;
 }

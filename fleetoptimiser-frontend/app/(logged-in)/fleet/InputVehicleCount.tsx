@@ -4,6 +4,7 @@ import { setGoalSimulationVehicles, setSimulationVehicle } from '@/components/re
 import { IconButton, InputAdornment, TextField } from '@mui/material';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
+import Tooltip from '@mui/material/Tooltip';
 
 type InputVehicleCountProps = {
     reducedVehicleGroup: ReducedVehicleGroup;
@@ -11,7 +12,7 @@ type InputVehicleCountProps = {
 };
 
 export const InputVehicleCount = ({ reducedVehicleGroup, restrict }: InputVehicleCountProps) => {
-    const { vehicle, count: availableCount, groupIds } = reducedVehicleGroup;
+    const { vehicle, count: availableCount, extra, groupIds } = reducedVehicleGroup;
 
     const dispatch = useAppDispatch();
     const simulationCount = useAppSelector(
@@ -59,8 +60,14 @@ export const InputVehicleCount = ({ reducedVehicleGroup, restrict }: InputVehicl
     };
 
     // if restrict = goal sim don't allow test/extra vehicles more than 0
-    const adjustmentDisabled = restrict && availableCount === 0;
+    const adjustmentDisabled = restrict && extra;
+    const increaseAboveCurrentDisabled = restrict && simulationCount === availableCount;
 
+    const goalTestVehicleText =
+        'Du har valgt køretøjet som et testkøretøj til simuleringen. Det betyder, at den nu kan benyttes af AI-modellen i flådesammensætning, hvis det er fordelagtigt i løsningen.';
+    const goalVehicleMax =
+        'Du kan ikke selv tilføje flere end det nuværende antal af køretøjstypen. Optimering tilføjer selv flere, hvis det er fordelagtigt for løsningen.';
+    const tooltipText = restrict ? (extra && goalTestVehicleText) || (simulationCount == availableCount && goalVehicleMax) || '' : '';
     return (
         <div className="flex flex-row items-center ">
             <TextField
@@ -77,17 +84,21 @@ export const InputVehicleCount = ({ reducedVehicleGroup, restrict }: InputVehicl
                 }}
                 InputProps={{
                     startAdornment: (
-                        <InputAdornment className="hidden sm:flex" position="start">
+                        <InputAdornment className="hidden md:flex" position="start">
                             <IconButton disabled={adjustmentDisabled} onClick={handleDecrement} edge="start">
                                 <RemoveIcon className="bg-gray-100 rounded-2xl p-1" />
                             </IconButton>
                         </InputAdornment>
                     ),
                     endAdornment: (
-                        <InputAdornment className="hidden sm:flex" position="end">
-                            <IconButton disabled={adjustmentDisabled} onClick={handleIncrement} edge="end">
-                                <AddIcon className="bg-gray-100 rounded-2xl p-1" />
-                            </IconButton>
+                        <InputAdornment className="hidden md:flex" position="end">
+                            <Tooltip title={tooltipText} className="text-md">
+                                <div>
+                                    <IconButton disabled={adjustmentDisabled || increaseAboveCurrentDisabled} onClick={handleIncrement} edge="end">
+                                        <AddIcon className="bg-gray-100 rounded-2xl p-1" />
+                                    </IconButton>
+                                </div>
+                            </Tooltip>
                         </InputAdornment>
                     ),
                 }}
@@ -98,6 +109,7 @@ export const InputVehicleCount = ({ reducedVehicleGroup, restrict }: InputVehicl
                         fieldset: {
                             borderRadius: '2px',
                             borderWidth: '0px',
+                            border: 'none',
                         },
                     },
                     '& input[type=number]': {

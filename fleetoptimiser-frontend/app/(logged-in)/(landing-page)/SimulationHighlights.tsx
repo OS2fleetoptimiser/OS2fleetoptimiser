@@ -29,7 +29,7 @@ function getSimTypeChip(simulationType: 'goal' | 'fleet') {
     );
 }
 
-function formatFleetChange(fleetChange: number) {
+export function formatFleetChange(fleetChange: number) {
     return (
         <Chip
             label={Math.abs(fleetChange)}
@@ -51,7 +51,7 @@ function formatFleetChange(fleetChange: number) {
     );
 }
 
-function getPlusMinusChip(value: number, extraLabel?: string) {
+export function getPlusMinusChip(value: number, extraLabel?: string) {
     return (
         <Chip
             variant="filled"
@@ -62,7 +62,7 @@ function getPlusMinusChip(value: number, extraLabel?: string) {
     );
 }
 
-function getUnallocatedChip(value: number) {
+export function getUnallocatedChip(value: number) {
     return (
         <Chip
             className={value === 0 ? 'bg-green-25 text-green-600 font-semibold' : 'bg-red-25 text-red-600 font-semibold'}

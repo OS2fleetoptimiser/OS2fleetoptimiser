@@ -13,23 +13,23 @@ import {
     setLocationIds,
     setAllSettings,
     setStartDate,
-    fetchSimulationSettings, addTestVehiclesMeta
+    fetchSimulationSettings,
+    addTestVehiclesMeta,
+    setLocationAddresses,
 } from '@/components/redux/SimulationSlice';
 import { useAppDispatch } from '@/components/redux/hooks';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
-import GoalSimulation from '../GoalSimulation';
-import ToolTip from '@/components/ToolTip';
-import GoalResultSkeletons from '../GoalResultsSkeleton';
-import { Skeleton } from '@mui/material';
-import useGetVehicles from "@/components/hooks/useGetVehicles";
+import { useEffect } from 'react';
+import { CircularProgress } from '@mui/material';
+import useGetVehicles from '@/components/hooks/useGetVehicles';
+import GoalSimulationHandler from '@/app/(logged-in)/goal/GoalSimulationHandler';
 
 export default function Page({ params }: { params: { simulationId: string } }) {
-    const [pageLoading, setPageLoading] = useState<boolean>(true);
     const simulation = useGetGoalSimulation(params.simulationId);
     const vehicles = useGetVehiclesByLocation({
         startPeriod: dayjs(simulation.data?.result.simulation_options.start_date),
         endPeriod: dayjs(simulation.data?.result.simulation_options.end_date),
+        locations: simulation.data?.result.simulation_options.location_ids,
         enabled: !!simulation.data,
         selector: (data) => {
             if (simulation.data?.result.simulation_options.location_ids) {
@@ -51,6 +51,7 @@ export default function Page({ params }: { params: { simulationId: string } }) {
                 .map((locationVehicles) => locationVehicles.vehicles.filter((vehicle) => simulationOptions.current_vehicles.includes(vehicle.id)))
                 .flatMap((vehicle) => vehicle);
             dispatch(fetchSimulationSettings());
+            dispatch(setLocationAddresses(vehicles.data.map((location) => ({ address: location.address, id: location.id }))));
             dispatch(setAllSettings(simulationOptions.settings));
             dispatch(setStartDate(simulationOptions.start_date));
             dispatch(setEndDate(simulationOptions.end_date));
@@ -62,49 +63,19 @@ export default function Page({ params }: { params: { simulationId: string } }) {
             dispatch(setGoalSimulationVehicles(simulationOptions.fixed_vehicles));
             dispatch(addTestVehicles(simulationOptions.test_vehicles));
             dispatch(addTestVehiclesMeta(allVehicles.data?.vehicles.filter((vehicle) => simulationOptions.test_vehicles.includes(vehicle.id))));
-            setPageLoading(false);
         }
     }, [simulation, vehicles, allVehicles]);
 
     return (
         <>
-            {pageLoading && (
-                <>
-                    <div className="bg-white p-4 mx-2 mb-4 drop-shadow-md">
-                        <h1 className="border-b mb-2 pb-2 font-semibold">Automatisk simulering</h1>
-                        <p>På denne side kan man som bruger anmode AI modulet om at komme med forslag til nye flådesammensætninger</p>
+            {vehicles.isLoading && (
+                <div className="w-full h-full z-10 top-0 left-0 fixed bg-[#FFFFFF75]">
+                    <div className="top-[40%] left-[50%] absolute transform -translate-x-1/2 -translate-y-1/2">
+                        <CircularProgress />
                     </div>
-                    <div className="lg:flex lg:justify-between">
-                        <div className="mx-2 mb-4 lg:flex-1 lg:min-w-[500px]">
-                            <h2 className="text-3xl mb-2">Optimeringsindstillinger</h2>
-                            <Skeleton className="h-8 mb-2 drop-shadow-md" variant="rectangular"></Skeleton>
-                            <Skeleton className="h-96 mb-2 drop-shadow-md" variant="rectangular"></Skeleton>
-                            <h2 className="text-3xl mb-2">
-                                Simuleringsflåde
-                                <ToolTip>
-                                    Flåden som låses i simuleringen. Såfremt kørselsbehovet kan tilfredsstilles med færre køretøjer, vil den automatiske simulering fjerne
-                                    køretøjer fra puljen.
-                                </ToolTip>
-                            </h2>
-                            <Skeleton className="h-96 mb-2 drop-shadow-md" variant="rectangular"></Skeleton>
-                            <h2 className="text-3xl mb-2">
-                                Sammenligningsflåde
-                                <ToolTip>
-                                    Flåden som den automatiske simulering sammenligner med. Flåden er sammenstykket af de køretøjer der har været aktive i den valgte
-                                    datoperiode.
-                                </ToolTip>
-                            </h2>
-                            <Skeleton className="h-96 mb-2 drop-shadow-md" variant="rectangular"></Skeleton>
-                        </div>
-                        <div className="flex-1 mx-2">
-                            <h2 className="text-3xl mb-2">Fremtidig flådesammensætning</h2>
-                            <GoalResultSkeletons></GoalResultSkeletons>
-                        </div>
-                    </div>
-                </>
+                </div>
             )}
-            {/*todo reflect the simulation configuration on the historic simulation*/}
-            {!pageLoading && <GoalSimulation goalSimulationId={params.simulationId}></GoalSimulation>}
+            {!vehicles.isLoading && <GoalSimulationHandler simulationId={params.simulationId}></GoalSimulationHandler>}
         </>
     );
 }

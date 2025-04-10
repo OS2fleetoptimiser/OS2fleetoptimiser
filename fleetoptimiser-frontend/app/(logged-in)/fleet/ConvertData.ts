@@ -18,6 +18,7 @@ export type SimulationResults = {
     simulationOptions: simulationOptions;
     vehicleDifferences: VehicleDifference[];
     vehicleUsage: VehicleUsage;
+    solutionNumber?: number;
 };
 
 export function convertDataToSimulationResults(input: simulationResult): SimulationResults {

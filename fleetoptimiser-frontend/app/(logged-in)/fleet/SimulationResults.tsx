@@ -21,7 +21,12 @@ export const SimulationResultsPage = ({
     simulationId?: string;
 }) => {
     const [tabValue, setTabValue] = useState(0);
-
+    // simulationId implies downloadable content, solutionNumber implies it's a goal simulation
+    const downloadLink = simulationId
+        ? simulationResults?.solutionNumber
+            ? `${AxiosBase.getUri()}goal-simulation/simulation/${simulationId}?download=true&solution_index=${simulationResults.solutionNumber}`
+            : `${AxiosBase.getUri()}fleet-simulation/simulation/${simulationId}?download=true`
+        : '';
     return (
         <div>
             {isLoading && (
@@ -94,15 +99,11 @@ export const SimulationResultsPage = ({
                             },
                         }}
                     />
-
-                    <IconButton
-                        href={`${AxiosBase.getUri()}fleet-simulation/simulation/${simulationId}?download=true`}
-                        disabled={!simulationId}
-                        className="border-none text-gray-700 hover:text-black"
-                        download
-                    >
-                        <DownloadIcon fontSize="small" />
-                    </IconButton>
+                    {simulationId && (
+                        <IconButton href={downloadLink} disabled={!simulationId} className="border-none text-gray-700 hover:text-black" download>
+                            <DownloadIcon fontSize="small" />
+                        </IconButton>
+                    )}
                 </Tabs>
                 {tabValue === 0 && simulationResults && <ResultsOverviewTab simulationResults={simulationResults} />}
                 {tabValue === 0 && !simulationResults && !isLoading && (
