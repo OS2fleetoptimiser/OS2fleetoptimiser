@@ -49,6 +49,7 @@ type VehicleResult = {
 function useGetVehicles<T = VehicleResult>(select?: (a: VehicleResult) => T) {
     return useQuery(['vehicles'], () => AxiosBase.get<VehicleResult>('configuration/vehicles').then((res) => res.data), {
         select: select,
+        refetchOnWindowFocus: false,
     });
 }
 

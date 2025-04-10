@@ -74,7 +74,9 @@ function getUnallocatedChip(value: number) {
 
 export default function SimulationHighlights({ simulations }: { simulations: SimulationHighlight[] }) {
     const router = useRouter();
-
+    const handleClick = (iD: string, simType: string) => {
+        router.push(`/${simType}/${iD.replace('celery-task-meta-', '')}`)
+    }
     return (
         <div className="w-full">
             <h3 className="text-lg font-semibold mb-4">Seneste simuleringer</h3>
@@ -95,11 +97,11 @@ export default function SimulationHighlights({ simulations }: { simulations: Sim
                         {simulations &&
                             simulations.map((sim, index) => (
                                 <div
-                                    key={index}
+                                    key={`${index}simHighlight`}
                                     className={`table-row hover:bg-gray-50 ${
                                         index + 1 !== simulations.length ? 'border-b border-gray-100' : ''
                                     } text-sm cursor-pointer`}
-                                    onClick={() => router.push(`/${sim.simulation_type}/${sim.id.replace('celery-task-meta-', '')}`)}
+                                    onClick={() => handleClick(sim.id, sim.simulation_type)}
                                 >
                                     <div className="table-cell p-3">{new Date(sim.simulation_date).toLocaleString()}</div>
                                     <div className="table-cell p-3">{formatFleetChange(sim.fleet_change)}</div>

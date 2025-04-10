@@ -67,7 +67,6 @@ export default function Home() {
         const vehicleWithStatusSelected = allVehicles.filter(v => selectedVehicleIds.includes(v.id));
         setSelectedVehicleIds(vehicleWithStatusSelected.map(v => v.id));
         dispatch(setCars(vehicleWithStatusSelected));
-        // setSimulationDisabled(vehicleWithStatusSelected.every(car => !['ok', 'locationChanged', 'leasingEnded'].includes(car.status)));
     };
 
     const handleDownload = () => {
@@ -76,7 +75,7 @@ export default function Home() {
 
     const isLoadingVehicles = vehicles.some(q => q.isLoading)
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-[1800px] mx-auto">
             <DateRangePicker range={range} onChange={handleDateChange} />
             {(forvaltningerLoading || locationsLoading) && <CircularProgress />}
             {onlyLocs && !forvaltningerLoading && (

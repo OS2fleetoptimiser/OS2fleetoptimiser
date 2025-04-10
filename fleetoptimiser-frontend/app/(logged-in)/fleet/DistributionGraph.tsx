@@ -1,6 +1,8 @@
+import { getYTicks } from '@/app/(logged-in)/fleet/UnallocatedTripsLine';
 import { ResponsiveBar } from '@nivo/bar';
 
 export type entry = {
+    label: string;
     km: number;
     Cykel: number;
     'El-cykel': number;
@@ -17,48 +19,23 @@ type Colors = {
     [key: string]: string;
 };
 
-const TripByVehicleType = ({ data }: props) => {
-    // Used to fix the number of labels so they don't overlap
-    const valuesToShow = data.map((v, i) => (i % Math.round(data.length / 10) === 0 ? v.km : 0));
-    const sumsY = data.map(km => {
-        return (Object.keys(km) as Array<keyof entry>).reduce((sum: number, key) => {
-            return key !== 'km' ? sum + km[key] : sum;
-        }, 0);
+export const VehicleTripDistributionBar = ({ data }: props) => {
+    const sumsY = data.map((bucket) => {
+        const { km, ...counts } = bucket;
+        return Object.values(counts).reduce((sum: number, val) => sum + (typeof val === 'number' ? val : 0), 0);
     });
-
-    const yTicks = getYTicks(sumsY)
+    const yTicks = getYTicks(sumsY);
     const colors: Colors = { Cykel: '#40dd7f', 'El-cykel': '#ffbc1f', 'El-bil': '#109cf1', 'Fossil-bil': '#ff6760', 'Ikke tildelt': '#52575c' };
-
     return (
         <ResponsiveBar
             data={data.sort((a, b) => a.km - b.km)}
             keys={['Cykel', 'El-cykel', 'El-bil', 'Fossil-bil', 'Ikke tildelt']}
-            indexBy="km"
-            margin={{ top: 10, right: 130, bottom: 50, left: 60 }}
+            indexBy="label"
+            margin={{ top: 20, right: 130, bottom: 100, left: 60 }}
             padding={0.3}
             valueScale={{ type: 'linear' }}
             indexScale={{ type: 'band', round: true }}
             colors={(e) => colors[e.id]}
-            defs={[
-                {
-                    id: 'dots',
-                    type: 'patternDots',
-                    background: 'inherit',
-                    color: '#38bcb2',
-                    size: 4,
-                    padding: 1,
-                    stagger: true,
-                },
-                {
-                    id: 'lines',
-                    type: 'patternLines',
-                    background: 'inherit',
-                    color: '#eed312',
-                    rotation: -45,
-                    lineWidth: 6,
-                    spacing: 10,
-                },
-            ]}
             borderColor={{
                 from: 'color',
                 modifiers: [['darker', 1.6]],
@@ -68,16 +45,14 @@ const TripByVehicleType = ({ data }: props) => {
             axisBottom={{
                 tickSize: 5,
                 tickPadding: 5,
-                tickRotation: 0,
-                legend: 'Turlængde km',
+                tickRotation: 35,
+                legend: 'Turlængde',
                 legendPosition: 'middle',
-                legendOffset: 32,
-                format: (v) => (valuesToShow.find((vts) => vts === v) ? v : ''),
+                legendOffset: 55,
             }}
             axisLeft={{
                 tickSize: 5,
                 tickPadding: 5,
-                tickRotation: 0,
                 legend: 'Antal ture',
                 legendPosition: 'middle',
                 legendOffset: -40,
@@ -85,10 +60,7 @@ const TripByVehicleType = ({ data }: props) => {
             }}
             labelSkipWidth={12}
             labelSkipHeight={12}
-            labelTextColor={{
-                from: 'color',
-                modifiers: [['darker', 1.6]],
-            }}
+            labelTextColor="white"
             legends={[
                 {
                     dataFrom: 'keys',
@@ -113,31 +85,16 @@ const TripByVehicleType = ({ data }: props) => {
                     ],
                 },
             ]}
-            role="application"
-            ariaLabel="Nivo bar chart demo"
-            barAriaLabel={function (e) {
-                return e.id + ': ' + e.formattedValue + ' in country: ' + e.indexValue;
+            tooltip={({ id, value, data }) => (
+                <div className="bg-[#222] text-white p-2 rounded-md text-xs">
+                    Turlængde: <span className="font-bold">{data.label}</span>
+                    <br />
+                    {id}: <span className="font-bold">{value} ture</span>
+                </div>
+            )}
+            theme={{
+                labels: { text: { fontWeight: 'bold', fontSize: '0.75rem' } },
             }}
         />
     );
 };
-
-
-export const getYTicks = (sums: number[], maxTicks: number = 5) => {
-    const maxAntal = Math.max(...sums);
-    if (maxAntal === 0) {
-        return [0];
-    }
-    const increment = Math.ceil((maxAntal) / (maxTicks - 1));
-    let ticks = [];
-    for (let i = 0; i <= maxAntal; i += increment) {
-        ticks.push(i);
-    }
-    if (!ticks.includes(maxAntal)) {
-        ticks.push(maxAntal);
-    }
-    return ticks;
-};
-
-
-export default TripByVehicleType;

@@ -16,6 +16,11 @@ type fleetSimulationSettings = {
     extraVehicles: Vehicle[];
 };
 
+type LocationIdAddress = {
+    id: number;
+    address: string;
+}
+
 type goalSimulationSettings = {
     fixed_vehicles: number[];
     extraExpense?: number;
@@ -38,6 +43,7 @@ type Simulation = {
     settings: settings;
     fleetSimulationSettings: fleetSimulationSettings;
     goalSimulationSettings: goalSimulationSettings;
+    locationIdAddresses: LocationIdAddress[];
 };
 
 const initialCars: Simulation = {
@@ -90,6 +96,7 @@ const initialCars: Simulation = {
         fixed_vehicles: [],
         testVehiclesMeta: [],
     },
+    locationIdAddresses: []
 };
 
 export const fetchSimulationSettings = createAsyncThunk('simulation/settings', async (thunkApi) => {
@@ -293,6 +300,9 @@ export const simulationSlice = createSlice({
         setGoalSimulationVehicles: (state, action: PayloadAction<number[]>) => {
             state.goalSimulationSettings.fixed_vehicles = action.payload;
         },
+        setLocationAddresses: (state, action: PayloadAction<LocationIdAddress[]>) => {
+            state.locationIdAddresses = action.payload
+        }
     },
     extraReducers: (builder) => {
         builder.addCase(fetchSimulationSettings.fulfilled, (state, action) => {
@@ -340,6 +350,7 @@ export const {
     addTestVehicleMeta,
     addTestVehiclesMeta,
     removeTestVehicleMeta,
+    setLocationAddresses,
 } = simulationSlice.actions;
 
 export default simulationSlice.reducer;

@@ -6,7 +6,7 @@ import { IconButton, Tooltip } from '@mui/material';
 const ToolTip = ({ children }: { children: string }) => (
     <Tooltip placement="right" title={children}>
         <IconButton>
-            <InfoOutlined />
+            <InfoOutlined fontSize="small" />
         </IconButton>
     </Tooltip>
 );

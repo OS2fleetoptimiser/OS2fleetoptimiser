@@ -20,7 +20,6 @@ export type simulationOptions = {
     end_date: string;
     location_id: number;
     location_ids?: number[];
-    forvaltninger?: Record<string, any>;
     intelligent_allocation: boolean;
     limit_km: boolean;
     settings: settings;
@@ -31,12 +30,50 @@ export type simulationOptions = {
     }[];
 };
 
+type VehicleResult = {
+    "Køretøj": string;
+    "Allokerede km": number;
+    "Årlig km": number;
+    "WLTP": number | string;
+    "Udledning for allokeret (kg CO2e)": number;
+    "Årlig udledning (kg CO2e)": number;
+    "Årlig Omkostning kr": number;
+    "Årlig Samfundsøkonomisk Omkostning kr": number;
+    "Samlet Årlig Omkostning": number;
+}
+
+type VehicleDistribution = {
+    name: string;
+    x: number[];
+    y: number[];
+}
+
+type UnallocatedDistribution = {
+    date: string;
+    "Antal ikke allokeret": number;
+}
+
+
+export type VehicleUsage = {
+    current: VehicleResult[];
+    simulation: VehicleResult[];
+};
+
+type ExtendedSimResults = {
+    current_vehicle_distribution: VehicleDistribution[];
+    simulation_vehicle_distribution: VehicleDistribution[];
+    unallocated_pr_day: UnallocatedDistribution[];
+    vehicle_usage: VehicleUsage;
+}
+
 export type simulationResult = {
+    number_of_trips: number;
     unallocated: number;
     financial_savings: number;
     co2e_savings: number;
     driving_book: drivingBook[];
     simulation_options: simulationOptions;
+    results: ExtendedSimResults;
 };
 
 export type simulation = {

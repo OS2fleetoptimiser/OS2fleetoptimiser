@@ -8,7 +8,7 @@ export default function LoggedInLayout({ children }: { children: React.ReactNode
             <TopNavigation logoutRedirect={`${env.KEYCLOAK_ISSUER}/protocol/openid-connect/logout`} />
             <InfoNav />
 
-            <main className="md:ml-76 p-4 pl-16 pr-16 text">{children}</main>
+            <main className="md:ml-76 p-4 tiny:pl-16 tiny:pr-16 px-2 text">{children}</main>
         </>
     );
 }
