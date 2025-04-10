@@ -162,6 +162,8 @@ class LocationUsage(BaseView):
 
 class WeekLocationActivity(BaseModel):
     week_name: str
+    start_date: date
+    end_date: date
     activity: float
     average_activity: Optional[float] = None # convert to computed_field if migrating to pydantic v2
 
