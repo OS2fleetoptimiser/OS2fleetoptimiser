@@ -23,7 +23,6 @@ import {
 import { CircularProgress } from '@mui/material';
 
 export default function Page({ params }: { params: { simulationId: string } }) {
-    const [pageLoading, setPageLoading] = useState<boolean>(true);
     const simulation = useGetFleetSimulation(params.simulationId);
 
     const vehiclesByLocation = useGetVehiclesByLocation({
@@ -65,13 +64,12 @@ export default function Page({ params }: { params: { simulationId: string } }) {
             dispatch(setSimulationVehicles(simulationOptions.simulation_vehicles));
             const extraVehicles = simulationOptions.simulation_vehicles.filter((vehicleId) => !selectedVehicles.find((vehicle) => vehicle.id === vehicleId.id));
             dispatch(addExtraVehicles(allVehicles.data.vehicles.filter((vehicle) => extraVehicles.find((extra) => extra.id === vehicle.id))));
-            setPageLoading(false);
         }
     }, [simulation, vehiclesByLocation, allVehicles]);
     return (
         <>
-            {!pageLoading && <FleetSimulationHandler simulationId={params.simulationId} />}
-            {pageLoading && (
+            {!vehiclesByLocation.isLoading && <FleetSimulationHandler simulationId={params.simulationId} />}
+            {vehiclesByLocation.isLoading && (
                 <div className="w-full h-full z-10 top-0 left-0 fixed bg-[#FFFFFF75]">
                     <div className="top-[40%] left-[50%] absolute transform -translate-x-1/2 -translate-y-1/2">
                         <CircularProgress />

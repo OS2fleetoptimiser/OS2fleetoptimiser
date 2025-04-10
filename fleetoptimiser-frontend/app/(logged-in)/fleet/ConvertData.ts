@@ -1,25 +1,11 @@
-import {drivingBook, simulationResult, VehicleUsage} from "@/components/hooks/useSimulateFleet";
+import {drivingBook, simulationOptions, simulationResult, VehicleUsage} from "@/components/hooks/useSimulateFleet";
 
-type VehicleDifference = {
+export type VehicleDifference = {
     name: string;
     currentCount: number;
     simulationCount: number;
     changeCount: number;
 };
-
-type SimulationOptions = {
-    start_date: string;
-    end_date: string;
-    location_id: number;
-    location_ids?: number[];
-    forvaltninger?: Record<string, any>;
-    intelligent_allocation: boolean;
-    limit_km: boolean;
-    settings: any;
-    current_vehicles: number[];
-    simulation_vehicles: { id: number; simulation_count: number }[];
-};
-
 
 export type SimulationResults = {
     unallocatedTrips: number;
@@ -29,7 +15,7 @@ export type SimulationResults = {
     currentEmission: number;
     simulationEmission: number;
     drivingBook: drivingBook[];
-    simulationOptions: SimulationOptions;
+    simulationOptions: simulationOptions;
     vehicleDifferences: VehicleDifference[];
     vehicleUsage: VehicleUsage;
 };

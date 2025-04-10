@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CircularProgress, IconButton, Tab, Tabs } from '@mui/material';
 import NoSimulationResults from '@/app/(logged-in)/fleet/NoResults';
 import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
-import { SimResultHeader } from '@/app/(logged-in)/fleet/SimResultKPICard';
+import { SimResultHeader } from '@/app/(logged-in)/fleet/SimResultHeader';
 import { FleetChangesTable } from '@/app/(logged-in)/fleet/FleetChangeTable';
 import { UnallocatedTripsLineChart } from '@/app/(logged-in)/fleet/UnallocatedTripsLine';
 import { VehicleTripDistribution } from '@/app/(logged-in)/fleet/VehicleTripDistribution';

@@ -15,7 +15,7 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
 import ToolTip from '@/components/ToolTip';
-import { getComparator, stableSort } from '@/app/(logged-in)/fleet/VehicleResults';
+import { getComparator, stableSort } from '@/app/(logged-in)/fleet/VehicleResultsTable';
 import {drivingBook} from "@/components/hooks/useSimulateFleet";
 
 type DrivingBookTableProps = {
