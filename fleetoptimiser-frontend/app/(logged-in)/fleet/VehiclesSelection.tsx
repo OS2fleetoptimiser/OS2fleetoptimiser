@@ -28,9 +28,12 @@ export const VehiclesSelectionTable = ({ manualSimulation, vehicles }: { manualS
                         <TableCell className={headerStyle}>WLTP</TableCell>
                         <TableCell className={headerStyle}>Omkostning / år</TableCell>
                         <TableCell className={headerStyle}>Antal i {name}</TableCell>
-                        <TableCell className={`${headerStyle} sm:table-cell hidden`}>
+                        <TableCell className={`${headerStyle} xl:table-cell hidden`}>
                             Antal i nuværende flåde
                         </TableCell>
+                        {!manualSimulation && <TableCell className={`${headerStyle} xl:table-cell hidden`}>
+                            Slut leasing
+                        </TableCell>}
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -47,11 +50,14 @@ export const VehiclesSelectionTable = ({ manualSimulation, vehicles }: { manualS
                                     {vehicle.vehicle.omkostning_aar ? `${vehicle.vehicle.omkostning_aar.toLocaleString()}` : '-'}
                                 </TableCell>
                                 <TableCell className={rowStyle}>
-                                    <InputVehicleCount reducedVehicleGroup={vehicle} restrict={false} />
+                                    <InputVehicleCount reducedVehicleGroup={vehicle} restrict={!manualSimulation} />
                                 </TableCell>
-                                <TableCell className={`${rowStyle} sm:table-cell hidden`}>
+                                <TableCell className={`${rowStyle} xl:table-cell hidden`}>
                                     {vehicle.count}
                                 </TableCell>
+                                {!manualSimulation && <TableCell className={`${rowStyle} xl:table-cell hidden`}>
+                                    {vehicle.vehicle.end_leasing ? new Date(vehicle.vehicle.end_leasing).toLocaleDateString() : 'Ejet'}
+                                </TableCell>}
                             </TableRow>
                         );
                     })}
@@ -67,7 +73,7 @@ export const VehiclesSelectionTable = ({ manualSimulation, vehicles }: { manualS
                             )}{' '}
                             / {totalCountCurrent}
                         </TableCell>
-                        <TableCell className="border-none sticky bg-white bottom-0 sm:table-cell hidden"></TableCell>
+                        <TableCell colSpan={manualSimulation ? 1 : 2} className="border-none sticky bg-white bottom-0 xl:table-cell hidden"></TableCell>
                     </TableRow>
                 </TableFooter>
             </Table>

@@ -105,6 +105,9 @@ export const UnallocatedTripsLineChart = ({ simulationResults }: { simulationRes
                             Ikke kørte ture: <span className="font-bold">{(point.data.yFormatted || point.data.y).toString()}</span>
                         </div>
                     )}
+                    theme={{
+                        grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
+                    }}
                 />
             </div>
         </div>
