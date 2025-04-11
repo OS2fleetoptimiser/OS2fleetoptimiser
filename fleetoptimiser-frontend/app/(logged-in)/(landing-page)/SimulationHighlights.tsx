@@ -1,7 +1,7 @@
 import { SimulationHighlight } from '@/components/hooks/useGetLandingPage';
 import { Tooltip } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import { formatFleetChange, getPlusMinusChip, getUnallocatedChip, getSimTypeChip } from './ChipFormatting';
+import { FleetChangeChip, PlusMinusChip, UnallocatedChip, SimTypeChip } from './ChipFormatting';
 
 function cutCharacters(str: string, cutAbove: number = 20) {
     return str.length > cutAbove ? str.slice(0, cutAbove) + '...' : str;
@@ -39,16 +39,16 @@ export default function SimulationHighlights({ simulations }: { simulations: Sim
                                     onClick={() => handleClick(sim.id, sim.simulation_type)}
                                 >
                                     <div className="table-cell p-3">{new Date(sim.simulation_date).toLocaleString()}</div>
-                                    <div className="table-cell p-3">{formatFleetChange(sim.fleet_change)}</div>
-                                    <div className="table-cell p-3">{getPlusMinusChip(sim.financial_savings)}</div>
-                                    <div className="table-cell p-3">{getPlusMinusChip(sim.co2e_savings, 'Ton')}</div>
-                                    <div className="table-cell p-3">{getUnallocatedChip(sim.unallocated)}</div>
+                                    <div className="table-cell p-3">{FleetChangeChip(sim.fleet_change)}</div>
+                                    <div className="table-cell p-3">{PlusMinusChip(sim.financial_savings)}</div>
+                                    <div className="table-cell p-3">{PlusMinusChip(sim.co2e_savings, 'Ton')}</div>
+                                    <div className="table-cell p-3">{UnallocatedChip(sim.unallocated)}</div>
                                     <div className="table-cell p-3">
                                         <Tooltip placement="top" title={sim.addresses.join(', ')}>
                                             <span>{cutCharacters(sim.addresses.join(', '))}</span>
                                         </Tooltip>
                                     </div>
-                                    <div className="table-cell p-3">{getSimTypeChip(sim.simulation_type)}</div>
+                                    <div className="table-cell p-3">{SimTypeChip(sim.simulation_type)}</div>
                                 </div>
                             ))}
                     </div>

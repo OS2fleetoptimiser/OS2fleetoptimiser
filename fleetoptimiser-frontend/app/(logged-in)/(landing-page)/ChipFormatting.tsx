@@ -7,7 +7,7 @@ import BlockIcon from "@mui/icons-material/Block";
 import MemoryIcon from "@mui/icons-material/Memory";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 
-export const formatFleetChange = (fleetChange: number) => {
+export const FleetChangeChip = (fleetChange: number) => {
     return (
         <Chip
             label={Math.abs(fleetChange)}
@@ -29,7 +29,7 @@ export const formatFleetChange = (fleetChange: number) => {
     );
 }
 
-export const getPlusMinusChip = (value: number, extraLabel?: string) => {
+export const PlusMinusChip = (value: number, extraLabel?: string) => {
     return (
         <Chip
             variant="filled"
@@ -40,7 +40,7 @@ export const getPlusMinusChip = (value: number, extraLabel?: string) => {
     );
 }
 
-export const getUnallocatedChip = (value: number)=> {
+export const UnallocatedChip = (value: number)=> {
     return (
         <Chip
             className={value === 0 ? 'bg-green-25 text-green-600 font-semibold' : 'bg-red-25 text-red-600 font-semibold'}
@@ -50,7 +50,7 @@ export const getUnallocatedChip = (value: number)=> {
     );
 }
 
-export const getSimTypeChip = (simulationType: 'goal' | 'fleet') => {
+export const SimTypeChip = (simulationType: 'goal' | 'fleet') => {
     return (
         <>
             {simulationType === 'goal' && (
