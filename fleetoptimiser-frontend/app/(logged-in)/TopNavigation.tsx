@@ -8,7 +8,7 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useAppSelector } from '@/components/redux/hooks';
+import {useAppDispatch, useAppSelector} from '@/components/redux/hooks';
 import Link from 'next/link';
 import { Suspense, useState } from 'react';
 import ExpandLess from '@mui/icons-material/ExpandLess';
@@ -31,6 +31,7 @@ import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import HomeIcon from '@mui/icons-material/Home';
 import { signOut } from 'next-auth/react';
+import { prepareGoalSimulation } from "@/components/redux/SimulationSlice";
 
 type Props = {
     logoutRedirect: string;
@@ -39,6 +40,8 @@ type Props = {
 const TopNavigation = ({ logoutRedirect }: Props) => {
     const [showNavBar, setShowNavBar] = useState<boolean>(false);
     const pathname = usePathname();
+
+    const dispatch = useAppDispatch();
 
     const isSelected = (path: string, contains: boolean = false) => {
         return pathname === path || (contains && pathname.includes(path))
@@ -166,7 +169,13 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
                                     </span>
                                 </Tooltip>
                             ) : (
-                                <ListItemButton onClick={() => router.push('/goal')} disabled={disableGoalLink} selected={isSelected('/goal')}>
+                                <ListItemButton
+                                    onClick={async () => {
+                                        await dispatch(prepareGoalSimulation());
+                                        router.push('/goal');
+                                    }}
+                                    disabled={disableGoalLink}
+                                    selected={isSelected('/goal')}>
                                     <ListItemIcon className="ml-4">
                                         <MemoryIcon />
                                     </ListItemIcon>

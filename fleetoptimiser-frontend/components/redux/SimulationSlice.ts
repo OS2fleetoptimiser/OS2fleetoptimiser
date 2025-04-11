@@ -2,11 +2,12 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import dayjs from 'dayjs';
 import { Vehicle } from '../hooks/useGetVehicles';
 import { VehicleWithStatus } from '../hooks/useGetVehiclesByLocation';
-import { SelectedLocation } from "@/app/(logged-in)/setup/LocationPicker";
+import { SelectedLocation } from '@/app/(logged-in)/setup/LocationPicker';
 import { reduceDuplicateVehicles } from '../DuplicateReducer';
 import { bike_settings, settings, shift_settings, simulation_settings } from '../hooks/useGetSettings';
 import AxiosBase from '../AxiosBase';
 import { DropDownData } from '../hooks/useGetDropDownData';
+import { RootState } from '@/components/redux/store';
 
 type fleetSimulationSettings = {
     simulation_vehicles: {
@@ -19,7 +20,7 @@ type fleetSimulationSettings = {
 type LocationIdAddress = {
     id: number;
     address: string;
-}
+};
 
 type goalSimulationSettings = {
     fixed_vehicles: number[];
@@ -96,8 +97,38 @@ const initialCars: Simulation = {
         fixed_vehicles: [],
         testVehiclesMeta: [],
     },
-    locationIdAddresses: []
+    locationIdAddresses: [],
 };
+
+export const prepareGoalSimulation = createAsyncThunk<number[], void, { state: RootState }>(
+    'simulation/prepareGoalSimulation',
+    async (_, { getState, dispatch }): Promise<number[]> => {
+        // thunk to enforce that it's not allowed to bring above current vehicle type values / test vehicle values from manual sim to goal sim
+        // ensures that the count is "reset" whenever the user clicks to the automatic simulation page from navigation or setup
+        const state = getState();
+        const updatedFixedVehicles: number[] = [];
+        const duplicateGroups = reduceDuplicateVehicles(state.simulation.selectedVehicles);
+
+        state.simulation.fleetSimulationSettings.simulation_vehicles.forEach((simVehicle) => {
+            const group = duplicateGroups.find((g) => g.vehicle.id === simVehicle.id);
+            const allowedCount = simVehicle.simulation_count;
+            const groupIds = group ? group.originalVehicles : [];
+            const safeCount = Math.min(allowedCount, groupIds.length);
+            updatedFixedVehicles.push(...groupIds.slice(0, safeCount));
+        });
+        dispatch(setGoalSimulationVehicles(updatedFixedVehicles));
+
+        // align the manual simulation selected vehicles
+        const updatedSimulationVehicles = state.simulation.fleetSimulationSettings.simulation_vehicles.map((simVehicle) => {
+            const group = duplicateGroups.find((g) => g.vehicle.id === simVehicle.id);
+            const groupIds = group ? group.originalVehicles : [];
+            const newCount = Math.min(simVehicle.simulation_count, groupIds.length);
+            return { ...simVehicle, simulation_count: newCount };
+        });
+        dispatch(setSimulationVehicles(updatedSimulationVehicles));
+        return updatedFixedVehicles;
+    }
+);
 
 export const fetchSimulationSettings = createAsyncThunk('simulation/settings', async (thunkApi) => {
     const response = await AxiosBase.get<settings>('configuration/simulation-configurations');
@@ -211,7 +242,7 @@ export const simulationSlice = createSlice({
         },
         setLocationForvaltning: (state, action: PayloadAction<SelectedLocation[]>) => {
             state.locationForvaltning = action.payload;
-            state.location_ids = action.payload.map(loc => loc.id);
+            state.location_ids = action.payload.map((loc) => loc.id);
             state.forvaltninger = action.payload.reduce((acc, loc) => {
                 (acc[loc.forvaltning] ||= []).push(loc.id);
                 return acc;
@@ -301,8 +332,8 @@ export const simulationSlice = createSlice({
             state.goalSimulationSettings.fixed_vehicles = action.payload;
         },
         setLocationAddresses: (state, action: PayloadAction<LocationIdAddress[]>) => {
-            state.locationIdAddresses = action.payload
-        }
+            state.locationIdAddresses = action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder.addCase(fetchSimulationSettings.fulfilled, (state, action) => {

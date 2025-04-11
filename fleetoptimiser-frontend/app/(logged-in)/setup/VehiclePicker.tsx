@@ -30,6 +30,8 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import MemoryIcon from '@mui/icons-material/Memory';
 import { useRouter } from 'next/navigation';
 import DownloadIcon from '@mui/icons-material/Download';
+import { prepareGoalSimulation } from "@/components/redux/SimulationSlice";
+import { useAppDispatch } from "@/components/redux/hooks";
 
 interface VehiclePickerProps {
     vehicles: VehicleWithStatus[];
@@ -82,6 +84,7 @@ const DepartmentVehicleFilter = ({ allDepartments, selectedDepartment, setSelect
 
 export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectionChange, isLoading, simulationDisabled, onDownload }: VehiclePickerProps) {
     const router = useRouter();
+    const dispatch = useAppDispatch();
 
     // show progressively more vehicle data in the table
     const isXlScreen = useMediaQuery({ minWidth: '1280px' });
@@ -296,7 +299,10 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
                             <Button
                                 disabled={simulationDisabled}
                                 startIcon={<MemoryIcon />}
-                                onClick={() => router.push('/goal')}
+                                onClick={async () => {
+                                  await dispatch(prepareGoalSimulation());
+                                  router.push('/goal');
+                              }}
                                 variant="contained"
                                 size="small"
                             >
