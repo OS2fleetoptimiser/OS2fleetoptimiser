@@ -9,6 +9,7 @@ import ApiError from '@/components/ApiError';
 import dayjs from 'dayjs';
 import { filterProps } from '../../(filters)/FilterHeader';
 import getColorMapperFunc from '../colorUtils';
+import { DownloadableGraph } from '@/components/DownloadableGraph';
 
 const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninger, start, departments, vehicles, shifts }: filterProps) => {
     const { queryObject: drivingData } = useGetDrivingData({
@@ -95,7 +96,8 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
         },
     });
 
-    const shiftColorMapper = getColorMapperFunc(availableshifts)
+    const shiftColorMapper = getColorMapperFunc(availableshifts);
+    const fileNameAppendix = `${start}-${end}-${locations?.length ?? 'alle'}_lokationer-${vehicles?.length ?? 'alle'}_koeretoejer`;
 
     return (
         <div>
@@ -115,7 +117,9 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
             {drivingData.data &&
                 (drivingData.data.dataPoints.length > 0 ? (
                     <div className="h-96">
-                        <AverageDrivingGraph data={drivingData.data.dataPoints} keys={drivingData.data.keys} colorMapper={shiftColorMapper}/>
+                        <DownloadableGraph filename={`gennemsnitlig_koersel-${fileNameAppendix}.png`}>
+                            <AverageDrivingGraph data={drivingData.data.dataPoints} keys={drivingData.data.keys} colorMapper={shiftColorMapper} />
+                        </DownloadableGraph>
                     </div>
                 ) : (
                     <p className="m-4">Der er ingen kørselsdata for de valgte filtre.</p>

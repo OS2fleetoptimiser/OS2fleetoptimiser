@@ -5,8 +5,9 @@ import useGetDrivingData from '@/components/hooks/useGetDrivingData';
 import { CircularProgress } from '@mui/material';
 import dayjs from 'dayjs';
 import { getInterval } from '../../../dashboard/ShiftNameTranslater';
-import DayilyDrivingGraph from './DailyDrivingGraph';
 import { filterProps } from '../../(filters)/FilterHeader';
+import CombinedDailyDrivingGraph from '@/app/(logged-in)/dashboard/driving/(DailyDriving)/CombinedDailyDriving';
+import { DownloadableGraph } from '@/components/DownloadableGraph';
 
 const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forvaltninger, locations, vehicles }: filterProps) => {
     const colors = ['#6baed6', '#4292c6', '#2171b5', '#08519c', '#08306b'];
@@ -117,6 +118,7 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
             return final;
         },
     });
+    const fileNameAppendix = `${start}-${end}-${locations?.length ?? 'alle'}_lokationer`;
 
     return (
         <div>
@@ -129,11 +131,13 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
             )}
             {dashboardData.data &&
                 (Object.keys(dashboardData.data).length > 0 ? (
-                    Object.keys(dashboardData.data).map((shiftKey, i) => (
-                        <div key={i}>
-                            <DayilyDrivingGraph color={colors[i]} header={shiftKey} data={[dashboardData.data[shiftKey]]}></DayilyDrivingGraph>
-                        </div>
-                    ))
+                    <DownloadableGraph filename={`daglig_koersel-${fileNameAppendix}.png`}>
+                        <CombinedDailyDrivingGraph
+                            header="Daglig kørsel i vagtlag"
+                            data={Object.keys(dashboardData.data).map((shiftKey) => dashboardData.data[shiftKey])}
+                            colors={colors}
+                        />
+                    </DownloadableGraph>
                 ) : (
                     <p className="m-4">Der er ingen kørselsdata for de valgte filtre.</p>
                 ))}
