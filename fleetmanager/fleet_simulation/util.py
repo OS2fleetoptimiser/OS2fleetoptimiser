@@ -572,7 +572,7 @@ def get_fleet_simulation_highlights(simulation):
 
 def get_goal_simulation_highlights(simulation):
     goal_results = GoalSimulationResult(**simulation.get("result", {}))
-    if len(goal_results.solutions) == 0:
+    if not (goal_results and goal_results.solutions):
         return None
     best_solution = goal_results.solutions[0]  # a goal simulation highlight only returns the first best ranked solution
     results = {
