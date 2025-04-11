@@ -14,6 +14,7 @@ import AxiosBase from '@/components/AxiosBase';
 import DownloadingIcon from '@mui/icons-material/Downloading';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { filterProps } from '../../(filters)/FilterHeader';
+import { DownloadableGraph } from "@/components/DownloadableGraph";
 
 dayjs.extend(isoWeek);
 
@@ -75,6 +76,9 @@ const VehicleActivityDashboard = ({
             router.push(`/dashboard/trip-segments?${newSearchParams.toString()}`);
         }
     };
+
+    const fileNameAppendix = `${start}-${end}-${locations?.length ?? 'alle'}_lokationer-${vehicles?.length ?? 'alle'}_koeretoejer`;
+
     return (
         <div>
             <div className="flex items-center py-8">
@@ -91,7 +95,12 @@ const VehicleActivityDashboard = ({
                         setColorThreshold(e.target.value.includes(',') ? e.target.value.replace(',', '.') : e.target.value);
                     }}
                 />
-                <p className="text-explanation text-xs ml-4 block w-96">Køretøjsaktivitet viser hvor mange kilometer der er kørt pr. dag i den valgte periode, enten samlet på lokationen eller enkeltvis pr køretøj. Skift mellem lokationer - og køretøjer fanen. Justér grænseværdien for at fremhæve lavere eller højere antal kørte kilometer. Hvis et felt er gråt indikerer det, at køretøjet har en igangværende tur, men ikke har været aktiv - altså står den stille et andet sted end sin hjemmelokation.</p>
+                <p className="text-explanation text-xs ml-4 block w-96">
+                    Køretøjsaktivitet viser hvor mange kilometer der er kørt pr. dag i den valgte periode, enten samlet på lokationen eller enkeltvis pr
+                    køretøj. Skift mellem lokationer - og køretøjer fanen. Justér grænseværdien for at fremhæve lavere eller højere antal kørte kilometer. Hvis
+                    et felt er gråt indikerer det, at køretøjet har en igangværende tur, men ikke har været aktiv - altså står den stille et andet sted end sin
+                    hjemmelokation.
+                </p>
                 <Button
                     className="ml-auto h-8"
                     href={`${AxiosBase.getUri()}${queryString.concat(`&threshold=${colorThreshold}`).substring(1)}&download=true`}
@@ -126,20 +135,24 @@ const VehicleActivityDashboard = ({
                     <>
                         <TabPanel value="locations">
                             <div style={{ height: String(210 + (heatMapData ? (heatMapData.data.locationGroup.km.length - 1) * 40 : 0)) + 'px' }}>
-                                <DrivingHeatmapKm
-                                    setLocationZoom={goToLocation}
-                                    data={heatMapData.data.locationGroup.km}
-                                    maxHeatValue={isNaN(parseFloat(colorThreshold as string)) ? undefined : +colorThreshold}
-                                />
+                                <DownloadableGraph filename={`loktaionsaktivitet-${fileNameAppendix}.png`}>
+                                    <DrivingHeatmapKm
+                                        setLocationZoom={goToLocation}
+                                        data={heatMapData.data.locationGroup.km}
+                                        maxHeatValue={isNaN(parseFloat(colorThreshold as string)) ? undefined : +colorThreshold}
+                                    />
+                                </DownloadableGraph>
                             </div>
                         </TabPanel>
                         <TabPanel value="vehicles">
                             <div style={{ height: String(210 + (heatMapData ? (heatMapData.data.vehicleGroup.km.length - 1) * 40 : 0)) + 'px' }}>
-                                <DrivingHeatmapKm
-                                    setLocationZoom={goToLocation}
-                                    data={heatMapData.data.vehicleGroup.km}
-                                    maxHeatValue={isNaN(parseFloat(colorThreshold as string)) ? undefined : +colorThreshold}
-                                />
+                                <DownloadableGraph filename={`koeretoejsaktivitet-${fileNameAppendix}.png`}>
+                                    <DrivingHeatmapKm
+                                        setLocationZoom={goToLocation}
+                                        data={heatMapData.data.vehicleGroup.km}
+                                        maxHeatValue={isNaN(parseFloat(colorThreshold as string)) ? undefined : +colorThreshold}
+                                    />
+                                </DownloadableGraph>
                             </div>
                         </TabPanel>
                     </>
