@@ -41,12 +41,12 @@ const ComparisonFleet = ({ vehicles }: { vehicles: Vehicle[] }) => {
     const table = useReactTable({ data: vehicles, columns: defaultColumns, getCoreRowModel: getCoreRowModel() });
 
     return (
-        <table className="w-full border-collapse">
+        <table className="relative my-4 shadow-none rounded-md w-full border-collapse">
             <thead className="border-b">
                 {table.getHeaderGroups().map((headerGroup) => (
                     <tr className="border-b" key={headerGroup.id}>
                         {headerGroup.headers.map((header) => (
-                            <th className="p-2" key={header.id}>
+                            <th className="p-3 text-gray-500 text-sm font-bold bg-gray-50 items-center" key={header.id}>
                                 {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                             </th>
                         ))}
@@ -57,7 +57,7 @@ const ComparisonFleet = ({ vehicles }: { vehicles: Vehicle[] }) => {
                 {table.getRowModel().rows.map((row) => (
                     <tr className="border-b" key={row.id}>
                         {row.getVisibleCells().map((cell) => (
-                            <td className="p-2" key={cell.id}>
+                            <td className="p-3 text-sm items-center" key={cell.id}>
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                             </td>
                         ))}

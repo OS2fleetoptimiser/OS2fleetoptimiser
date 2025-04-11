@@ -94,6 +94,7 @@ export const VehicleTripDistributionBar = ({ data }: props) => {
             )}
             theme={{
                 labels: { text: { fontWeight: 'bold', fontSize: '0.75rem' } },
+                grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
             }}
         />
     );
