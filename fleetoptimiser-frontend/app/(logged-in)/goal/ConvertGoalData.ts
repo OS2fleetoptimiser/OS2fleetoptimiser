@@ -1,21 +1,21 @@
-import { goalSimulation } from '@/components/hooks/useSimulateGoal';
+import {goalSimulation, goalSolution} from '@/components/hooks/useSimulateGoal';
 import { SimulationResults, VehicleDifference } from '@/app/(logged-in)/fleet/ConvertData';
-import { simulationOptions } from '@/components/hooks/useSimulateFleet';
+import { drivingBook, simulationOptions, VehicleResult } from '@/components/hooks/useSimulateFleet';
 
 export function convertGoalDataToSimulationResults(input: goalSimulation): { solutions: SimulationResults[] } {
     const { result } = input;
     const { solutions: goalSolutions, simulation_options } = result;
 
-    const convertedSolutions: SimulationResults[] = goalSolutions.map((sol: any, i: number) => {
+    const convertedSolutions: SimulationResults[] = goalSolutions.map((sol: goalSolution, i: number) => {
         const drivingBook =
-            sol.results?.driving_book?.map((trip: any) => ({
+            sol.results?.driving_book?.map((trip: drivingBook) => ({
                 start_time: trip.start_time,
                 end_time: trip.end_time,
                 distance: trip.distance,
                 current_vehicle_name: trip.current_vehicle_name.trim(),
                 current_vehicle_id: Number(trip.current_vehicle_id),
                 current_type: trip.current_type,
-                simulation_vehicle_name: trip.simulation_vehicle_name.trim(),
+                simulation_vehicle_name: trip.simulation_vehicle_name,
                 simulation_vehicle_id: Number(trip.simulation_vehicle_id),
                 simulation_type: trip.simulation_type,
             })) || [];
@@ -35,7 +35,7 @@ export function convertGoalDataToSimulationResults(input: goalSimulation): { sol
         const vehicleCounts: {
             [name: string]: { current: number; simulation: number };
         } = {};
-        vehicleUsage.current.forEach((item: any) => {
+        vehicleUsage.current.forEach((item: VehicleResult) => {
             const rawName = item['Køretøj'] || '';
             const vehicleName = normalizeVehicleName(rawName);
             if (!vehicleName) return;
@@ -45,7 +45,7 @@ export function convertGoalDataToSimulationResults(input: goalSimulation): { sol
             vehicleCounts[vehicleName].current += 1;
         });
 
-        vehicleUsage.simulation.forEach((item: any) => {
+        vehicleUsage.simulation.forEach((item: VehicleResult) => {
             const rawName = item['Køretøj'] || '';
             const vehicleName = normalizeVehicleName(rawName);
             if (!vehicleName) return;
