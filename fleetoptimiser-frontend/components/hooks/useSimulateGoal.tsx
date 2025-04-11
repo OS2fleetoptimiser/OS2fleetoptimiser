@@ -4,6 +4,12 @@ import AxiosBase from '../AxiosBase';
 import { useAppSelector } from '../redux/hooks';
 import { settings } from './useGetSettings';
 import { useState } from 'react';
+import { drivingBook, ExtendedSimResults } from "@/components/hooks/useSimulateFleet";
+
+type ExtendedGoalSimResults = {
+    results: ExtendedSimResults;
+    driving_book: drivingBook[];
+}
 
 export type goalSolution = {
     current_expense: number;
@@ -19,6 +25,7 @@ export type goalSolution = {
         emission: string;
         count_difference?: number;
     }[];
+    results: ExtendedGoalSimResults;
 };
 
 type goalSimulationOptions = {

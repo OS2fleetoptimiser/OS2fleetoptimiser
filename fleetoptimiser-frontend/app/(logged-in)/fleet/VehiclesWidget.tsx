@@ -38,7 +38,7 @@ export const VehiclesWidget = ({ manualSimulation }: { manualSimulation: boolean
             <div className="flex justify-between">
                 <div className="flex flex-row items-center space-x-2">
                     <CommuteIcon className="text-blue-500" fontSize="small" />
-                    <span className="text-md font-bold">Vælg køretøjer i simulering</span>
+                    <span className="text-md font-bold">Vælg køretøjer i {manualSimulation ? 'simulering' : 'optimering'}</span>
                 </div>
                 <ExtraVehicleModal buttonAppearance={true} />
             </div>

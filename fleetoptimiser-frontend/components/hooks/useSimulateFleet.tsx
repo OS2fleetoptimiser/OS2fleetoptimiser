@@ -30,7 +30,7 @@ export type simulationOptions = {
     }[];
 };
 
-type VehicleResult = {
+export type VehicleResult = {
     "Køretøj": string;
     "Allokerede km": number;
     "Årlig km": number;
@@ -59,7 +59,7 @@ export type VehicleUsage = {
     simulation: VehicleResult[];
 };
 
-type ExtendedSimResults = {
+export type ExtendedSimResults = {
     current_vehicle_distribution: VehicleDistribution[];
     simulation_vehicle_distribution: VehicleDistribution[];
     unallocated_pr_day: UnallocatedDistribution[];
