@@ -10,11 +10,12 @@ type kvPairs = {
 
 type dataPoint = key & kvPairs;
 
-const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; keys: string[], colorMapper: (s: string) => string }) => {
+const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; keys: string[]; colorMapper: (s: string) => string }) => {
     // Used to fix, so it doesn't show the labels on the bottom axis if there is more than 60
     const showValuesOnAxis = data.length <= 60;
-    const getColors = (bar: any) => { return colorMapper(bar.id)}
-
+    const getColors = (bar: any) => {
+        return colorMapper(bar.id);
+    };
 
     const getTspanGroups = (value: any, data: dataPoint[]) => {
         if (!showValuesOnAxis) {
@@ -73,12 +74,11 @@ const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; k
             margin={{ top: 50, right: 210, bottom: 90, left: 60 }}
             padding={0.3}
             colors={getColors}
-            enableLabel={false} // Disable labels on the bars
             valueScale={{ type: 'linear' }}
             indexScale={{ type: 'band', round: true }}
             tooltip={(data) => {
                 return (
-                    <div className="bg-white p-2 shadow-md">
+                    <div className="bg-gray-900 text-white p-2 rounded text-xs">
                         <p>{data.id}</p>
                         <p>{`Køretøj: ${data.data.plate} ${data.data.department}`}</p>
                         <p>{`Gmns kørsel: ${data.value.toFixed(1)}`}</p>
@@ -120,6 +120,9 @@ const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; k
             labelTextColor={{
                 from: 'color',
                 modifiers: [['darker', 1.6]],
+            }}
+            theme={{
+                grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
             }}
             legends={[
                 {
