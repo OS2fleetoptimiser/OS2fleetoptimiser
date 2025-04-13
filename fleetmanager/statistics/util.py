@@ -1757,7 +1757,7 @@ def get_usage_on_locations(session: Session, total_selected_time: float | int, s
          A list of LocationUsage objects with computed usage, car counts, total available time, and usage ratio.
      """
     dialect = session.bind.engine.dialect.name
-    if dialect == "sqllite":
+    if dialect == "sqlite":
         time_function = func.strftime("%s", RoundTrips.end_time) - func.strftime("%s", RoundTrips.start_time)
     elif dialect == "mysql":
         time_function = func.timestampdiff(text("SECOND"), RoundTrips.start_time, RoundTrips.end_time)
