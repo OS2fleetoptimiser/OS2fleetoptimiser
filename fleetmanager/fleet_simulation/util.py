@@ -615,7 +615,7 @@ def load_simulation_highlights(r: redis.Redis, session: Session, n: int = 5) -> 
             sim_highlight = get_fleet_simulation_highlights(simulation)
         elif "goal_simulation" in key:
             sim_highlight = get_goal_simulation_highlights(simulation)
-        if not sim_highlight:
+        if not sim_highlight or None in sim_highlight.values():
             continue
         sim_highlight["addresses"] = [
             location.address for location in session.query(
