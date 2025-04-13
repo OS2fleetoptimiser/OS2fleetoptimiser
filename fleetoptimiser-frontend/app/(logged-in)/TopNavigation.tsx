@@ -64,13 +64,13 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
     // User must choose cars that have been driven in the given period to continue
     const disableSimulationLink = useAppSelector(
         (state) =>
-            state.simulation.selectedVehicles.filter((car) => car.status === 'ok' || car.status === 'locationChanged' || car.status === 'leasingEnded')
+            state.simulation.selectedVehicles.filter((car) => car.status === 'ok' || car.status === 'locationChanged')
                 .length === 0
     );
 
     const disableGoalLink = useAppSelector((state) => {
         const filteredVehicles = state.simulation.selectedVehicles.filter(
-            (car) => car.status === 'ok' || car.status === 'locationChanged' || car.status === 'leasingEnded'
+            (car) => car.status === 'ok' || car.status === 'locationChanged'
         );
         return filteredVehicles.length === 0 || filteredVehicles.length > 100;
     });

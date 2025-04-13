@@ -20,7 +20,7 @@ import NoSelectableVehicles from "@/app/(logged-in)/setup/NoSelectableVehicles";
 
 export default function Home() {
     const dispatch = useAppDispatch();
-    const simulationDisabled = useAppSelector((state) => state.simulation.selectedVehicles.every(car => !['ok', 'locationChanged', 'leasingEnded'].includes(car.status)))
+    const simulationDisabled = useAppSelector((state) => state.simulation.selectedVehicles.every(car => !['ok', 'locationChanged'].includes(car.status)))
     useEffect(() => {
         dispatch(fetchSimulationSettings());
     }, [dispatch]);
