@@ -7,6 +7,7 @@ import ApiError from '@/components/ApiError';
 import { useState } from 'react';
 import TimeActivityHeatMap from './TimeActivityHeatMap';
 import { filterProps } from '../../(filters)/FilterHeader';
+import { DownloadableGraph } from '@/components/DownloadableGraph';
 
 function TimeActivityDashboard({ end, locations, forvaltninger, start, departments, vehicles, shifts }: filterProps) {
     const [colorThreshold, setColorThreshold] = useState<number>(20);
@@ -49,6 +50,7 @@ function TimeActivityDashboard({ end, locations, forvaltninger, start, departmen
             return result;
         },
     });
+    const fileNameAppendix = `${start}-${end}-${locations?.length ?? 'alle'}_lokationer-${vehicles?.length ?? 'alle'}_koeretoejer`;
 
     return (
         <div>
@@ -79,7 +81,9 @@ function TimeActivityDashboard({ end, locations, forvaltninger, start, departmen
                 )}
                 {heatMapData.data && (
                     <div style={{ height: String(210 + (heatMapData ? (heatMapData.data.length - 1) * 40 : 0)) + 'px' }}>
-                        <TimeActivityHeatMap data={heatMapData.data} threshold={colorThreshold} />
+                        <DownloadableGraph filename={`tidsaktivitet-${fileNameAppendix}.png`}>
+                            <TimeActivityHeatMap data={heatMapData.data} threshold={colorThreshold} />
+                        </DownloadableGraph>
                     </div>
                 )}
                 {heatMapData.isError && (
