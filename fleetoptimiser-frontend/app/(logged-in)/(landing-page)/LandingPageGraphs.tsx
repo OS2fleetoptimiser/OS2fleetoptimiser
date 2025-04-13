@@ -4,6 +4,7 @@ import ActivityHeatmap from '@/app/(logged-in)/(landing-page)/ActivityGraph';
 import Link from 'next/link';
 import { Button } from '@mui/material';
 import { useMediaQuery } from 'react-responsive';
+import NoData from "@/app/(logged-in)/(landing-page)/NoData";
 
 export default function LandingPageGraphs({ usageData, activityData }: { usageData: LocationUsage[]; activityData: LocationActivity[] }) {
     const isWide = useMediaQuery({ minWidth: 1348 });
@@ -33,7 +34,7 @@ export default function LandingPageGraphs({ usageData, activityData }: { usageDa
             <h3 className="text-lg font-semibold mb-4">Udnytelsesgrad og aktivitet</h3>
             <div className="flex flex-col md:flex-row md:space-x-4">
                 <div className="w-full md:w-1/2">
-                    <UsageGraph data={sortedUsageData} showKeys={showKeys} />
+                    {sortedUsageData.length > 0 ? <UsageGraph data={sortedUsageData} showKeys={showKeys}/> : <NoData/>}
                     <div key="buttongroup" className="flex flex-row items-center space-x-4">
                         <Link href={'/dashboard/availability'}>
                             <Button size="small" variant="outlined" className="text-gray-700 border-gray-700">
@@ -48,7 +49,7 @@ export default function LandingPageGraphs({ usageData, activityData }: { usageDa
                     </div>
                 </div>
                 <div className="w-full md:w-1/2 mt-16 md:mt-0">
-                    <ActivityHeatmap data={sortedActivityData} showKeys={showKeys} />
+                    {sortedActivityData.length > 0 ? <ActivityHeatmap data={sortedActivityData} showKeys={showKeys}/> : <NoData/>}
                     <div key="buttongroup" className="flex flex-row items-center space-x-4">
                         <Link href={'/dashboard/activity'}>
                             <Button size="small" variant="outlined" className="text-gray-700 border-gray-700">
