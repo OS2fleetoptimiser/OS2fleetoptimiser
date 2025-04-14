@@ -16,10 +16,10 @@ export type LineData = {
 type Props = {
     data: LineData[];
     header: string;
-    colors?: string[];
+    colorMapper: (s: string) => string;
 };
 
-const CombinedDailyDrivingGraph = ({ data, header, colors }: Props) => {
+const CombinedDailyDrivingGraph = ({ data, header, colorMapper }: Props) => {
     const getAveragePerSeries = (series: LineData): number => series.data.reduce((sum, point) => sum + point.y, 0) / series.data.length;
 
     return (
@@ -48,7 +48,9 @@ const CombinedDailyDrivingGraph = ({ data, header, colors }: Props) => {
                         );
                     }}
                     margin={{ top: 50, right: 210, bottom: 90, left: 80 }}
-                    colors={colors || undefined}
+                    colors={(bar: LineData) =>
+                        colorMapper(bar.id)
+                    }
                     xScale={{
                         type: 'time',
                         format: '%Y-%m-%d',

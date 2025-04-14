@@ -8,10 +8,9 @@ import { getInterval } from '../../../dashboard/ShiftNameTranslater';
 import { filterProps } from '../../(filters)/FilterHeader';
 import CombinedDailyDrivingGraph from '@/app/(logged-in)/dashboard/driving/(DailyDriving)/CombinedDailyDriving';
 import { DownloadableGraph } from '@/components/DownloadableGraph';
+import getColorMapperFunc from "@/app/(logged-in)/dashboard/driving/colorUtils";
 
 const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forvaltninger, locations, vehicles }: filterProps) => {
-    const colors = ['#6baed6', '#4292c6', '#2171b5', '#08519c', '#08306b'];
-
     const fillDays = (data: { x: string; y: number }[], start: string, end: string) => {
         let dt = dayjs(start);
         const endDate = dayjs(end);
@@ -119,6 +118,7 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
         },
     });
     const fileNameAppendix = `${start}-${end}-${locations?.length ?? 'alle'}_lokationer`;
+    const shiftColorMapper = getColorMapperFunc(availableshifts);
 
     return (
         <div>
@@ -135,7 +135,7 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
                         <CombinedDailyDrivingGraph
                             header="Daglig kørsel i vagtlag"
                             data={Object.keys(dashboardData.data).map((shiftKey) => dashboardData.data[shiftKey])}
-                            colors={colors}
+                            colorMapper={shiftColorMapper}
                         />
                     </DownloadableGraph>
                 ) : (

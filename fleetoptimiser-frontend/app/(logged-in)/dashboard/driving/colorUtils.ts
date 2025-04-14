@@ -41,10 +41,22 @@ const shiftCompare = (a: string, b: string) => {
 const createColorMap = (shiftNames: Array<string>, colors: Array<string>) => {
     // Convert the set to an array and return it
     const sortedKeys = shiftNames.sort(shiftCompare);
+    const n = sortedKeys.length;
+    let selectedColors: string[] = [];
 
-    // Map the sorted keys to an array of objects with their corresponding colors
+    if (n === 1) {
+        selectedColors = [colors[0]];
+    } else if (n <= colors.length) {
+        for (let i = 0; i < n; i++) {
+            const colorIndex = Math.round((i * (colors.length - 1)) / (n - 1));
+            selectedColors.push(colors[colorIndex]);
+        }
+    } else { // fall back to cycling through the colors.
+        selectedColors = sortedKeys.map((_, i) => colors[i % colors.length]);
+    }
+
     return sortedKeys.reduce((acc: Record<string, string>, key, index) => {
-        acc[key] = colors[index % colors.length]; // Cycle through the colors array
+        acc[key] = selectedColors[index];
         return acc;
     }, {});
 }
@@ -52,8 +64,7 @@ const createColorMap = (shiftNames: Array<string>, colors: Array<string>) => {
 type IdShift = (shift & { id: number });
 
 const getColorMapperFunc = (availableShifts: Array<IdShift> | undefined) => {
-    const colors = ['#6baed6', '#4292c6', '#2171b5', '#08519c', '#08306b'];
-
+    const colors = ['#abc9e1', '#9ecae1', '#4292c6', '#2171b5', '#084594'];
 
     // handle case with empty or length 1 available shifts
 
