@@ -57,7 +57,9 @@ export default function OverViewGraphs({ endDate, forvaltninger, locations, star
         },
     });
     // forvaltninger irrelevant
-    const fileNameAppendix = `${startDate}-${endDate}-${locations?.length ?? 'alle'}_lokationer`;
+    const fileStartDate = startDate ? dayjs(startDate).format('YYYY-MM-DD') : dayjs().add(-7, 'day').format('YYYY-MM-DD');
+    const fileEndDate = endDate ? dayjs(endDate).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD');
+    const fileNameAppendix = `${fileStartDate}-${fileEndDate}-${locations?.length ?? 'alle'}_lokationer`;
     return (
         <>
             <div className="flex flex-col space-y-4">
