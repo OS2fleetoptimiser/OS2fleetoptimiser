@@ -1,4 +1,6 @@
 import { ResponsiveLine } from '@nivo/line';
+import { getYTicks } from '@/app/(logged-in)/fleet/UnallocatedTripsLine';
+import React from 'react';
 
 type dataPoint = {
     x: string;
@@ -15,9 +17,29 @@ type props = {
 };
 
 const DateLineGraph = ({ data, yLabel, color }: props) => {
+    const dataType = data[0].id;
+    const yTicks = getYTicks(
+        data.flatMap((series) => series.data.map((point) => (dataType === 'emission' ? Number(point.y.toFixed(3)) : Number(point.y.toFixed()))))
+    );
+    const metrics: Record<string, string> = {
+        emission: 'Ton CO2e',
+        share: '% fossilfri',
+        driven: 'km',
+    };
     return (
         <ResponsiveLine
-            margin={{ top: 20, right: 20, bottom: 60, left: 80 }}
+            tooltip={({ point }) => {
+                return (
+                    <div className="bg-gray-900 text-white p-2 rounded text-xs">
+                        <span className="font-bold">
+                            {point.data.yFormatted} {metrics[dataType] || ''}
+                        </span>
+                        <br />
+                        Dato: {point.data.xFormatted}
+                    </div>
+                );
+            }}
+            margin={{ top: 40, right: 20, bottom: 70, left: 80 }}
             animate={true}
             data={data}
             colors={[color]}
@@ -32,28 +54,34 @@ const DateLineGraph = ({ data, yLabel, color }: props) => {
                 type: 'linear',
                 stacked: false,
             }}
-            yFormat={(data) => {
-                const value = data as number;
-                return value.toFixed(3).replace('.', ',');
+            yFormat={(value) => {
+                const num = value as number;
+                return num.toLocaleString('da-DK', {
+                    maximumFractionDigits: dataType === 'emission' ? 3 : 0,
+                });
             }}
             axisLeft={{
                 legend: yLabel,
                 legendOffset: -60,
                 legendPosition: 'middle',
+                tickValues: yTicks,
             }}
             axisBottom={{
                 format: '%b %d',
-                tickValues: 'every 2 days',
+                tickValues: 5,
                 legend: 'Dato',
                 legendOffset: 40,
                 legendPosition: 'middle',
             }}
             enablePointLabel={false}
-            pointSize={16}
+            pointSize={1}
             pointBorderWidth={1}
             pointBorderColor={{
                 from: 'color',
                 modifiers: [['darker', 0.3]],
+            }}
+            theme={{
+                grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
             }}
             useMesh={true}
             enableSlices={false}
