@@ -8,6 +8,7 @@ import { getInterval } from '../../ShiftNameTranslater';
 import dayjs from 'dayjs';
 import { filterProps } from '../../(filters)/FilterHeader';
 import getColorMapperFunc from '../colorUtils';
+import { DownloadableGraph } from '@/components/DownloadableGraph';
 
 const MonthlyDrivingDashboard = ({ availableshifts, end, start, departments, forvaltninger, locations, vehicles, shifts }: filterProps) => {
     const { queryObject: dashboardData } = useGetDrivingData({
@@ -61,7 +62,8 @@ const MonthlyDrivingDashboard = ({ availableshifts, end, start, departments, for
         },
     });
 
-    const shiftColorMapper = getColorMapperFunc(availableshifts)
+    const shiftColorMapper = getColorMapperFunc(availableshifts);
+    const fileNameAppendix = `${start}-${end}-${locations?.length ?? 'alle'}_lokationer-${vehicles?.length ?? 'alle'}_koeretoejer`;
 
     return (
         <div>
@@ -90,7 +92,9 @@ const MonthlyDrivingDashboard = ({ availableshifts, end, start, departments, for
                 {dashboardData.data &&
                     (dashboardData.data.drivingData.length > 0 ? (
                         <div className="h-96">
-                            <MonthlyDrivingGraph data={dashboardData.data.drivingData} colorMapper={shiftColorMapper}></MonthlyDrivingGraph>
+                            <DownloadableGraph filename={`maanedelig_koersel-${fileNameAppendix}.png`}>
+                                <MonthlyDrivingGraph data={dashboardData.data.drivingData} colorMapper={shiftColorMapper}></MonthlyDrivingGraph>
+                            </DownloadableGraph>
                         </div>
                     ) : (
                         <p className="m-4">Der er ingen kørselsdata for de valgte filtre.</p>

@@ -10,48 +10,11 @@ type kvPairs = {
 
 type dataPoint = key & kvPairs;
 
-const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; keys: string[], colorMapper: (s: string) => string }) => {
+const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; keys: string[]; colorMapper: (s: string) => string }) => {
     // Used to fix, so it doesn't show the labels on the bottom axis if there is more than 60
     const showValuesOnAxis = data.length <= 60;
-    const getColors = (bar: any) => { return colorMapper(bar.id)}
-
-
-    const getTspanGroups = (value: any, data: dataPoint[]) => {
-        if (!showValuesOnAxis) {
-            return null;
-        }
-
-        let plate = value; // Assuming value is directly the plate string
-        let department = data.find((d) => d.plate === value)?.department || '';
-        if (typeof department !== 'string') {
-            department = '';
-        }
-        let departmentWords = department.split(' ');
-
-        let children: JSX.Element[] = [];
-
-        children.push(
-            <tspan
-                x={0}
-                dy={15}
-                fontSize="14"
-                fontFamily="'Roboto', 'Helvetica', 'Arial', sans-serif"
-                // fontWeight="500"
-                key="plate"
-            >
-                {plate}
-            </tspan>
-        );
-
-        departmentWords.forEach((word: any, index: number) => {
-            children.push(
-                <tspan x={-2} dy={index === 0 ? '10' : '10'} fontFamily="'Roboto', 'Helvetica', 'Arial', sans-serif" fontSize="9" key={`department-${index}`}>
-                    {word}
-                </tspan>
-            );
-        });
-
-        return children;
+    const getColors = (bar: any) => {
+        return colorMapper(bar.id);
     };
 
     let sorted = data.sort((a, b) => {
@@ -65,22 +28,28 @@ const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; k
         return bSum - aSum;
     });
 
+    const datumLookup = data.reduce(
+        (acc, item) => {
+            acc[item.vehicle_id.toString()] = item;
+            return acc;
+        },
+        {} as { [key: string]: { plate?: string; department?: string } }
+    );
     return (
         <ResponsiveBar
             data={sorted}
             keys={keys}
-            indexBy="plate"
+            indexBy="vehicle_id"
             margin={{ top: 50, right: 210, bottom: 90, left: 60 }}
             padding={0.3}
             colors={getColors}
-            enableLabel={false} // Disable labels on the bars
             valueScale={{ type: 'linear' }}
             indexScale={{ type: 'band', round: true }}
             tooltip={(data) => {
                 return (
-                    <div className="bg-white p-2 shadow-md">
+                    <div className="bg-gray-900 text-white p-2 rounded text-xs">
                         <p>{data.id}</p>
-                        <p>{`Køretøj: ${data.data.plate} ${data.data.department}`}</p>
+                        <p>{`Køretøj: ${data.data.plate ?? 'Ingen reg.nr.'} ${data.data.department ?? ''}`}</p>
                         <p>{`Gmns kørsel: ${data.value.toFixed(1)}`}</p>
                     </div>
                 );
@@ -93,16 +62,33 @@ const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; k
                 legend: 'Køretøjer',
                 legendPosition: 'middle',
                 legendOffset: 80,
-                format: showValuesOnAxis ? undefined : () => '', // Empty string if showValuesOnAxis is false
+                format: showValuesOnAxis ? undefined : () => '',
                 renderTick: ({ opacity, textAnchor, x, y, value }) => {
-                    if (data.length > 26) {
-                        return <></>;
-                    }
+                    const datum = datumLookup[value.toString()];
+                    if (!datum || data.length > 27) return <></>;
+                    const { plate, department } = datum;
                     return (
                         <g transform={`translate(${x},${y})`} style={{ opacity }}>
-                            <text textAnchor={textAnchor} transform="rotate(45)" fontSize={10}>
-                                {getTspanGroups(value, data)}
-                            </text>
+                            {plate ? (
+                                <text fontSize="12" textAnchor={textAnchor} transform="rotate(45)">
+                                    <tspan x={2} dy={7}>
+                                        {plate}
+                                    </tspan>
+                                </text>
+                            ) : (
+                                <text fontSize="12" textAnchor={textAnchor} transform="rotate(45)">
+                                    <tspan x={2} dy={7}>
+                                        Ingen reg.nr.
+                                    </tspan>
+                                </text>
+                            )}
+                            {department && (
+                                <text fontSize="10" textAnchor={textAnchor} transform="rotate(45)">
+                                    <tspan x={-10} dy={20}>
+                                        {department}
+                                    </tspan>
+                                </text>
+                            )}
                         </g>
                     );
                 },
@@ -116,10 +102,13 @@ const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; k
                 legendOffset: -40,
             }}
             labelSkipWidth={12}
-            labelSkipHeight={12}
+            labelSkipHeight={20}
             labelTextColor={{
                 from: 'color',
                 modifiers: [['darker', 1.6]],
+            }}
+            theme={{
+                grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
             }}
             legends={[
                 {

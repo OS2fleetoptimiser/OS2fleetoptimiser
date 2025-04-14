@@ -9,6 +9,7 @@ import ApiError from '@/components/ApiError';
 import dayjs from 'dayjs';
 import { filterProps } from '../../(filters)/FilterHeader';
 import getColorMapperFunc from '../colorUtils';
+import { DownloadableGraph } from '@/components/DownloadableGraph';
 
 const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninger, start, departments, vehicles, shifts }: filterProps) => {
     const { queryObject: drivingData } = useGetDrivingData({
@@ -30,14 +31,14 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
                 };
 
             const groupedByPlate = data.driving_data.reduce((acc, data) => {
-                let existing = acc.find((car) => car.plate === data.plate && car.department === data.department);
+                let existing = acc.find((car) => car.vehicle_id == data.vehicle_id && car.plate === data.plate && car.department === data.department);
                 if (existing) {
                     existing.trips.push(data);
                 } else {
-                    acc.push({ plate: data.plate, department: data.department, trips: [data] });
+                    acc.push({ vehicle_id: data.vehicle_id, plate: data.plate, department: data.department, trips: [data] });
                 }
                 return acc;
-            }, [] as { plate: string; department: string; trips: drivingData[] }[]);
+            }, [] as { vehicle_id: number; plate: string; department: string; trips: drivingData[] }[]);
 
             let dataPoints = [];
 
@@ -45,9 +46,10 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
             for (let i = 0; i < groupedByPlate.length; i++) {
                 let car = groupedByPlate[i];
                 let dataEntry = {
+                    vehicle_id: car.vehicle_id,
                     plate: car.plate,
                     department: car.department, // Adding the department here
-                } as { plate: string; department: string } & { [key: string]: number };
+                } as { vehicle_id: number; plate: string; department: string } & { [key: string]: number };
                 if (data.shifts.length === 0 || !data.shifts) {
                     let minDate = car.trips.reduce((acc, data) => {
                         return new Date(data.start_time) < acc ? new Date(data.start_time) : acc;
@@ -95,7 +97,8 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
         },
     });
 
-    const shiftColorMapper = getColorMapperFunc(availableshifts)
+    const shiftColorMapper = getColorMapperFunc(availableshifts);
+    const fileNameAppendix = `${start}-${end}-${locations?.length ?? 'alle'}_lokationer-${vehicles?.length ?? 'alle'}_koeretoejer`;
 
     return (
         <div>
@@ -115,7 +118,9 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
             {drivingData.data &&
                 (drivingData.data.dataPoints.length > 0 ? (
                     <div className="h-96">
-                        <AverageDrivingGraph data={drivingData.data.dataPoints} keys={drivingData.data.keys} colorMapper={shiftColorMapper}/>
+                        <DownloadableGraph filename={`gennemsnitlig_koersel-${fileNameAppendix}.png`}>
+                            <AverageDrivingGraph data={drivingData.data.dataPoints} keys={drivingData.data.keys} colorMapper={shiftColorMapper} />
+                        </DownloadableGraph>
                     </div>
                 ) : (
                     <p className="m-4">Der er ingen kørselsdata for de valgte filtre.</p>
