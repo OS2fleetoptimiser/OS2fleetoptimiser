@@ -249,13 +249,15 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
                                                 onClick={() => toggleVehicle(vehicle.id)}
                                             >
                                                 <TableCell padding="checkbox" className={rowStyle}>
-                                                    <Checkbox
-                                                        sx={{ '&:hover': { bgcolor: 'transparent' } }}
-                                                        checkedIcon={<BpCheckedIcon />}
-                                                        icon={<BpIcon />}
-                                                        checked={isChecked}
-                                                        onChange={() => toggleVehicle(vehicle.id)}
-                                                    />
+                                                    {vehicle.status !== 'dataMissing' && (
+                                                        <Checkbox
+                                                            sx={{ '&:hover': { bgcolor: 'transparent' } }}
+                                                            checkedIcon={<BpCheckedIcon />}
+                                                            icon={<BpIcon />}
+                                                            checked={isChecked}
+                                                            onChange={() => toggleVehicle(vehicle.id)}
+                                                        />
+                                                    )}
                                                 </TableCell>
                                                 <TableCell className={`${rowStyle}`}>
                                                     <div className="items-center flex space-x-1">
