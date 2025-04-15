@@ -140,6 +140,12 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                 header: 'Status',
                 size: 100,
                 Cell: ({ row }) => getStatus(row.original),
+                accessorFn: (row) => {
+                    if (hasMissingData(row)) return "Manglende metadata";
+                    if (hasEndedLeasing(row)) return "Udløbet leasing";
+                    return "OK"
+                    },
+                sortingFn: 'basic',
             },
             {
                 accessorFn: (row) => row.id,
