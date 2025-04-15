@@ -1684,7 +1684,10 @@ def eligible_saved_vehicles(since_date: datetime.date, session: Session):
             or_(Cars.disabled.is_(None), Cars.disabled == False),
             or_(Cars.deleted.is_(None), Cars.deleted == False)
         ),
-        Cars.id < 1000000  # exclude test vehicles
+        Cars.omkostning_aar.isnot(None),
+        Cars.type.isnot(None),
+        Cars.fuel.isnot(None),
+        Cars.location.isnot(None)
     ).scalar()
     return total_eligible_cars
 
