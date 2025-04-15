@@ -51,7 +51,9 @@ function TimeActivityDashboard({ end, locations, forvaltninger, start, departmen
         },
     });
     const fileNameAppendix = `${start}-${end}-${locations?.length ?? 'alle'}_lokationer-${vehicles?.length ?? 'alle'}_koeretoejer`;
-
+    const impliedCellHeight = 40
+    const impliedBaseHeight = 210
+    const computedHeight = impliedBaseHeight + ((heatMapData.data?.length || 1) * impliedCellHeight);
     return (
         <div>
             <>
@@ -80,7 +82,7 @@ function TimeActivityDashboard({ end, locations, forvaltninger, start, departmen
                     </div>
                 )}
                 {heatMapData.data && (
-                    <div style={{ height: String(210 + (heatMapData ? (heatMapData.data.length - 1) * 40 : 0)) + 'px' }}>
+                    <div style={{height: `${computedHeight}px`}}>
                         <DownloadableGraph filename={`tidsaktivitet-${fileNameAppendix}.png`}>
                             <TimeActivityHeatMap data={heatMapData.data} threshold={colorThreshold} />
                         </DownloadableGraph>
