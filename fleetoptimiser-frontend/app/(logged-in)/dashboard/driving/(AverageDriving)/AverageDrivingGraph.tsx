@@ -101,7 +101,7 @@ const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; k
                 legendPosition: 'middle',
                 legendOffset: -40,
             }}
-            labelSkipWidth={12}
+            labelSkipWidth={40}
             labelSkipHeight={20}
             labelTextColor={{
                 from: 'color',
