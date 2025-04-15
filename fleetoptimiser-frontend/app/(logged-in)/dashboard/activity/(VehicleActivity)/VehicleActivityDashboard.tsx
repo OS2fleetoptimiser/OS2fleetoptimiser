@@ -78,7 +78,10 @@ const VehicleActivityDashboard = ({
     };
 
     const fileNameAppendix = `${start}-${end}-${locations?.length ?? 'alle'}_lokationer-${vehicles?.length ?? 'alle'}_koeretoejer`;
-
+    const impliedCellHeight = 40
+    const impliedBaseHeight = 210
+    const vehicleHeight = impliedBaseHeight + ((heatMapData.data?.vehicleGroup.km?.length || 1) * impliedCellHeight);
+    const locationHeight = impliedBaseHeight + ((heatMapData.data?.locationGroup.km?.length || 1) * impliedCellHeight);
     return (
         <div>
             <div className="flex items-center py-8">
@@ -134,7 +137,7 @@ const VehicleActivityDashboard = ({
                 {heatMapData.data && (
                     <>
                         <TabPanel value="locations">
-                            <div style={{ height: String(210 + (heatMapData ? (heatMapData.data.locationGroup.km.length - 1) * 40 : 0)) + 'px' }}>
+                            <div style={{height: `${locationHeight}px`}}>
                                 <DownloadableGraph filename={`loktaionsaktivitet-${fileNameAppendix}.png`}>
                                     <DrivingHeatmapKm
                                         setLocationZoom={goToLocation}
@@ -145,7 +148,7 @@ const VehicleActivityDashboard = ({
                             </div>
                         </TabPanel>
                         <TabPanel value="vehicles">
-                            <div style={{ height: String(210 + (heatMapData ? (heatMapData.data.vehicleGroup.km.length - 1) * 40 : 0)) + 'px' }}>
+                            <div style={{height: `${vehicleHeight}px`}}>
                                 <DownloadableGraph filename={`koeretoejsaktivitet-${fileNameAppendix}.png`}>
                                     <DrivingHeatmapKm
                                         setLocationZoom={goToLocation}
