@@ -1249,7 +1249,7 @@ class AutomaticSimulation:
         current_fleet = []
         for current_id in self.current_vehicles:
             try:
-                vehicle_object = next(filter(lambda unique_vehicle: str(current_id) in unique_vehicle[-1], self.fh.original_fleet))
+                vehicle_object = next(filter(lambda unique_vehicle: str(current_id) in unique_vehicle[-1].split(','), self.fh.original_fleet))
             except StopIteration:
                 continue
 
