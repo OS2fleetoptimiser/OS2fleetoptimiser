@@ -226,7 +226,7 @@ def set_vehicles(ctx, description_fields=None):
                     [
                         attr
                         for field in description_fields
-                        if (attr := vehicle.get(field))
+                        if (attr := vehicle.__dict__.get(field))
                     ]
                 ),
             }
