@@ -227,7 +227,7 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
                 </Collapse>
                 <Divider />
 
-                <Link className="no-underline" href={'https://sway.cloud.microsoft/eMfBIhsk5ImWaxoX?ref=Link'} target="_blank">
+                <Link className="no-underline" href={'https://os2fleetoptimiser.github.io/os2fleetoptimiser-user-guide/'} target="_blank">
                     <ListItem disablePadding>
                         <ListItemButton>
                             <ListItemIcon>
