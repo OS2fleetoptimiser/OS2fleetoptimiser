@@ -25,7 +25,7 @@ export const DrivingHeatmapKm = ({
     maxHeatValue?: number;
     setLocationZoom: (cell: ComputedCell<HeatMapGroupWithMetaData>) => void;
 }) => {
-    const showLabels = useMediaQuery({ minWidth: '1280px' }) && data[0].data.length < 30; // labels become cluttered below width and with many cells
+    const showLabels = useMediaQuery({ minWidth: '1280px' }) && data[0].data.length <= 31; // labels become cluttered below width and with many cells
     return (
         <div className="hover:cursor-pointer h-full">
             <ResponsiveHeatMapCanvas
