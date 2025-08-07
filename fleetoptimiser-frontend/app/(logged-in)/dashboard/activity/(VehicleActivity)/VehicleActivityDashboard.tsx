@@ -14,7 +14,7 @@ import AxiosBase from '@/components/AxiosBase';
 import DownloadingIcon from '@mui/icons-material/Downloading';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { filterProps } from '../../(filters)/FilterHeader';
-import { DownloadableGraph } from "@/components/DownloadableGraph";
+import { DownloadableGraph } from '@/components/DownloadableGraph';
 
 dayjs.extend(isoWeek);
 
@@ -78,10 +78,10 @@ const VehicleActivityDashboard = ({
     };
 
     const fileNameAppendix = `${start}-${end}-${locations?.length ?? 'alle'}_lokationer-${vehicles?.length ?? 'alle'}_koeretoejer`;
-    const impliedCellHeight = 40
-    const impliedBaseHeight = 210
-    const vehicleHeight = impliedBaseHeight + ((heatMapData.data?.vehicleGroup.km?.length || 1) * impliedCellHeight);
-    const locationHeight = impliedBaseHeight + ((heatMapData.data?.locationGroup.km?.length || 1) * impliedCellHeight);
+    const impliedCellHeight = 40;
+    const impliedBaseHeight = 210;
+    const vehicleHeight = impliedBaseHeight + (heatMapData.data?.vehicleGroup.km?.length || 1) * impliedCellHeight;
+    const locationHeight = impliedBaseHeight + (heatMapData.data?.locationGroup.km?.length || 1) * impliedCellHeight;
     return (
         <div>
             <div className="flex items-center py-8">
@@ -99,10 +99,9 @@ const VehicleActivityDashboard = ({
                     }}
                 />
                 <p className="text-explanation text-xs ml-4 block w-96">
-                    Køretøjsaktivitet viser hvor mange kilometer der er kørt pr. dag i den valgte periode, enten samlet på lokationen eller enkeltvis pr
-                    køretøj. Skift mellem lokationer - og køretøjer fanen. Justér grænseværdien for at fremhæve lavere eller højere antal kørte kilometer. Hvis
-                    et felt er gråt indikerer det, at køretøjet har en igangværende tur, men ikke har været aktiv - altså står den stille et andet sted end sin
-                    hjemmelokation.
+                    Køretøjsaktivitet viser hvor mange kilometer der er kørt i den valgte periode, enten samlet på lokationen eller enkeltvis pr køretøj. Skift
+                    mellem lokationer - og køretøjer fanen. Justér grænseværdien for at fremhæve lavere eller højere antal kørte kilometer. Hvis et felt er gråt
+                    indikerer det, at køretøjet har en igangværende tur, men ikke har været aktiv - altså står den stille et andet sted end sin hjemmelokation.
                 </p>
                 <Button
                     className="ml-auto h-8"
@@ -137,7 +136,7 @@ const VehicleActivityDashboard = ({
                 {heatMapData.data && (
                     <>
                         <TabPanel value="locations">
-                            <div style={{height: `${locationHeight}px`}}>
+                            <div style={{ height: `${locationHeight}px` }}>
                                 <DownloadableGraph filename={`loktaionsaktivitet-${fileNameAppendix}.png`}>
                                     <DrivingHeatmapKm
                                         setLocationZoom={goToLocation}
@@ -148,7 +147,7 @@ const VehicleActivityDashboard = ({
                             </div>
                         </TabPanel>
                         <TabPanel value="vehicles">
-                            <div style={{height: `${vehicleHeight}px`}}>
+                            <div style={{ height: `${vehicleHeight}px` }}>
                                 <DownloadableGraph filename={`koeretoejsaktivitet-${fileNameAppendix}.png`}>
                                     <DrivingHeatmapKm
                                         setLocationZoom={goToLocation}
