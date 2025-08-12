@@ -446,7 +446,7 @@ def set_roundtrips(ctx):
 @click.pass_context
 def clean_roundtrips(ctx):
     engine = ctx.obj["engine"]
-    sess = ctx.obj["Session"]()
+    session = ctx.obj["Session"]
 
     rt = pd.read_sql(
         Query([RoundTrips.id, RoundTrips.start_time, RoundTrips.car_id]).statement,
@@ -457,7 +457,7 @@ def clean_roundtrips(ctx):
     if len(remove) != 0:
         assert len(rt) > len(remove), "Did not clean"
         logger.info(f"Removing {len(remove)} duplicates")
-        with Session() as sess:
+        with session.begin() as sess:
             sess.query(RoundTripSegments).filter(
                 RoundTripSegments.round_trip_id.in_(remove)
             ).delete(synchronize_session=False)
@@ -466,40 +466,41 @@ def clean_roundtrips(ctx):
             )
             sess.commit()
 
-    keep_data = (
-        sess.query(SimulationSettings)
-        .filter(SimulationSettings.name == "keep_data")
-        .first()
-    )
-    if keep_data:
-        delete_time = (
-            datetime.now()
-            - relativedelta(months=int(keep_data.value))
-            - timedelta(days=1)
+    with session.begin() as sess:
+        keep_data = (
+            sess.query(SimulationSettings)
+            .filter(SimulationSettings.name == "keep_data")
+            .first()
         )
-        assert delete_time < datetime.now() - relativedelta(
-            months=6
-        ), "Not allowing to delete less than 6 months old data"
-        rtr = (
-            sess.query(RoundTrips.id).filter(RoundTrips.start_time < delete_time).all()
-        )
-        rtrs = (
-            sess.query(RoundTripSegments.id)
-            .filter(RoundTripSegments.round_trip_id.in_([r.id for r in rtr]))
-            .all()
-        )
-        logger.info(
-            f"********************* would like to delete, {len(rtrs)} roundtripsegments and {len(rtr)} roundtrips"
-        )
+        if keep_data:
+            delete_time = (
+                datetime.now()
+                - relativedelta(months=int(keep_data.value))
+                - timedelta(days=1)
+            )
+            assert delete_time < datetime.now() - relativedelta(
+                months=6
+            ), "Not allowing to delete less than 6 months old data"
+            rtr = (
+                sess.query(RoundTrips.id).filter(RoundTrips.start_time < delete_time).all()
+            )
+            rtrs = (
+                sess.query(RoundTripSegments.id)
+                .filter(RoundTripSegments.round_trip_id.in_([r.id for r in rtr]))
+                .all()
+            )
+            logger.info(
+                f"********************* would like to delete, {len(rtrs)} roundtripsegments and {len(rtr)} roundtrips"
+            )
 
-        sess.query(RoundTripSegments).filter(
-            RoundTripSegments.round_trip_id.in_([r.id for r in rtr])
-        ).delete(synchronize_session="fetch")
+            sess.query(RoundTripSegments).filter(
+                RoundTripSegments.round_trip_id.in_([r.id for r in rtr])
+            ).delete(synchronize_session="fetch")
 
-        sess.query(RoundTrips).filter(RoundTrips.start_time < delete_time).delete(
-            synchronize_session="fetch"
-        )
-        sess.commit()
+            sess.query(RoundTrips).filter(RoundTrips.start_time < delete_time).delete(
+                synchronize_session="fetch"
+            )
+            sess.commit()
 
 
 def get_logs(car_id: int, last_date: datetime, url: str, headers: dict):
