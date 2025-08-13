@@ -110,7 +110,7 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
         ${showNavBar ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full pointer-events-none md:opacity-100 md:translate-x-0 md:pointer-events-auto'}`}
         >
             <div className="p-4 flex items-center mb-4 mt-2">
-                <Image alt="logo" src="/logo_shadows_transparent.png" width={47} height={35} quality={100} />
+                <Image alt="logo" src="/logo_shadows_transparent.png" width={47} height={35} unoptimized/>
                 <Typography variant="h3">
                     <span className="ml-2">FleetOptimiser</span>
                 </Typography>
