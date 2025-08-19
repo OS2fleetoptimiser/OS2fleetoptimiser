@@ -328,7 +328,7 @@ async def get_landing_page_kpi(metrics: List[KPIs] = Query(None), session: Sessi
     since_date = date.today() - relativedelta(months=1)
 
     kpi_functions = {
-        "total_saved_vehicles": eligible_saved_vehicles,
+        "total_saved_vehicles": (lambda _, session_: eligible_saved_vehicles(session_)),
         "active_vehicles_last_month": active_vehicles,
         "total_simulations_last_month": get_number_of_simulations,
         "non_fossil_share_last_month": get_non_fossil_km_share

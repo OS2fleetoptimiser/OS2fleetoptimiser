@@ -163,6 +163,7 @@ class Cars(Base):
     )
     forvaltning: Mapped[Optional[bool]] = mapped_column(String(128), default=None)
     description: Mapped[Optional[bool]] = mapped_column(String(128), default=None)
+    test_vehicle: Mapped[Optional[bool]] = mapped_column(Boolean(), default=False)
 
 
 class SimulationSettings(Base):

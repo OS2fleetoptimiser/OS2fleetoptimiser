@@ -1675,19 +1675,15 @@ def get_availability(
     )
 
 
-def eligible_saved_vehicles(since_date: datetime.date, session: Session):
-    # since_date is an input to keep consistent callable from kpis endpoint
+def eligible_saved_vehicles(session: Session):
     total_eligible_cars = session.query(
         func.count(Cars.id).label("count")
     ).filter(
         and_(
             or_(Cars.disabled.is_(None), Cars.disabled == False),
-            or_(Cars.deleted.is_(None), Cars.deleted == False)
+            or_(Cars.deleted.is_(None), Cars.deleted == False),
+            or_(Cars.test_vehicle.is_(None), Cars.test_vehicle == False)
         ),
-        Cars.omkostning_aar.isnot(None),
-        Cars.type.isnot(None),
-        Cars.fuel.isnot(None),
-        Cars.location.isnot(None)
     ).scalar()
     return total_eligible_cars
 

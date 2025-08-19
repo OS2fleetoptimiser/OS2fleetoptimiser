@@ -268,7 +268,7 @@ def get_single_vehicle(session: Session, vehicle_id: int):
         return
 
 
-def create_single_vehicle(session: Session, vehicle: VehicleInput):
+def create_single_vehicle(session: Session, vehicle: VehicleInput, test_vehicle: bool = True):
     """
     Function to create a vehicle. If the vehicle id is less than "min_allowed_id", the id will be set to 1000000.
     The selected location must exist and the vehicle itself pass validation on Vehicle class.
@@ -307,6 +307,9 @@ def create_single_vehicle(session: Session, vehicle: VehicleInput):
             value = value.id
             vehicle_entry[f"{key}_obj"] = session.get(key_to_model[key], value)
         vehicle_entry[key] = value
+
+    # manually creating a vehicle implies no fleet management synchronisation hence mark as test_vehicle
+    vehicle_entry["test_vehicle"] = test_vehicle
     session.add(Cars(**vehicle_entry))
     session.commit()
     return new_id
