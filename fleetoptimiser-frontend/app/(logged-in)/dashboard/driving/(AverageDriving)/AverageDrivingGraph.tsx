@@ -67,23 +67,24 @@ const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; k
                     const datum = datumLookup[value.toString()];
                     if (!datum || data.length > 27) return <></>;
                     const { plate, department } = datum;
+                    const anchor = textAnchor as "start" | "middle" | "end" | "inherit";
                     return (
                         <g transform={`translate(${x},${y})`} style={{ opacity }}>
                             {plate ? (
-                                <text fontSize="12" textAnchor={textAnchor} transform="rotate(45)">
+                                <text fontSize="12" textAnchor={anchor} transform="rotate(45)">
                                     <tspan x={2} dy={7}>
                                         {plate}
                                     </tspan>
                                 </text>
                             ) : (
-                                <text fontSize="12" textAnchor={textAnchor} transform="rotate(45)">
+                                <text fontSize="12" textAnchor={anchor} transform="rotate(45)">
                                     <tspan x={2} dy={7}>
                                         Ingen reg.nr.
                                     </tspan>
                                 </text>
                             )}
                             {department && (
-                                <text fontSize="10" textAnchor={textAnchor} transform="rotate(45)">
+                                <text fontSize="10" textAnchor={anchor} transform="rotate(45)">
                                     <tspan x={-10} dy={20}>
                                         {department}
                                     </tspan>
