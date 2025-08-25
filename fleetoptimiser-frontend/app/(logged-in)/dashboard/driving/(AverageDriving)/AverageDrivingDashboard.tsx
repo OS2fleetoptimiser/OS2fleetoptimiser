@@ -51,15 +51,10 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
                     department: car.department, // Adding the department here
                 } as { vehicle_id: number; plate: string; department: string } & { [key: string]: number };
                 if (data.shifts.length === 0 || !data.shifts) {
-                    let minDate = car.trips.reduce((acc, data) => {
-                        return new Date(data.start_time) < acc ? new Date(data.start_time) : acc;
-                    }, new Date('3000-01-01'));
-
-                    let maxDate = car.trips.reduce((acc, data) => {
-                        return new Date(data.start_time) > acc ? new Date(data.start_time) : acc;
-                    }, new Date('1000-01-01'));
-
-                    let totalDays = Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 3600 * 24));
+                    const uniqueDays = new Set(
+                      car.trips.map(t => new Date(t.start_time).toISOString().split("T")[0])
+                    );
+                    let totalDays = uniqueDays.size
                     totalDays = totalDays != 0 ? totalDays : 1;
                     const averageDistance = car.trips.reduce((sum, data) => sum + data.distance, 0) / totalDays;
                     if (averageDistance > 0) dataEntry['Hele dagen'] = averageDistance;
@@ -70,15 +65,10 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
                             return acc;
                         }, []);
 
-                        let minDate = tripsInShift.reduce((acc, data) => {
-                            return new Date(data.start_time) < acc ? new Date(data.start_time) : acc;
-                        }, new Date('3000-01-01'));
-
-                        let maxDate = tripsInShift.reduce((acc, data) => {
-                            return new Date(data.start_time) > acc ? new Date(data.start_time) : acc;
-                        }, new Date('1000-01-01'));
-
-                        let totalDays = Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 3600 * 24));
+                        const uniqueDays = new Set(
+                          tripsInShift.map(t => new Date(t.start_time).toISOString().split("T")[0])
+                        );
+                        let totalDays = uniqueDays.size
                         totalDays = totalDays != 0 ? totalDays : 1;
                         const averageDistance = tripsInShift.reduce((sum, data) => sum + data.distance, 0) / totalDays;
                         let shiftName = 'Hele dagen';
