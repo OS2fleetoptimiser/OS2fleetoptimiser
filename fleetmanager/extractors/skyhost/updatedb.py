@@ -296,17 +296,14 @@ def set_roundtrips(ctx):
     session_maker: sessionmaker[Session] = ctx.obj["Session"]
     cars = pd.read_sql(
         Query(Cars)
-        .filter(Cars.omkostning_aar.isnot(None), Cars.location.isnot(None))
+        .filter(Cars.omkostning_aar.isnot(None), Cars.location.isnot(None),
+                and_(
+                    or_(Cars.disabled.is_(None), Cars.disabled == False),
+                    or_(Cars.deleted.is_(None), Cars.deleted == False))
+                )
         .statement,
         engine,
     )
-
-    with session_maker() as session:
-        banned_cars = (
-            session.query(Cars.id)
-            .filter(or_(Cars.deleted == True, Cars.disabled == True))
-            .all()
-        )
 
     carid2key = {}
     for key in to_list(ctx.obj["SOAP_KEY"]):
@@ -319,7 +316,8 @@ def set_roundtrips(ctx):
             continue
         carid2key.update({str(a): key for a in trackers.frame.ID.values})
 
-    allowed_starts = get_allowed_starts_with_additions(session)
+    with session_maker() as session:
+        allowed_starts = get_allowed_starts_with_additions(session)
 
     collected_trip_length = 0
     collected_trip_count = 0
@@ -333,7 +331,6 @@ def set_roundtrips(ctx):
             str(car.id) not in carid2key
             or pd.isna(car.omkostning_aar)
             or pd.isna(car.location)
-            or car.id in banned_cars
         ):
             continue
         with engine.connect() as conn:
