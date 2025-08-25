@@ -593,6 +593,14 @@ def set_trackers(ctx, description_fields=None):
                 get_or_create(Session, Cars, car)
 
 
+def to_dt_timestamp(ts):
+    try:
+        dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S")
+    except ValueError:
+        dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%f")
+    return dt
+
+
 def get_trips(car_id, key, from_date=None):
     current_time = datetime.now()
     min_time = datetime(
@@ -664,10 +672,10 @@ def get_trips(car_id, key, from_date=None):
                 continue
 
             st = fix_time(
-                datetime.strptime(trip.StartPos_Timestamp, "%Y-%m-%dT%H:%M:%S")
+                to_dt_timestamp(trip.StartPos_Timestamp)
             )
             et = fix_time(
-                datetime.strptime(trip.StopPos_Timestamp, "%Y-%m-%dT%H:%M:%S")
+                to_dt_timestamp(trip.StopPos_Timestamp)
             )
             trips.append(
                 dict(
