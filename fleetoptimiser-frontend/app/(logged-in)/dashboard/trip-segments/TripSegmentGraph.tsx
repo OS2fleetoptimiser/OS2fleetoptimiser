@@ -106,10 +106,10 @@ const TripSegmentGraph = ({ data, setFocus, focus }: { data: ogData; setFocus: (
                     if (!entry) {
                         return <g transform={`translate(${x},${y})`} style={{ opacity }}></g>;
                     }
-
+                    const anchor = textAnchor as "start" | "middle" | "end" | "inherit";
                     return (
                         <g transform={`translate(${x},${y})`} style={{ opacity }}>
-                            <text textAnchor={textAnchor} transform="rotate(45)" fontSize={10}>
+                            <text textAnchor={anchor} transform="rotate(45)" fontSize={10}>
                                 {getTspanGroups(entry)}
                             </text>
                         </g>
