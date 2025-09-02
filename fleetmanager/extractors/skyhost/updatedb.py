@@ -600,18 +600,14 @@ def to_dt_timestamp(ts):
 
 def get_trips(car_id, key, from_date=None):
     current_time = datetime.now()
-    min_time = datetime(
-        year=2022, month=2, day=24
-    )  # 23/2 seems to be the date from which lat, lon is added
+    min_time = datetime(2022, 2, 24)
     if from_date is None or from_date < min_time:
         from_date = min_time
 
     agent = SoapAgent(key)
+    frames = []
 
-    trips = []
-    for k, (start_log_time, end_log_time) in enumerate(
-        date_iter(from_date, current_time, week_period=52)
-    ):
+    for start_log_time, end_log_time in date_iter(from_date, current_time, week_period=52):
         logger.info(f"{start_log_time}, {end_log_time}")
         dbook = driving_book(
             car_id,
@@ -620,82 +616,47 @@ def get_trips(car_id, key, from_date=None):
             agent,
         )
 
-        if not all(
-            [
-                "StartPos_sLat" in dbook.columns,
-                "StartPos_sLon" in dbook.columns,
-                "StopPos_Timestamp" in dbook.columns,
-            ]
-        ):
+        required = ["ID", "Meters", "StartPos_sLat", "StartPos_sLon",
+                    "StartPos_Timestamp", "StopPos_Timestamp"]
+        if not all(col in dbook.columns for col in required):
             continue
+        required.extend(["StopPos_sLat", "StopPos_sLon"])
 
-        trimmed = dbook[
-            (dbook.StartPos_sLat.notnull())
-            & (dbook.StartPos_sLon.notnull())
-            & (dbook.StopPos_Timestamp.notnull())
-        ]
-        length_trimmed = len(trimmed)
-        length_dbook = len(dbook)
-        if length_trimmed != length_dbook:
-            if length_trimmed == length_dbook - 1:
-                # if the missing attribute entry is the last, we cut it and continue
-                missing_attributes_entry = dbook[~dbook.ID.isin(trimmed.ID.values)]
-                if (
-                    missing_attributes_entry.iloc[0].ID
-                    == dbook.sort_values("StartPos_Timestamp", ascending=False)
-                    .iloc[0]
-                    .ID
-                    and pd.isna(missing_attributes_entry.iloc[0].StartPos_Timestamp)
-                    is False
-                ):
-                    dbook = dbook.sort_values(
-                        "StartPos_Timestamp", ascending=False
-                    ).iloc[1:]
-            else:
-                logger.info(
-                    f"Car {car_id} did not have lat, lon or StopPost_Timestamp in all "
-                    f"logs between {start_log_time} - {end_log_time}"
-                )
-                break
-        db_length = len(dbook)
-        for idx, trip in enumerate(dbook.itertuples()):
-            # check for none types in date (will ruin the aggreagtion)
-            # allow if it's the last
-            if ((not trip.StartPos_Timestamp or not trip.StopPos_Timestamp) and
-                    (db_length != idx + 1 or current_time != end_log_time)):
-                logger.warning(f"ERROR IN THE LOGS FROM SKYHOST {trip.ID } DID NOT HAVE TIMESTAMPS")
-                return pd.DataFrame()
-            elif not trip.StartPos_Timestamp or not trip.StopPos_Timestamp:
-                continue
+        # filter rows with missing coords or stop times
+        predropped_count = len(dbook)
+        dbook = dbook.dropna(subset=["StartPos_sLat", "StartPos_sLon", "StopPos_Timestamp"])
+        if dbook.empty:
+            continue
+        postdrop_count = len(dbook)
+        if predropped_count != postdrop_count:
+            logger.info(f"dropped {predropped_count - postdrop_count} columns")
+        frames.append(dbook[required])
 
-            st = fix_time(
-                to_dt_timestamp(trip.StartPos_Timestamp)
-            )
-            et = fix_time(
-                to_dt_timestamp(trip.StopPos_Timestamp)
-            )
-            trips.append(
-                dict(
-                    id=trip.ID,
-                    car_id=car_id,
-                    distance=int(trip.Meters) / 1000,
-                    start_time=st,
-                    end_time=et,
-                    start_latitude=float(trip.StartPos_sLat),
-                    start_longitude=float(trip.StartPos_sLon),
-                    end_latitude=None,
-                    end_longitude=None,
-                    # todo add start location when we get it
-                )
-            )
-
-    if len(trips) == 0:
+    if not frames:
         return pd.DataFrame()
-    trips_frame = pd.DataFrame(trips)
-    trips_frame["end_latitude"] = trips_frame["start_latitude"].tolist()[1:] + [None]
-    trips_frame["end_longitude"] = trips_frame["start_longitude"].tolist()[1:] + [None]
-    # we do not return the last trip with no end lat / lon
-    return trips_frame.iloc[:-1]
+
+    df = pd.concat(frames, ignore_index=True)
+
+    df["StartPos_Timestamp"] = df["StartPos_Timestamp"].apply(lambda x: fix_time(to_dt_timestamp(x)))
+    df["StopPos_Timestamp"] = df["StopPos_Timestamp"].apply(lambda x: fix_time(to_dt_timestamp(x)))
+
+    df = df.dropna(subset=["StartPos_Timestamp", "StopPos_Timestamp"])
+
+    df = df.sort_values("StartPos_Timestamp").reset_index(drop=True)
+
+    trips = pd.DataFrame({
+        "id": df["ID"],
+        "car_id": car_id,
+        "distance": df["Meters"].astype(float) / 1000.0,
+        "start_time": df["StartPos_Timestamp"],
+        "end_time": df["StopPos_Timestamp"],
+        "start_latitude": df["StartPos_sLat"].astype(float),
+        "start_longitude": df["StartPos_sLon"].astype(float),
+        "end_latitude": df["StopPos_sLat"].astype(float),
+        "end_longitude": df["StopPos_sLon"].astype(float)
+    })
+
+    return trips.reset_index(drop=True)
 
 
 @cli.command()
