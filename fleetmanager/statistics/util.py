@@ -1419,13 +1419,15 @@ def group_by_vehicle_location(
         vehicle_id = record["vehicle_id"]
 
         if record["trip_segments"] != None and len(record["trip_segments"]) != 0:
-            # Get aggregation keys for current trip and initialize all distances to None in timespan
+            # Get aggregation keys for current trip and initialize ONLY unprocessed periods to None
             # This represents times where the car is currently active but not driving
             trip_day_keys = date_duration_getter(
                 record["start_time"], record["end_time"], aggregation_level)
             for aggregation_key, _, _ in trip_day_keys:
-                vehicle_grouped[(vehicle_id, aggregation_key)
-                                ]["distance"] = None
+                # Only set to None if this period hasn't been processed yet (is exactly 0, not None or accumulated value)
+                current_distance = vehicle_grouped[(vehicle_id, aggregation_key)]["distance"]
+                if current_distance is not None and current_distance == 0:
+                    vehicle_grouped[(vehicle_id, aggregation_key)]["distance"] = None
 
             for segment in record["trip_segments"]:
                 trip_segment_aggregation_key, _, _ = get_aggregation_key(
