@@ -14,11 +14,9 @@ const MonthlyDrivingGraph = ({ data, colorMapper }: { data: dataPoint[]; colorMa
     const getColors = (bar: any) => {
         return colorMapper(bar.id);
     };
-    let keys = data.length > 0 ? Object.keys(data[0]) : [];
-    keys.splice(
-        keys.findIndex((k) => k === 'monthYear'),
-        1
-    );
+    let keys = [...new Set(data.flatMap(dataPoint =>
+        Object.keys(dataPoint).filter(key => key !== 'monthYear')
+    ))];
 
     return (
         <ResponsiveBar
