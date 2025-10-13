@@ -1,17 +1,12 @@
-import { Button, CircularProgress, Modal } from '@mui/material';
+import { Button, CircularProgress, Modal, TextField } from '@mui/material';
 import { useState } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
+import SearchIcon from '@mui/icons-material/Search';
 import ApiError from '@/components/ApiError';
 import ExtraVehicleTable from './ExtraVehicleTable';
 import { useAppDispatch, useAppSelector } from '@/components/redux/hooks';
 import useGetUniqueVehicles from '@/components/hooks/useGetUniqueVehicles';
-import {
-    addExtraVehicles,
-    addTestVehicles,
-    addTestVehiclesMeta,
-    clearExtraVehicles,
-    clearTestVehicles,
-} from '@/components/redux/SimulationSlice';
+import { addExtraVehicles, addTestVehicles, addTestVehiclesMeta, clearExtraVehicles, clearTestVehicles } from '@/components/redux/SimulationSlice';
 import { Vehicle } from '@/components/hooks/useGetVehicles';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import AddIcon from '@mui/icons-material/Add';
@@ -21,6 +16,7 @@ import VehicleModal from '@/app/(logged-in)/configuration/CreateOrUpdateVehicle'
 const ExtraVehicleModal = ({ buttonAppearance = false }: { buttonAppearance?: boolean }) => {
     const [open, setOpen] = useState<boolean>(false);
     const [showVehicleModal, setShowVehicleModal] = useState<boolean>(false);
+    const [searchQuery, setSearchQuery] = useState<string>('');
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     const { data: dropDownData, isFetching } = useGetDropDownData();
@@ -48,6 +44,18 @@ const ExtraVehicleModal = ({ buttonAppearance = false }: { buttonAppearance?: bo
             return meetsConditions && isNotSelected;
         });
 
+    const filterVehiclesBySearch = (vehicles: Vehicle[], query: string) => {
+        if (!query.trim()) {
+            return vehicles;
+        }
+        const lowerQuery = query.toLowerCase();
+        return vehicles.filter((v) => {
+            const make = v.make?.toLowerCase() || '';
+            const model = v.model?.toLowerCase() || '';
+            return make.includes(lowerQuery) || model.includes(lowerQuery);
+        });
+    };
+
     const selectAllVehicles = () => {
         if (!cars.data) {
             return;
@@ -60,7 +68,7 @@ const ExtraVehicleModal = ({ buttonAppearance = false }: { buttonAppearance?: bo
 
     const clearAllVehicles = () => {
         dispatch(clearExtraVehicles());
-        dispatch(clearTestVehicles());  // one component for both manual and automatic sim
+        dispatch(clearTestVehicles()); // one component for both manual and automatic sim
     };
     return (
         <>
@@ -86,15 +94,31 @@ const ExtraVehicleModal = ({ buttonAppearance = false }: { buttonAppearance?: bo
                     {cars.isLoading && <CircularProgress />}
                     {cars.data && (
                         <>
-                            <ExtraVehicleTable cars={filterPreselectedVehicles(cars.data, selectedVehicles)}></ExtraVehicleTable>
+                            <div className="max-w-sm mb-2">
+                                <TextField
+                                    fullWidth
+                                    placeholder="Søg efter køretøj (mærke eller model)"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    variant="outlined"
+                                    size="small"
+                                    InputProps={{
+                                        startAdornment: <SearchIcon className="mr-2 text-gray-400" />,
+                                    }}
+                                />
+                            </div>
+                            <ExtraVehicleTable
+                                cars={filterVehiclesBySearch(filterPreselectedVehicles(cars.data, selectedVehicles), searchQuery)}
+                            ></ExtraVehicleTable>
                             <div className="flex justify-between items-center">
                                 <Button variant="outlined" onClick={() => setShowVehicleModal(true)} endIcon={<AddIcon />}>
                                     Opret nyt testkøretøj
                                 </Button>
 
                                 {/*  no scenario for adding all test = 0 selected implies all  */}
-                                <Button variant="outlined" onClick={clearAllVehicles}>Fjern alle</Button>
-
+                                <Button variant="outlined" onClick={clearAllVehicles}>
+                                    Fjern alle
+                                </Button>
                             </div>
                         </>
                     )}
