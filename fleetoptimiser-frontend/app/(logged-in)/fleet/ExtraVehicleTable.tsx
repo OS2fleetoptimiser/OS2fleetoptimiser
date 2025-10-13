@@ -66,8 +66,8 @@ const ExtraVehicleTable = ({ cars }: { cars: Vehicle[] }) => {
                     {props.row.original.wltp_el
                         ? `${props.row.original.wltp_el} Wh/km`
                         : props.row.original.wltp_fossil
-                        ? `${props.row.original.wltp_fossil} km/l`
-                        : 'Ikke udfyldt'}
+                          ? `${props.row.original.wltp_fossil} km/l`
+                          : 'Ikke udfyldt'}
                 </div>
             ),
         }),
@@ -96,10 +96,7 @@ const ExtraVehicleTable = ({ cars }: { cars: Vehicle[] }) => {
     });
 
     return (
-        <TableContainer
-            component={Paper}
-            className="relative my-4 shadow-sm border border-gray-200 rounded-md max-h-[calc(100vh-250px)] overflow-auto"
-        >
+        <TableContainer component={Paper} className="relative my-4 shadow-sm border border-gray-200 rounded-md max-h-[calc(100vh-300px)] overflow-auto">
             <Table stickyHeader>
                 <TableHead>
                     {table.getHeaderGroups().map((headerGroup, index) => (
