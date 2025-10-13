@@ -12,7 +12,7 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import Power from '@mui/icons-material/Power';
 import PowerOff from '@mui/icons-material/PowerOff';
-import {Alert, Box, Button, Chip, IconButton, Snackbar, Tooltip} from '@mui/material';
+import { Alert, Box, Button, Chip, IconButton, Snackbar, Tooltip } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -26,7 +26,7 @@ import { MRT_Localization_DA } from 'material-react-table/locales/da';
 import { useCallback, useMemo, useState } from 'react';
 import DisableVehicleDialog from './DisableVehicleDialog';
 import { useWritePrivilegeContext } from '@/app/providers/WritePrivilegeProvider';
-import ToolTip from "@/components/ToolTip";
+import ToolTip from '@/components/ToolTip';
 import DoneIcon from '@mui/icons-material/Done';
 
 const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicle[]; dropDownData: DropDownData }) => {
@@ -130,9 +130,9 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
 
     const getStatus = (vehicle: Vehicle) => {
         if (hasMissingData(vehicle)) return <Chip variant="outlined" color="error" label="Manglende metadata"></Chip>;
-        if (hasEndedLeasing(vehicle)) return <Chip style={{"color": "#ca8a04", borderColor: "#ca8a04"}} variant="outlined" label="Udløbet leasing"></Chip>;
-        return <Chip variant="outlined" color="success" label="OK" deleteIcon={<DoneIcon />} onDelete={() => "render icon"}></Chip>;
-    }
+        if (hasEndedLeasing(vehicle)) return <Chip style={{ color: '#ca8a04', borderColor: '#ca8a04' }} variant="outlined" label="Udløbet leasing"></Chip>;
+        return <Chip variant="outlined" color="success" label="OK" deleteIcon={<DoneIcon />} onDelete={() => 'render icon'}></Chip>;
+    };
 
     const columns = useMemo<MRT_ColumnDef<Vehicle>[]>(() => {
         const baseColumns: MRT_ColumnDef<Vehicle>[] = [
@@ -141,10 +141,10 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                 size: 100,
                 Cell: ({ row }) => getStatus(row.original),
                 accessorFn: (row) => {
-                    if (hasMissingData(row)) return "Manglende metadata";
-                    if (hasEndedLeasing(row)) return "Udløbet leasing";
-                    return "OK"
-                    },
+                    if (hasMissingData(row)) return 'Manglende metadata';
+                    if (hasEndedLeasing(row)) return 'Udløbet leasing';
+                    return 'OK';
+                },
                 sortingFn: 'basic',
             },
             {
@@ -235,10 +235,6 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
         }
         return baseColumns;
     }, [hasImei]);
-
-    const handleExportData = () => {
-        exportDataToXlsx(columns, vehicleData);
-    };
 
     return (
         <>
@@ -341,21 +337,34 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                         </Table>
                     </Box>
                 )}
-                renderTopToolbarCustomActions={() => (
+                renderTopToolbarCustomActions={({ table }) => (
                     <div className="flex gap-4">
-                        <Button color="primary" onClick={handleExportData} startIcon={<FileDownloadIcon />} variant="contained">
+                        <Button
+                            color="primary"
+                            onClick={() => {
+                                const filteredRows = table.getPrePaginationRowModel().rows.map((row) => row.original);
+                                exportDataToXlsx(columns, filteredRows);
+                            }}
+                            startIcon={<FileDownloadIcon />}
+                            variant="contained"
+                        >
                             Eksporter Til .xlsx
                         </Button>
                         <Tooltip title={hasWritePrivilege ? '' : 'Du har læserettigheder'}>
-                            <Button disabled={!hasWritePrivilege} color="primary" onClick={() => setIsImportModalOpen(true)} startIcon={<FileUploadIcon />} variant="contained">
+                            <Button
+                                disabled={!hasWritePrivilege}
+                                color="primary"
+                                onClick={() => setIsImportModalOpen(true)}
+                                startIcon={<FileUploadIcon />}
+                                variant="contained"
+                            >
                                 Importer flådedata
                             </Button>
                         </Tooltip>
                         <ToolTip>
-                            Importering af data, er kun for køretøjer, der er forbundet via. dit flådestyringssystem. Dvs. IDet skal stemme overens med et kendt køretøj i dit flådesystem. Brug Tilføj nyt køretøj for at tilføje nye testkøretøjer.
+                            Importering af data, er kun for køretøjer, der er forbundet via. dit flådestyringssystem. Dvs. IDet skal stemme overens med et kendt
+                            køretøj i dit flådesystem. Brug Tilføj nyt køretøj for at tilføje nye testkøretøjer.
                         </ToolTip>
-
-
                     </div>
                 )}
                 renderBottomToolbarCustomActions={() => (
@@ -365,7 +374,6 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                                 Tilføj nyt køretøj
                             </Button>
                         </Tooltip>
-
                     </div>
                 )}
             />
