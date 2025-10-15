@@ -158,30 +158,38 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
         <>
             <Dialog open={open}>
                 <DialogTitle className="mb-3" textAlign="center">
-                    {isUpdate ? 'Opdater Køretøj' : 'Tilføj Køretøj'}
+                    {isUpdate ? 'Opdater Køretøj' : 'Tilføj Testkøretøj'}
                 </DialogTitle>
                 <DialogContent>
-                    <form onSubmit={formik.handleSubmit}>
-                        {/*ID && Plate*/}
-                        <div className="flex space-x-4 p-6">
-
-                            <TextField sx={inputStyle} className="w-1/2 mr-6" name="id" label="ID" disabled={true} />
-                            <TextField
-                                className="w-1/2 subtle"
-                                label="Nummerplade"
-                                type="text"
-                                id="plate"
-                                name="plate"
-
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                value={formik.values.plate ?? ''}
-                            />
-                            {formik.touched.plate && formik.errors.plate ? <div>{formik.errors.plate}</div> : null}
+                    {!isUpdate && (
+                        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
+                            <p className="text-sm text-gray-700">
+                                <strong>Testkøretøj:</strong> Et testkøretøj er ikke forbundet til dit flådestyringssystem og vil derfor ikke blive synkroniseret automatisk.
+                                Brug denne funktion til at tilføje køretøjer til testformål og til at simulere scenarier i FleetOptimiser.
+                            </p>
                         </div>
+                    )}
+                    <form onSubmit={formik.handleSubmit}>
+                        {isUpdate && (
+                            <div className="flex space-x-4 p-6">
+                                <TextField sx={inputStyle} className="w-1/2 mr-6" name="id" label="ID" disabled={true} />
+                                <TextField
+                                    className="w-1/2 subtle"
+                                    label="Nummerplade"
+                                    type="text"
+                                    id="plate"
+                                    name="plate"
+
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    value={formik.values.plate ?? ''}
+                                />
+                                {formik.touched.plate && formik.errors.plate ? <div>{formik.errors.plate}</div> : null}
+                            </div>
+                        )}
 
                         {/* Make && Model */}
-                        <div className="flex space-x-4 px-6 mt-3">
+                        <div className={`flex space-x-4 ${isUpdate ? 'px-6 mt-3' : 'p-6'}`}>
                             <TextField
                                 className="w-1/2 mr-6 subtle"
                                 label="Mærke"
@@ -373,7 +381,7 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                         </div>
 
                         {/* Annual KM & Sleep */}
-                        <div className="px-6 mt-3 flex space-x-4">
+                        <div className={`px-6 mt-3 flex space-x-4 ${!isUpdate ? 'mb-6' : ''}`}>
                             <TextField
                                 className="w-1/2 mr-6 subtle"
                                 label="Km pr år"
@@ -415,110 +423,114 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                         </div>
 
                         {/* Location & Department & Leasing Type */}
-                        <div className="p-6 mt-3 flex space-x-4">
-                            <TextField
-                                className="w-1/3 subtle"
-                                label="Forvaltning"
-                                type="text"
-                                id="forvaltning"
+                        {isUpdate && (
+                            <div className="p-6 mt-3 flex space-x-4">
+                                <TextField
+                                    className="w-1/3 subtle"
+                                    label="Forvaltning"
+                                    type="text"
+                                    id="forvaltning"
 
-                                name="forvaltning"
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                value={formik.values.forvaltning ?? ''}
-                                onKeyDown={(e) => {
-                                    if (e.key === ',') {
-                                        e.preventDefault();
-                                    }
-                                }}
-                            />
-                            {formik.touched.forvaltning && formik.errors.forvaltning ? <div>{formik.errors.forvaltning}</div> : null}
-                            <TextField
-                                className="w-1/3 subtle"
-                                id="location.id"
-                                name="location.id"
+                                    name="forvaltning"
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    value={formik.values.forvaltning ?? ''}
+                                    onKeyDown={(e) => {
+                                        if (e.key === ',') {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                />
+                                {formik.touched.forvaltning && formik.errors.forvaltning ? <div>{formik.errors.forvaltning}</div> : null}
+                                <TextField
+                                    className="w-1/3 subtle"
+                                    id="location.id"
+                                    name="location.id"
 
-                                label="Lokation"
-                                select
-                                value={formik.values.location?.id || ''}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                            >
-                                {[...dropDownData.locations]
-                                    .sort((a, b) => a.address.localeCompare(b.address))
-                                    .map((location) => (
-                                        <MenuItem key={location.id} value={location.id}>
-                                            {location.address}
-                                        </MenuItem>
-                                    ))}
-                            </TextField>
-                            {formik.touched.location && formik.touched.location && formik.errors.location ? <div>{formik.errors.location}</div> : null}
-                            <TextField
-                                className="w-1/3 subtle"
-                                label="Afdeling"
-                                type="text"
+                                    label="Lokation"
+                                    select
+                                    value={formik.values.location?.id || ''}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                >
+                                    {[...dropDownData.locations]
+                                        .sort((a, b) => a.address.localeCompare(b.address))
+                                        .map((location) => (
+                                            <MenuItem key={location.id} value={location.id}>
+                                                {location.address}
+                                            </MenuItem>
+                                        ))}
+                                </TextField>
+                                {formik.touched.location && formik.touched.location && formik.errors.location ? <div>{formik.errors.location}</div> : null}
+                                <TextField
+                                    className="w-1/3 subtle"
+                                    label="Afdeling"
+                                    type="text"
 
-                                id="department"
-                                name="department"
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                value={formik.values.department ?? ''}
-                                onKeyDown={(e) => {
-                                    if (e.key === ',') {
-                                        e.preventDefault();
-                                    }
-                                }}
-                            />
-                            {formik.touched.department && formik.errors.department ? <div>{formik.errors.department}</div> : null}
-                        </div>
+                                    id="department"
+                                    name="department"
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    value={formik.values.department ?? ''}
+                                    onKeyDown={(e) => {
+                                        if (e.key === ',') {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                />
+                                {formik.touched.department && formik.errors.department ? <div>{formik.errors.department}</div> : null}
+                            </div>
+                        )}
 
                         {/* Start Leasing & End Leasing */}
-                        <div className="px-6 mt-3 mb-6 flex space-x-4">
-                            <TextField
-                                className="w-1/2 subtle"
-                                id="leasing_type.id"
-                                name="leasing_type.id"
+                        {isUpdate && (
+                            <div className="px-6 mt-3 mb-6 flex space-x-4">
+                                <TextField
+                                    className="w-1/2 subtle"
+                                    id="leasing_type.id"
+                                    name="leasing_type.id"
 
-                                label="Leasing Type"
-                                select
-                                value={formik.values.leasing_type?.id || ''} // Use || operator instead of ?? to provide a default empty string value
-                                onChange={(event) => {
-                                    formik.handleChange(event);
-                                    setSelectedLeasingType(Number(event.target.value)); // Set selected vehicle to the value selected
-                                }}
-                                onBlur={formik.handleBlur}
-                            >
-                                {dropDownData.leasing_types.map((leasing) => (
-                                    <MenuItem key={leasing.id} value={leasing.id}>
-                                        {leasing.name}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                            {formik.touched.leasing_type && formik.errors.leasing_type ? <div>{formik.errors.leasing_type}</div> : null}
-                            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="da">
-                                <DatePicker
-                                    defaultValue={formik.initialValues.start_leasing ? dayjs(formik.initialValues.start_leasing) : null}
-                                    format="DD-MM-YYYY"
-                                    label="Start Leasing"
-                                    onChange={(date) => formik.setFieldValue('start_leasing', date ? dayjs(date).format('YYYY-MM-DD') : '')}
-                                    className={formik.touched.start_leasing && formik.errors.start_leasing && !formik.values.start_leasing ? 'error subtle' : ' subtle'}
-                                />
-                                {formik.touched.start_leasing && formik.errors.start_leasing ? <div>{formik.errors.start_leasing}</div> : null}
-                                <DatePicker
-                                    defaultValue={formik.initialValues.end_leasing ? dayjs(formik.initialValues.end_leasing) : null}
-                                    format="DD-MM-YYYY"
-                                    label="Slut Leasing"
-                                    onChange={(date) => formik.setFieldValue('end_leasing', date ? dayjs(date).format('YYYY-MM-DD') : '')}
-                                    slotProps={{
-                                        textField: {
-                                            required: selectedLeasingType === 1 || selectedLeasingType === 2,
-                                        },
+                                    label="Leasing Type"
+                                    select
+                                    value={formik.values.leasing_type?.id || ''} // Use || operator instead of ?? to provide a default empty string value
+                                    onChange={(event) => {
+                                        formik.handleChange(event);
+                                        setSelectedLeasingType(Number(event.target.value)); // Set selected vehicle to the value selected
                                     }}
-                                    className={formik.touched.end_leasing && formik.errors.end_leasing && !formik.values.end_leasing ? 'error subtle' : 'subtle'}
-                                />
-                                {formik.touched.end_leasing && formik.errors.end_leasing ? <div>{formik.errors.end_leasing}</div> : null}
-                            </LocalizationProvider>
-                        </div>
+                                    onBlur={formik.handleBlur}
+                                >
+                                    {dropDownData.leasing_types.map((leasing) => (
+                                        <MenuItem key={leasing.id} value={leasing.id}>
+                                            {leasing.name}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                                {formik.touched.leasing_type && formik.errors.leasing_type ? <div>{formik.errors.leasing_type}</div> : null}
+                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="da">
+                                    <DatePicker
+                                        defaultValue={formik.initialValues.start_leasing ? dayjs(formik.initialValues.start_leasing) : null}
+                                        format="DD-MM-YYYY"
+                                        label="Start Leasing"
+                                        onChange={(date) => formik.setFieldValue('start_leasing', date ? dayjs(date).format('YYYY-MM-DD') : '')}
+                                        className={formik.touched.start_leasing && formik.errors.start_leasing && !formik.values.start_leasing ? 'error subtle' : ' subtle'}
+                                    />
+                                    {formik.touched.start_leasing && formik.errors.start_leasing ? <div>{formik.errors.start_leasing}</div> : null}
+                                    <DatePicker
+                                        defaultValue={formik.initialValues.end_leasing ? dayjs(formik.initialValues.end_leasing) : null}
+                                        format="DD-MM-YYYY"
+                                        label="Slut Leasing"
+                                        onChange={(date) => formik.setFieldValue('end_leasing', date ? dayjs(date).format('YYYY-MM-DD') : '')}
+                                        slotProps={{
+                                            textField: {
+                                                required: selectedLeasingType === 1 || selectedLeasingType === 2,
+                                            },
+                                        }}
+                                        className={formik.touched.end_leasing && formik.errors.end_leasing && !formik.values.end_leasing ? 'error subtle' : 'subtle'}
+                                    />
+                                    {formik.touched.end_leasing && formik.errors.end_leasing ? <div>{formik.errors.end_leasing}</div> : null}
+                                </LocalizationProvider>
+                            </div>
+                        )}
                         <DialogActions>
                             <Button
                                 className="mb-8"
