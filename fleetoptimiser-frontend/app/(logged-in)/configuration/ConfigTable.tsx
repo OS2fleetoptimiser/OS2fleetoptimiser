@@ -42,6 +42,10 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
     const [isUpdatedSuccessSnackBarOpen, setIsUpdatedSuccessSnackBarOpen] = useState(false);
     const [isDeletedInfoSnackBarOpen, setIsDeletedInfoSnackBarOpen] = useState(false);
     const [openDisableDialog, setOpenDisableDialog] = useState<boolean>(false);
+    const [pagination, setPagination] = useState({
+        pageIndex: 0,
+        pageSize: 10,
+    });
 
     const queryClient = useQueryClient();
     function handleCloseSuccessSnackbar() {
@@ -265,6 +269,9 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                 initialState={{
                     density: 'compact',
                 }}
+                state={{pagination}}
+                onPaginationChange={setPagination}
+                autoResetPageIndex={false}
                 enableEditing
                 enableStickyHeader
                 renderRowActions={({ row }) => (
