@@ -143,19 +143,22 @@ def get_vehicles(session: Session):
     return sorted_vehicles
 
 
-def update_single_vehicle(session: Session, vehicle: Vehicle, ignore_none_values=False):
+def update_single_vehicle(session: Session, vehicle: Vehicle, ignore_none_values=False, accepted_none_values: list = None):
     """
     Function to update a single vehicle in the database.
     Checks that the vehicle and location exists before update any values on the vehicle.
     Any key, value pair will be updated on the vehicle, so all None values will also update on the vehicle.
+    accepted_none_values, allows changing vehicle type which implies value change of related wltp field
     """
+    if accepted_none_values is None:
+        accepted_none_values = []
     locations = [a.id for a in session.query(AllowedStarts.id).all()]
     db_vehicle = session.query(Cars).filter(Cars.id == vehicle.id).first()
     if db_vehicle is None:
         return "the car id does not exist"
     for key, value in vehicle:
 
-        if ignore_none_values and (value is None):
+        if ignore_none_values and (value is None) and (key not in accepted_none_values):
             continue
 
         if (
@@ -724,6 +727,8 @@ def match_errors(id):
     }
     return errors.get(id, None)
 
+def safe_lower(val):
+    return val.strip().lower() if isinstance(val, str) and val.strip() else None
 
 def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
 
@@ -766,6 +771,9 @@ def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
         "sleep": "Hvile",
     }
 
+    unknown_columns = set(metadata.keys()) - set(column_names.values())
+    metadata.drop(list(unknown_columns), axis=1, inplace=True)
+
     # check columns
     if set(metadata.keys()) != set(column_names.values()):
         raise MetadataColumnError
@@ -779,24 +787,34 @@ def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
     for i, row in metadata.iterrows():
         excel_row = i + 2
 
+        vehicle_invalid = False
         if (row["Lokation"] not in locations) and (row["Lokation"] != None):
             validation[excel_row] = "Fejl i: Lokation: Lokation eksisterer ikke"
-            continue
+            vehicle_invalid = True
 
-        if (row["Drivmiddel"] not in fuel_types) and (row["Drivmiddel"] != None):
-            validation[excel_row] = "Fejl i: Drivmiddel"
-            continue
+        drivmiddel = safe_lower(row["Drivmiddel"])
+        if drivmiddel not in fuel_types:
+            reason = f"skal udfyldes; {', '.join(fuel_types.keys())}" if not drivmiddel else f"ukendt type; \"{drivmiddel}\""
+            validation[excel_row] = f"Fejl i: Drivmiddel, {reason}"
+            vehicle_invalid = True
 
-        if (row["Type"] not in vehicle_types) and (row["Type"] != None):
-            validation[excel_row] = "Fejl i: Type"
-            continue
+        vehicle_type = safe_lower(row["Type"])
+        if vehicle_type not in vehicle_types:
+            reason = f"skal udfyldes; {', '.join(vehicle_types.keys())}" if not vehicle_type else f"ukendt type; \"{vehicle_type}\""
+            validation[excel_row] = f"Fejl i: Type, {reason}"
+            vehicle_invalid = True
 
-        if (row["Leasing type"] not in leasing_types) and (row["Leasing type"] != None):
-            validation[excel_row] = "Fejl i: Leasingtype"
-            continue
+        leasing_type = safe_lower(row["Leasing type"])
+        if leasing_type not in leasing_types:
+            reason = f"skal udfyldes; {', '.join(leasing_types.keys())}" if not leasing_type else f"ukendt type; \"{leasing_type}\""
+            validation[excel_row] = f"Fejl i: Leasingtype, {reason}"
+            vehicle_invalid = True
 
         if row.get("id") not in valid_ids:
             validation[excel_row] = "Ignoreres: Id ikke i database"
+            vehicle_invalid = True
+
+        if vehicle_invalid:
             continue
 
         try:
@@ -805,8 +823,8 @@ def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
                 plate=row.Nummerplade,
                 make=row.Mærke,
                 model=row.Model,
-                type=vehicle_types.get(row.Type),
-                fuel=fuel_types.get(row.Drivmiddel),
+                type=vehicle_types.get(vehicle_type),
+                fuel=fuel_types.get(drivmiddel),
                 wltp_fossil=row["Wltp (Fossil)"],
                 wltp_el=row["Wltp (El)"],
                 capacity_decrease=row["Procentvis WLTP"],
@@ -818,7 +836,7 @@ def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
                 forvaltning=row["Forvaltning"],
                 start_leasing=row["Start leasing"],
                 end_leasing=row["Slut leasing"],
-                leasing_type=leasing_types.get(row["Leasing type"]),
+                leasing_type=leasing_types.get(leasing_type),
                 km_aar=row["Kilometer pr/år"],
                 sleep=row["Hvile"],
             )
@@ -861,7 +879,13 @@ def update_vehicle_metadata(
             continue
 
         vehicle = vehicles[key]
-        res = update_single_vehicle(session, vehicle, ignore_none_values=True)
+        # we have validated the vehicle to have the correct wltp according to vehicle type, hence accept none values
+        res = update_single_vehicle(
+            session,
+            vehicle,
+            ignore_none_values=True,
+            accepted_none_values=["wltp_fossil", "wltp_el"]
+        )
         count = count + 1
 
     return count
