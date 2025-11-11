@@ -540,7 +540,7 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                             <Button
                                 variant="contained"
                                 className="mr-8 mb-8"
-                                type="submit">{isUpdate ? 'Opdater' : 'Bekræft'}</Button>
+                                type="submit">{isUpdate ? 'Opdater' : 'Tilføj'}</Button>
                         </DialogActions>
                     </form>
 
