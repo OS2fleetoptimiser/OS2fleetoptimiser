@@ -1,4 +1,3 @@
-import os
 from datetime import date
 from typing import List, Optional
 
@@ -17,7 +16,7 @@ from fleetmanager.simulation_setup import (
 )
 
 from ..dependencies import get_session
-from .schemas import Locations, LocationsVehicleList, Forvaltninger
+from .schemas import Locations, LocationsVehicleList
 
 router = APIRouter(
     prefix="/simulation-setup",
