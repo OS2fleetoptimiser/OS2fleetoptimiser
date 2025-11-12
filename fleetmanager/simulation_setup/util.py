@@ -1,14 +1,12 @@
-import time
 from datetime import date, datetime
 
 import pandas as pd
-from sqlalchemy import and_, case, not_, or_, select, func
+from sqlalchemy import and_, case, not_, or_, select
 from sqlalchemy.orm import Session
 
 from fleetmanager.api.configuration.schemas import (
     FuelType,
     LeasingType,
-    Location,
     VehicleType,
 )
 from fleetmanager.api.simulation_setup.schemas import (
@@ -17,7 +15,6 @@ from fleetmanager.api.simulation_setup.schemas import (
     LocationsVehicleList,
     LocationVehicles,
     VehicleView,
-    Forvaltninger,
 )
 from fleetmanager.configuration.util import load_name_settings
 from fleetmanager.data_access.dbschema import AllowedStarts, Cars, RoundTrips
@@ -45,15 +42,29 @@ def get_locations(session: Session):
 
 
 def get_forvaltninger(session: Session):
-    forvaltning = session.query(Cars.forvaltning, Cars.location).where(Cars.location.isnot(None)).group_by(Cars.forvaltning, Cars.location).all()
-    forvaltning = [(None if pd.isna(forv) or forv == "" else forv, location) for forv, location in forvaltning]
-    unique_forvaltninger = set(map(lambda x: x[0], forvaltning))
-    if len(unique_forvaltninger) <= 1:
-        return Forvaltninger().__root__
-    grouped_forvaltninger = {"Ingen Forvaltning" if pd.isna(name) else name: list(map(lambda b: b[1], filter(lambda x: x[0] == name, forvaltning))) for name in unique_forvaltninger}
-    parsed = Forvaltninger.parse_obj(grouped_forvaltninger)
+    """
+    returning a map of unique forvaltning to locations
+    """
+    forvaltning_query = (
+        session.query(Cars.forvaltning, Cars.location)
+        .where(Cars.location.isnot(None))
+        .where(Cars.disabled != True)
+        .where(Cars.deleted != True)
+        .group_by(Cars.forvaltning, Cars.location)
+    )
 
-    return parsed.__root__
+    grouped = {}
+    for forvaltning, location in forvaltning_query:
+        key = None if forvaltning in (None, "") else forvaltning
+        grouped.setdefault(key, []).append(location)
+
+    if len(grouped) <= 1:
+        return {}
+
+    return {
+        "Ingen Forvaltning" if name is None else name: locations
+        for name, locations in grouped.items()
+    }
 
 
 def get_location_vehicles(
