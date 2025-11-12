@@ -2,25 +2,21 @@
 
 import { DateRangePicker, DateRangeType } from './DateRangePicker';
 import { useAppDispatch, useAppSelector } from '@/components/redux/hooks';
-import {
-    useEffect,
-    useMemo,
-    useState
-} from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { fetchVehiclesByLocation, useGetForvaltninger, useGetLocations } from '@/components/hooks/useGetVehiclesByLocation';
 import LocationPicker, { SelectedLocation } from './LocationPicker';
 import { CircularProgress } from '@mui/material';
-import {fetchSimulationSettings, setCars, setEndDate, setLocationForvaltning, setStartDate } from '@/components/redux/SimulationSlice';
+import { fetchSimulationSettings, setCars, setEndDate, setLocationForvaltning, setStartDate } from '@/components/redux/SimulationSlice';
 import { useQueries } from '@tanstack/react-query';
 import VehiclePicker from './VehiclePicker';
 import { exportDrivingData } from '../setup/DrivingDataDownload';
-import NoConnectionError from "@/app/(logged-in)/setup/NoConnectionError";
-import NoSelectableVehicles from "@/app/(logged-in)/setup/NoSelectableVehicles";
+import NoConnectionError from '@/app/(logged-in)/setup/NoConnectionError';
+import NoSelectableVehicles from '@/app/(logged-in)/setup/NoSelectableVehicles';
 
 export default function Home() {
     const dispatch = useAppDispatch();
-    const simulationDisabled = useAppSelector((state) => state.simulation.selectedVehicles.every(car => !['ok', 'locationChanged'].includes(car.status)))
+    const simulationDisabled = useAppSelector((state) => state.simulation.selectedVehicles.every((car) => !['ok', 'locationChanged'].includes(car.status)));
     useEffect(() => {
         dispatch(fetchSimulationSettings());
     }, [dispatch]);
@@ -44,14 +40,13 @@ export default function Home() {
     const handleLocationChange = (selectedLocations: SelectedLocation[]) => {
         dispatch(setLocationForvaltning(selectedLocations));
 
-        const validVehicles = selectedVehicles.filter(vehicle =>
-            selectedLocations.some(loc => loc.id === vehicle.location?.id && loc.forvaltning === vehicle.forvaltning)
+        const validVehicles = selectedVehicles.filter((vehicle) =>
+            selectedLocations.some((loc) => loc.id === vehicle.location?.id && loc.forvaltning === vehicle.forvaltning)
         );
 
         dispatch(setCars(validVehicles));
-        setSelectedVehicleIds(validVehicles.map(v => v.id));
+        setSelectedVehicleIds(validVehicles.map((v) => v.id));
     };
-
 
     // vehicle stuff
     const vehicles = useQueries({
@@ -61,19 +56,25 @@ export default function Home() {
             staleTime: Infinity,
         })),
     });
-    const allVehicles = vehicles.flatMap((q) => q.data?.locations ?? []).flatMap((loc) => loc.vehicles ?? []);
+    const completeVehicleList = vehicles.flatMap((q) => q.data?.locations ?? []).flatMap((loc) => loc.vehicles ?? []);
+    // deduplicating vehicles by id in case same location is selected under multiple forvaltninger
+    const allVehicles = Array.from(new Map(completeVehicleList.map((v) => [v.id, v])).values());
     const [selectedVehicleIds, setSelectedVehicleIds] = useState(selectedVehicles.map((v) => v.id));
     const handleVehicleChange = (selectedVehicleIds: number[]) => {
-        const vehicleWithStatusSelected = allVehicles.filter(v => selectedVehicleIds.includes(v.id));
-        setSelectedVehicleIds(vehicleWithStatusSelected.map(v => v.id));
+        const vehicleWithStatusSelected = allVehicles.filter((v) => selectedVehicleIds.includes(v.id));
+        setSelectedVehicleIds(vehicleWithStatusSelected.map((v) => v.id));
         dispatch(setCars(vehicleWithStatusSelected));
     };
 
     const handleDownload = () => {
-        exportDrivingData(startPeriod.format('YYYY-MM-DD'), endPeriod.format('YYYY-MM-DD'), locationForvaltning.map(loc => loc.id));
+        exportDrivingData(
+            startPeriod.format('YYYY-MM-DD'),
+            endPeriod.format('YYYY-MM-DD'),
+            locationForvaltning.map((loc) => loc.id)
+        );
     };
 
-    const isLoadingVehicles = vehicles.some(q => q.isLoading)
+    const isLoadingVehicles = vehicles.some((q) => q.isLoading);
     return (
         <div className="space-y-6 max-w-[1800px] mx-auto">
             <DateRangePicker range={range} onChange={handleDateChange} />
@@ -88,9 +89,9 @@ export default function Home() {
             )}
             {/*todo replace with component from landing page no connection*/}
             {/*no onlyLocs implies no connection */}
-            {!locationsLoading && !onlyLocs && <NoConnectionError/>}
-            {!isLoadingVehicles && allVehicles.length === 0 && locationForvaltning.length > 0 && <NoSelectableVehicles/>}
-            {vehicles.some(q => q.isError) && <NoConnectionError/>}
+            {!locationsLoading && !onlyLocs && <NoConnectionError />}
+            {!isLoadingVehicles && allVehicles.length === 0 && locationForvaltning.length > 0 && <NoSelectableVehicles />}
+            {vehicles.some((q) => q.isError) && <NoConnectionError />}
             {allVehicles.length > 0 && (
                 <VehiclePicker
                     vehicles={allVehicles}
