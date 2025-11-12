@@ -41,13 +41,3 @@ class LocationVehicles(BaseModel):
 
 class LocationsVehicleList(BaseModel):
     locations: list[LocationVehicles]
-
-
-class Forvaltninger(BaseModel):
-    __root__: Dict[str, List[int]] | None
-
-    def __getitem__(self, item):
-        return self.__root__[item]
-
-    def __setitem__(self, key, value):
-        self.__root__[key] = value
