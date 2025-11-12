@@ -284,7 +284,7 @@ def update_car(current_car: dict, session: Session, dmr_attributes: list):
         if type(value) == str and len(value) == 0:
             continue
 
-        if value != getattr(saved_car, key) and key in dmr_attributes:
+        if key in dmr_attributes and getattr(saved_car, key) is not None:
             # we don't want to write DMR attributes if it's been changed elsewhere
             continue
 
@@ -303,6 +303,7 @@ def insert_car(current_car: dict, session: Session):
             )
 
     session.add(Cars(**current_car))
+    session.commit()
 
 
 def get_electrical_range(details: details_object | None):
@@ -473,7 +474,7 @@ def get_location_id(department: department_object | None, session: Session):
     location = None
     if department is None or department.get("address", {}) is None:
         return None
-    if address := department.get("address", {}).get("address") is not None:
+    if address := department.get("address", {}).get("address"):
         location = session.query(AllowedStarts).filter(AllowedStarts.address == address).first()
         if location:
             return location.id
