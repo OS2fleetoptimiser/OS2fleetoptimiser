@@ -2,19 +2,11 @@
 import json
 import os
 import re
-from datetime import date, datetime, timedelta
-from time import sleep
-from typing import TypedDict
-
 
 import click
-import numpy as np
-import pandas as pd
-import pytz
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import create_engine, func, or_, text, and_
-from sqlalchemy.orm import Session, sessionmaker, selectinload
-from sqlalchemy.orm.query import Query
+from sqlalchemy import create_engine, or_, text, and_
+from sqlalchemy.orm import sessionmaker
 
 from fleetmanager.extractors.skyhost.util import *
 from fleetmanager.api.location.schemas import AllowedStart as AllowedStartSchema
@@ -37,7 +29,7 @@ from fleetmanager.model.roundtripaggregator import (
 )
 from fleetmanager.model.roundtripaggregator import aggregating_score as score
 
-from fleetmanager.extractors.skyhost.parsers import DrivingBook, MileageLogPositions, Trackers
+from fleetmanager.extractors.skyhost.parsers import Trackers
 from fleetmanager.extractors.skyhost.soap_agent import SoapAgent
 
 logger = logging.getLogger(__name__)
@@ -52,6 +44,7 @@ logger = logging.getLogger(__name__)
 @click.option("-k", "--keys", envvar="KEYS", required=True)
 @click.option("-acid", "--account-ids", envvar="ACCOUNT_IDS", required=False)
 @click.option("-akeys", "--api-keys", envvar="API_KEYS", required=False)
+@click.option("-vl", "--update-vehicle-location", envvar="UPDATE_VEHICLE_LOCATION", required=False, default=False)
 @click.pass_context
 def cli(
     ctx,
@@ -63,6 +56,7 @@ def cli(
     keys=None,
     account_ids=None,
     api_keys=None,
+    update_vehicle_location=None
 ):
     """
     Preserves the context for the remaining functions
@@ -85,6 +79,7 @@ def cli(
     ctx.obj["SOAP_KEY"] = to_list(keys)
     ctx.obj["api_keys"] = api_keys
     ctx.obj["account_ids"] = account_ids
+    ctx.obj["update_vehicle_location"] = update_vehicle_location
 
 
 @cli.command()
@@ -162,12 +157,17 @@ def set_allowed_starts(ctx):
     departments = {}
     for api_key, account_id in zip(api_keys, account_ids):
         vehicles_url = f"https://api.skyhost.dk/accounts/{account_id}/resources/vehicles"
+        complete_vehicle_list = []
         headers = {"Authorization": f"Bearer {api_key}"}
-        skyhost_vehicles_request = run_request(vehicles_url, params=None, headers=headers)
-        if skyhost_vehicles_request.status_code != 200:
-            continue
-
-        for skyhost_vehicle in skyhost_vehicles_request.json().get("items"):
+        while True:
+            skyhost_vehicles_request = run_request(vehicles_url, params=None, headers=headers)
+            if skyhost_vehicles_request.status_code != 200:
+                break
+            complete_vehicle_list.extend(skyhost_vehicles_request.json().get("items"))
+            if vehicles_url := skyhost_vehicles_request.json().get("nextPageLink"):
+                continue
+            break
+        for skyhost_vehicle in complete_vehicle_list:
             vehicle_details_url = f"https://api.skyhost.dk/accounts/{account_id}/resources/vehicles/{skyhost_vehicle.get('id')}/details"
             vehicle_response = run_request(vehicle_details_url, headers=headers, params=None)
             if vehicle_response.status_code != 200:
@@ -393,13 +393,18 @@ def set_trackers_v2(ctx, description_fields=None):
 
     for account_id, api_key in zip(account_ids, api_keys):
         vehicle_list_url = f"https://api.skyhost.dk/accounts/{account_id}/resources/vehicles"
+        complete_vehicle_list = []
         headers = {"Authorization": f"Bearer {api_key}"}
-        vehicles_list_response = run_request(vehicle_list_url, headers=headers, params=None)
-        if vehicles_list_response.status_code != 200:
-            continue
+        while True:
+            vehicles_list_response = run_request(vehicle_list_url, headers=headers, params=None)
+            if vehicles_list_response.status_code != 200:
+                break
+            complete_vehicle_list.extend(vehicles_list_response.json().get("items"))
+            if vehicle_list_url := vehicles_list_response.json().get("nextPageLink"):
+                continue
+            break
 
-        vehicles = vehicles_list_response.json().get("items")
-        for vehicle_from_skyhost in vehicles:
+        for vehicle_from_skyhost in complete_vehicle_list:
             imei = vehicle_from_skyhost.get("externalId")
             skyhost_id = vehicle_from_skyhost.get("id")
             car_db = list(filter(lambda car: car.imei == imei, cars_in_db))
@@ -467,7 +472,7 @@ def set_trackers_v2(ctx, description_fields=None):
             )
             range_km = get_electrical_range(vehicle_details.get("details"))
             car = dict(
-                id=id_,
+                id=int(id_),
                 imei=imei,
                 plate=plate,
                 make=make,
@@ -479,7 +484,6 @@ def set_trackers_v2(ctx, description_fields=None):
                         if (attr := vehicle_details.get(field))
                     ]
                 ),
-                location=get_location_id(vehicle_details.get("department"), session),
                 km_aar=calcluate_km_aar(vehicle_details.get("leasing")),
                 end_leasing=get_leasing_date(vehicle_details.get("leasing"), "endDate"),
                 start_leasing=get_leasing_date(vehicle_details.get("leasing"), "startDate"),
@@ -490,6 +494,12 @@ def set_trackers_v2(ctx, description_fields=None):
                 wltp_el=None if wltp_el is None else round(wltp_el, 2),
                 range=None if range_km is None else round(range_km, 2),
             )
+
+            if "arkiveret" in vehicle_details.get("department", {}).get("name", "").lower():
+                car["disabled"] = 1
+            elif ctx.obj["update_vehicle_location"] and (known_location := get_location_id(vehicle_details.get("department"), session)):
+                car["location"] = known_location
+                car["department"] = vehicle_details.get("department").get("name").strip()
 
             if not is_car_valid(car):
                 continue
@@ -548,7 +558,7 @@ def set_trackers(ctx, description_fields=None):
             if tracker.ID in banned_cars:
                 continue
             plate = tracker.Marker if tracker.Marker is not None and re.match(r"\w{2}\d{5}", str(tracker.Marker)) else None
-            if plate is None:
+            if plate is None and 'Description' in trackers.frame.columns:
                 description_plate_pattern = re.search(r"\w{2}\d{5}", str(tracker.Description))
                 plate = None if description_plate_pattern is None else description_plate_pattern.group()
             # some times plate is in tracker.Marker
@@ -567,8 +577,11 @@ def set_trackers(ctx, description_fields=None):
                 # todo update if meta data on car changed
             )
             if (
-                tracker.Description in default_cars.plate.values
-                or int(tracker.ID) in default_cars.id.values
+                "Description" in tracker.frame.columns and
+                (
+                    tracker.Description in default_cars.plate.values
+                    or int(tracker.ID) in default_cars.id.values
+                )
             ):
                 # we already know the car
                 # only thing we can update by now is the imei
