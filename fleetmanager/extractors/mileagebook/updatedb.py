@@ -196,17 +196,22 @@ def set_vehicles(ctx, description_fields=None):
     url = ctx.obj["url"] + "/Fleet/Cars"
     params = {"LastModifiedDateTime": datetime(2020, 1, 1).isoformat()}
 
-    vehicles = run_request(url, params, headers)
-    if vehicles.status_code != 200:
-        logger.warning(f"Vehicles request returned {vehicles.status_code}")
-        return
+    vehicles = []
+    while True:
+        vehicles_response = run_request(url, params, headers)
+        if vehicles_response.status_code != 200:
+            logger.warning(f"Vehicles request returned {vehicles_response.status_code}")
+            break
+        vehicles.extend(vehicles_response.json().get("Cars", []))
+        if url := vehicles_response.json().get("Pagination", {}).get("Next"):
+            continue
+        break
 
     if description_fields is not None:
         description_fields = description_fields.split(",")
     else:
         description_fields = []
 
-    vehicles = vehicles.json().get("Cars", [])
     saved_vehicles = pd.read_sql(Query(Cars).statement, engine)
     saved_columns = saved_vehicles.columns
 
