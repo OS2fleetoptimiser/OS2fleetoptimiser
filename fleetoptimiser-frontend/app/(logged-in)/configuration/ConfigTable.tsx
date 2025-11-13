@@ -265,7 +265,7 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                 initialState={{
                     density: 'compact',
                 }}
-                state={{pagination}}
+                state={{ pagination }}
                 onPaginationChange={setPagination}
                 autoResetPageIndex={false}
                 enableEditing
@@ -317,7 +317,6 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                                 <TableRow>
                                     <TableCell className="text-center font-semibold">Drivmiddel</TableCell>
                                     <TableCell className="text-center font-semibold">Procentvis WLTP nedskrivning</TableCell>
-                                    <TableCell className="text-center font-semibold">CO2 (g/km)</TableCell>
                                     <TableCell className="text-center font-semibold">Rækkevidde (km)</TableCell>
                                     <TableCell className="text-center font-semibold">Start leasing</TableCell>
                                     <TableCell className="text-center font-semibold">Leasing Type</TableCell>
@@ -331,7 +330,6 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                                         {row.original.fuel?.name}
                                     </TableCell>
                                     <TableCell className="text-center">{row.original.capacity_decrease}</TableCell>
-                                    <TableCell className="text-center">{row.original.co2_pr_km}</TableCell>
                                     <TableCell className="text-center">{row.original.range}</TableCell>
                                     <TableCell className="text-center">
                                         {row.original.start_leasing ? dayjs(row.original.start_leasing).format('DD-MM-YYYY') : null}

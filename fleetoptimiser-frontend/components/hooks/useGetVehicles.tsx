@@ -17,7 +17,6 @@ export type VehicleWithOutID = {
     wltp_fossil: number | null;
     wltp_el: number | null;
     capacity_decrease: number | null;
-    co2_pr_km: number | null;
     range: number | null;
     omkostning_aar: number | null;
     location: {
