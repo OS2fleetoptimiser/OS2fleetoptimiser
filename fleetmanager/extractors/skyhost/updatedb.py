@@ -577,7 +577,7 @@ def set_trackers(ctx, description_fields=None):
                 # todo update if meta data on car changed
             )
             if (
-                "Description" in tracker.frame.columns and
+                "Description" in trackers.frame.columns and
                 (
                     tracker.Description in default_cars.plate.values
                     or int(tracker.ID) in default_cars.id.values
