@@ -491,7 +491,7 @@ def get_allowed_starts_with_additions(
         for addition in start.additions:
             allowed_starts.append(
                 {
-                    "id": addition.id,
+                    "id": addition.allowed_start_id,
                     "latitude": addition.latitude,
                     "longitude": addition.longitude
                 }
