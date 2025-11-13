@@ -1,6 +1,5 @@
 export type FormattedData = {
     capacity_decrease?: number | null;
-    co2_pr_km?: number | null;
     end_leasing?: string | null;
     fuel?: string | null;
     id?: number | null;

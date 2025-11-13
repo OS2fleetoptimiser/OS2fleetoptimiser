@@ -31,7 +31,6 @@ export const emptyVehicle: VehicleWithOutID = {
     wltp_fossil: null,
     wltp_el: null,
     capacity_decrease: null,
-    co2_pr_km: null,
     range: null,
     omkostning_aar: null,
     location: { id: 0, address: '' },
@@ -296,7 +295,7 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                             ) : null}
                         </div>
 
-                        {/* Capacity Decrease & CO2 per km */}
+                        {/* Capacity Decrease */}
                         <div className="px-6 mt-3 flex space-x-4">
                             <TextField
                                 className="w-1/2 mr-6 subtle"
@@ -317,25 +316,6 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                 }}
                             />
                             {formik.touched.capacity_decrease && formik.errors.capacity_decrease ? <div>{formik.errors.capacity_decrease}</div> : null}
-                            <TextField
-                                className="w-1/2 subtle"
-                                label="CO2 pr. km"
-                                type="number"
-                                id="co2_pr_km"
-
-                                name="co2_pr_km"
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                value={formik.values.co2_pr_km ?? ''}
-                                InputProps={{
-                                    inputMode: 'decimal',
-                                    inputProps: {
-                                        min: 0, // Set the minimum value to 0
-                                        step: 0.1, // Set the step value to 0.01 (adjust as needed)
-                                    },
-                                }}
-                            />
-                            {formik.touched.co2_pr_km && formik.errors.co2_pr_km ? <div>{formik.errors.co2_pr_km}</div> : null}
                         </div>
 
                         {/* Range & Annual Cost */}

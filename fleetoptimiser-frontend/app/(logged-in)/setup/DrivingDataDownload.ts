@@ -78,7 +78,6 @@ const formatCars = (cars: Vehicle[]) => {
         'WLTP Fossil': car.wltp_fossil,
         'WLTP El': car.wltp_el,
         Kapacitetsnedskrivning: car.capacity_decrease,
-        'Co2 pr km': car.co2_pr_km,
         Rækkevidde: car.range,
         'Årlig omkostning': car.omkostning_aar,
         'Start leasing': car.start_leasing,

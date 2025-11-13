@@ -15,7 +15,6 @@ export function formatDataForExport(originalData: Vehicle[]): FormattedData[] {
         'Wltp (Fossil)': data.wltp_fossil,
         'Wltp (El)': data.wltp_el,
         'Procentvis WLTP': data.capacity_decrease,
-        'CO2 (g/km)': data.co2_pr_km,
         'Rækkevidde (km)': data.range,
         'Omk./år': data.omkostning_aar,
         Lokation: data.location?.address,
