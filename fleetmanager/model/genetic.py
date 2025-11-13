@@ -812,7 +812,7 @@ class DrivingTest:
             )
         elif 3 in self.fleet_handler.grouped_sorting.keys():
             longest_ranging_electrical_vehicle = max([
-                (idx, vehicle.range) for idx, vehicle in enumerate(self.fleet_handler.fleet)
+                (idx, vehicle.range or 500) for idx, vehicle in enumerate(self.fleet_handler.fleet)
                 if vehicle.type == 3
             ], key=lambda x: x[1])
             best_electrical_vehicle = self.fleet_handler.fleet[longest_ranging_electrical_vehicle[0]]  # adding el
