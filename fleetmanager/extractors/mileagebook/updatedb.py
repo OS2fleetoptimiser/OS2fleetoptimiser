@@ -42,7 +42,7 @@ from fleetmanager.model.roundtripaggregator import (
 logger = logging.getLogger(__name__)
 
 allowed_statuses = ["Oprettet", "Aktiv - I brug", "Bestilt"]
-disallowed_vehicle_categories = ["Traktor", "Motorredskab", "Påhængsredskab", "Påhængsvogn", "Traktor påhængsvogn"]
+default_disallowed_vehicle_categories = ["Traktor", "Motorredskab", "Påhængsredskab", "Påhængsvogn", "Traktor påhængsvogn", "Lille knallert", "Sættevogn"]
 
 @dataclass
 class MileageBookMappings:
@@ -86,6 +86,7 @@ class CarModel:
 @click.option("-l", "--db-url", envvar="DB_URL", required=True)
 @click.option("-dbs", "--db-server", envvar="DB_SERVER", required=True)
 @click.option("-k", "--key", envvar="KEY", required=True)
+@click.option("-iv", "--ignore-vehicles", envvar="IGNORE_VEHICLES", required=False)
 @click.pass_context
 def cli(
     ctx,
@@ -95,6 +96,7 @@ def cli(
     db_url=None,
     db_server=None,
     key=None,
+    ignore_vehicles=None,
 ):
     """
     Preserves the context for the remaining functions
@@ -109,6 +111,9 @@ def cli(
     ctx.obj["Session"] = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     ctx.obj["url"] = "https://enterpriseapi.mileagebook.com/api"
     ctx.obj["headers"] = {"X-Access-Token": key}
+    if ignore_vehicles:
+        ignore_vehicles = [cat.strip() for cat in ignore_vehicles.split(",")]
+    ctx.obj["disallowed_vehicle_categories"] = ignore_vehicles
 
 
 @cli.command()
@@ -195,7 +200,7 @@ def set_vehicles(ctx, description_fields=None):
 
     url = ctx.obj["url"] + "/Fleet/Cars"
     params = {"LastModifiedDateTime": datetime(2020, 1, 1).isoformat()}
-
+    disallowed_vehicle_categories = ctx.obj["disallowed_vehicle_categories"] or default_disallowed_vehicle_categories
     vehicles = []
     while True:
         vehicles_response = run_request(url, params, headers)
