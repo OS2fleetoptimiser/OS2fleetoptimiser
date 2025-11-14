@@ -37,6 +37,7 @@ export type VehicleWithOutID = {
     imei: string | null;
     description: string | null;
     forvaltning: string | null;
+    test_vehicle: boolean | null;
 };
 
 export type Vehicle = { id: number } & VehicleWithOutID;

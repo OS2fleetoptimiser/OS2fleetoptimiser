@@ -115,6 +115,11 @@ class Vehicle(BaseModel):
         description="Forvaltning if exists, hierarchy eq. forvaltning --> location --> department",
         default=None
     )
+    test_vehicle: bool | None = Field(
+        example=False,
+        description="Is the vehicle a test vehicle created directly in the UI or a synced vehicle with data.",
+        default=None
+    )
 
     @root_validator(pre=True)
     def check_leasing_and_dates(cls, values):
