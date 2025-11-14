@@ -33,6 +33,8 @@ interface WeekLocationActivity {
     week_name: string;
     activity: number;
     average_activity: number;
+    start_date: string;
+    end_date: string;
 }
 
 export interface LocationActivity extends BaseView {
