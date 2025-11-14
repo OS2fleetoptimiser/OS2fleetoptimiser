@@ -8,6 +8,8 @@ interface ActivityHeatmapProps {
         data: {
             x: string;
             y: number;
+            start_date: string;
+            end_date: string;
         }[];
     }[];
 }
@@ -46,9 +48,15 @@ const normalizeData = (data: ActivityHeatmapProps['data']) => {
         data: allWeeks
             .map((week) => {
                 const weekData = location.data.find((d) => d.x === week);
+                const { start, end } = weekData
+                    ? { start: weekData.start_date, end: weekData.end_date }
+                    : getDateRangeFromYearWeek(week);
+
                 return {
                     x: week,
-                    y: weekData ? weekData.y : 0,
+                    y: weekData?.y ?? 0,
+                    start_date: start,
+                    end_date: end,
                 };
             })
             .sort((a, b) => {
@@ -120,8 +128,7 @@ const ActivityHeatmap = ({ data, showKeys = true }: ActivityHeatmapProps & { sho
                 }}
                 onClick={(cell) => {
                     const locationId = addressToIdMap[cell.serieId];
-                    const { start, end } = getDateRangeFromYearWeek(cell.data.x);
-                    window.location.href = `/dashboard/activity?startdate=${start}&enddate=${end}&locations=${locationId}`;
+                    window.location.href = `/dashboard/activity?startdate=${cell.data.start_date}&enddate=${cell.data.end_date}&locations=${locationId}`;
                 }}
                 theme={{
                     labels: { text: { fontWeight: 'bold', fontSize: '0.75rem' } },
