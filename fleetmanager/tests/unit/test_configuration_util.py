@@ -76,6 +76,7 @@ def test_create_delete_vehicle(db_session):
         start_leasing=date.today() - timedelta(days=365),
         end_leasing=date.today() + timedelta(730),
         omkostning_aar=112000,
+        test_vehicle=True
     )
 
     saved_id = create_single_vehicle(db_session, vehicle=vehicle)

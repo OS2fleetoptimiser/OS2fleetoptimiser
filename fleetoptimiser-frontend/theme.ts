@@ -89,7 +89,7 @@ const theme = createTheme({
                             color: '#000'
                         },
                         '& .MuiInputBase-input': { // the text when typed in the textfield
-                            fontWeight: 'bold',
+                            fontWeight: 'medium',
                             color: '#000',
                             borderRadius: 3,
                             backgroundColor: '#f5f5f5'
