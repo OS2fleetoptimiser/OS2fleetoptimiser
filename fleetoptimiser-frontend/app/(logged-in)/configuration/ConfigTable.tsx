@@ -133,6 +133,7 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
     };
 
     const getStatus = (vehicle: Vehicle) => {
+        if (vehicle.disabled) return <Chip variant="outlined" style={{ color: '#888', borderColor: '#888' }} label="Deaktiveret"></Chip>;
         if (hasMissingData(vehicle)) return <Chip variant="outlined" color="error" label="Manglende metadata"></Chip>;
         if (hasEndedLeasing(vehicle)) return <Chip style={{ color: '#ca8a04', borderColor: '#ca8a04' }} variant="outlined" label="Udløbet leasing"></Chip>;
         return <Chip variant="outlined" color="success" label="OK" deleteIcon={<DoneIcon />} onDelete={() => 'render icon'}></Chip>;
@@ -145,6 +146,7 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                 size: 100,
                 Cell: ({ row }) => getStatus(row.original),
                 accessorFn: (row) => {
+                    if (row.disabled) return 'Deaktiveret';
                     if (hasMissingData(row)) return 'Manglende metadata';
                     if (hasEndedLeasing(row)) return 'Udløbet leasing';
                     return 'OK';
