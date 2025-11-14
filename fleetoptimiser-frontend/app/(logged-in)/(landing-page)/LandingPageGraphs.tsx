@@ -26,6 +26,8 @@ export default function LandingPageGraphs({ usageData, activityData }: { usageDa
             data: locationData.weeks.map((week) => ({
                 x: week.week_name,
                 y: week.average_activity,
+                start_date: week.start_date,
+                end_date: week.end_date,
             })),
         }));
 
