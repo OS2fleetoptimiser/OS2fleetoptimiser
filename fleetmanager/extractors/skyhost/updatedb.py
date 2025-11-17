@@ -156,17 +156,8 @@ def set_allowed_starts(ctx):
     account_ids = ctx.obj["account_ids"]
     departments = {}
     for api_key, account_id in zip(api_keys, account_ids):
-        vehicles_url = f"https://api.skyhost.dk/accounts/{account_id}/resources/vehicles"
-        complete_vehicle_list = []
         headers = {"Authorization": f"Bearer {api_key}"}
-        while True:
-            skyhost_vehicles_request = run_request(vehicles_url, params=None, headers=headers)
-            if skyhost_vehicles_request.status_code != 200:
-                break
-            complete_vehicle_list.extend(skyhost_vehicles_request.json().get("items"))
-            if vehicles_url := skyhost_vehicles_request.json().get("nextPageLink"):
-                continue
-            break
+        complete_vehicle_list = get_complete_tracker_list(account_id=account_id, api_key=api_key)
         for skyhost_vehicle in complete_vehicle_list:
             vehicle_details_url = f"https://api.skyhost.dk/accounts/{account_id}/resources/vehicles/{skyhost_vehicle.get('id')}/details"
             vehicle_response = run_request(vehicle_details_url, headers=headers, params=None)
@@ -232,14 +223,10 @@ def set_roundtrips_v2(ctx):
     collected_route_length = 0
     collected_route_count = 0
     for api_key, account_id in zip(api_keys, account_ids):
-        vehicles_url = f"https://api.skyhost.dk/accounts/{account_id}/resources/vehicles"
+        complete_vehicle_list = get_complete_tracker_list(account_id=account_id, api_key=api_key)
         headers = {"Authorization": f"Bearer {api_key}"}
-        skyhost_vehicles_request = run_request(vehicles_url, params=None, headers=headers)
-        if skyhost_vehicles_request.status_code != 200:
-            continue
 
-        skyhost_vehicles = skyhost_vehicles_request.json().get("items")
-        for skyhost_vehicle in skyhost_vehicles:
+        for skyhost_vehicle in complete_vehicle_list:
             if str(skyhost_vehicle.get("externalId")) not in known_imeis:
                 continue
             skyhost_device_id = skyhost_vehicle.get("id")
@@ -268,7 +255,6 @@ def set_roundtrips_v2(ctx):
                 score,
                 session,
                 is_session_maker=False,
-                # save=False
             )
             collected_route_count += usage_count
             collected_trip_count += possible_count
@@ -392,17 +378,8 @@ def set_trackers_v2(ctx, description_fields=None):
     banned_cars = [str(car.id) for car in session.query(Cars.id).filter(or_(Cars.deleted == True, Cars.disabled == True)).all()]
 
     for account_id, api_key in zip(account_ids, api_keys):
-        vehicle_list_url = f"https://api.skyhost.dk/accounts/{account_id}/resources/vehicles"
-        complete_vehicle_list = []
+        complete_vehicle_list = get_complete_tracker_list(account_id=account_id, api_key=api_key)
         headers = {"Authorization": f"Bearer {api_key}"}
-        while True:
-            vehicles_list_response = run_request(vehicle_list_url, headers=headers, params=None)
-            if vehicles_list_response.status_code != 200:
-                break
-            complete_vehicle_list.extend(vehicles_list_response.json().get("items"))
-            if vehicle_list_url := vehicles_list_response.json().get("nextPageLink"):
-                continue
-            break
 
         for vehicle_from_skyhost in complete_vehicle_list:
             imei = vehicle_from_skyhost.get("externalId")
@@ -928,12 +905,7 @@ def location_precision_test_v2(
     for account_id, api_key in zip(account_ids, api_keys):
         if len(carimei2key) == len(cars):
             break
-        vehicle_url = f"https://api.skyhost.dk/accounts/{account_id}/resources/vehicles"
-        headers = {"Authorization": f"Bearer {api_key}"}
-        vehicles_response = run_request(vehicle_url, headers=headers, params=None)
-        if vehicles_response.status_code != 200:
-            continue
-        vehicles_response = vehicles_response.json().get("items", [])
+        vehicles_response = get_complete_tracker_list(account_id=account_id, api_key=api_key)
         if len(vehicles_response) == 0 or len([veh for veh in vehicles_response if str(veh.get("externalId")) in car_imeis]) == 0:
             continue
 
@@ -1008,6 +980,21 @@ def location_precision_test_v2(
             "precision": precision,
             "kilometers": total_kilometers
         }
+
+
+def get_complete_tracker_list(account_id, api_key):
+    vehicle_list_url = f"https://api.skyhost.dk/accounts/{account_id}/resources/vehicles"
+    complete_vehicle_list = []
+    headers = {"Authorization": f"Bearer {api_key}"}
+    while True:
+        vehicles_list_response = run_request(vehicle_list_url, headers=headers, params=None)
+        if vehicles_list_response.status_code != 200:
+            break
+        complete_vehicle_list.extend(vehicles_list_response.json().get("items"))
+        if vehicle_list_url := vehicles_list_response.json().get("nextPageLink"):
+            continue
+        break
+    return complete_vehicle_list
 
 
 if __name__ == "__main__":
