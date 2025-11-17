@@ -580,14 +580,6 @@ def set_trackers(ctx, description_fields=None):
                 get_or_create(Session, Cars, car)
 
 
-def to_dt_timestamp(ts):
-    try:
-        dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S")
-    except ValueError:
-        dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%f")
-    return dt
-
-
 def get_trips(car_id, key, from_date=None):
     current_time = datetime.now()
     min_time = datetime(2022, 2, 24)

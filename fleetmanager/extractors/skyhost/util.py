@@ -1,3 +1,4 @@
+from dateutil import parser
 import requests
 import numpy as np
 from sqlalchemy.orm import Query, Session
@@ -126,8 +127,8 @@ def get_trips_v2(from_date: datetime, to_date: datetime, url: str, headers: dict
                         id=tId,
                         car_id=car_id,
                         distance=int(trip.get("tripDistanceMeters")) / 1000,
-                        start_time=fix_time(datetime.strptime(trip.get("start"), "%Y-%m-%dT%H:%M:%S%z")),
-                        end_time=fix_time(datetime.strptime(trip.get("end"), "%Y-%m-%dT%H:%M:%S%z")),
+                        start_time=fix_time(to_dt_timestamp(trip.get("start"))),
+                        end_time=fix_time(to_dt_timestamp(trip.get("end"))),
                         start_latitude=trip.get("startAddress", {}).get("lat"),
                         start_longitude=trip.get("startAddress", {}).get("lon"),
                         end_latitude=trip.get("endAddress", {}).get("lat"),
@@ -143,9 +144,11 @@ def get_trips_v2(from_date: datetime, to_date: datetime, url: str, headers: dict
     logger.info("len trips from gettripsv2: {}".format(len(trips)))
     return trips
 
+def to_dt_timestamp(ts):
+    return parser.parse(ts)
 
 def fix_time(trip_time):
-    if trip_time.tzinfo == timezone.utc:
+    if trip_time.tzinfo is not None:
         return trip_time.astimezone(cph)
     new_time = trip_time + (utc.localize(trip_time) - cph.localize(trip_time))
     if new_time.date() in winter_times and 1 <= trip_time.hour <= 2:
