@@ -1,8 +1,9 @@
-import { Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField } from '@mui/material';
+import { Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow } from '@mui/material';
 import { Vehicle } from '@/components/hooks/useGetVehicles';
 import { useAppSelector } from '@/components/redux/hooks';
 import { ReducedVehicleGroup } from '@/app/(logged-in)/fleet/VehiclesWidget';
 import { InputVehicleCount } from './InputVehicleCount';
+import ToolTip from '@/components/ToolTip';
 
 export const VehiclesSelectionTable = ({ manualSimulation, vehicles }: { manualSimulation: boolean; vehicles: ReducedVehicleGroup[] }) => {
     const propellantFormat = (vehicle: Vehicle) => {
@@ -18,7 +19,8 @@ export const VehiclesSelectionTable = ({ manualSimulation, vehicles }: { manualS
     const totalCountCurrent = vehicles.reduce((acc, car) => acc + car.count, 0);
     const name = manualSimulation ? 'simulering' : 'optimering';
     const headerStyle = 'p-3 text-gray-500 text-sm font-bold bg-gray-50 items-center';
-
+    const automaticToolText =
+        'Hvis du fjerner køretøjer, kan algoritmen erstatte dem med andre testkøretøjer for at finde det bedste mix. Hvis du beholder dem, vil algoritmen først forsøge at reducere antallet, hvis der er overkapacitet i den valgte flåde.';
     return (
         <TableContainer component={Paper} className="relative my-4 shadow-none rounded-md max-h-[calc(100vh-450px)] overflow-auto">
             <Table stickyHeader>
@@ -27,13 +29,12 @@ export const VehiclesSelectionTable = ({ manualSimulation, vehicles }: { manualS
                         <TableCell className={headerStyle}>Køretøj</TableCell>
                         <TableCell className={headerStyle}>WLTP</TableCell>
                         <TableCell className={headerStyle}>Omkostning / år</TableCell>
-                        <TableCell className={headerStyle}>Antal i {name}</TableCell>
-                        <TableCell className={`${headerStyle} xl:table-cell hidden`}>
-                            Antal i nuværende flåde
+                        <TableCell className={headerStyle}>
+                            Antal i {name}
+                            {!manualSimulation ? <ToolTip>{automaticToolText}</ToolTip> : ''}
                         </TableCell>
-                        {!manualSimulation && <TableCell className={`${headerStyle} xl:table-cell hidden`}>
-                            Slut leasing
-                        </TableCell>}
+                        <TableCell className={`${headerStyle} xl:table-cell hidden`}>Antal i nuværende flåde</TableCell>
+                        {!manualSimulation && <TableCell className={`${headerStyle} xl:table-cell hidden`}>Slut leasing</TableCell>}
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -52,12 +53,12 @@ export const VehiclesSelectionTable = ({ manualSimulation, vehicles }: { manualS
                                 <TableCell className={rowStyle}>
                                     <InputVehicleCount reducedVehicleGroup={vehicle} restrict={!manualSimulation} />
                                 </TableCell>
-                                <TableCell className={`${rowStyle} xl:table-cell hidden`}>
-                                    {vehicle.count}
-                                </TableCell>
-                                {!manualSimulation && <TableCell className={`${rowStyle} xl:table-cell hidden`}>
-                                    {vehicle.vehicle.end_leasing ? new Date(vehicle.vehicle.end_leasing).toLocaleDateString() : 'Ejet'}
-                                </TableCell>}
+                                <TableCell className={`${rowStyle} xl:table-cell hidden`}>{vehicle.count}</TableCell>
+                                {!manualSimulation && (
+                                    <TableCell className={`${rowStyle} xl:table-cell hidden`}>
+                                        {vehicle.vehicle.end_leasing ? new Date(vehicle.vehicle.end_leasing).toLocaleDateString() : 'Ejet'}
+                                    </TableCell>
+                                )}
                             </TableRow>
                         );
                     })}
