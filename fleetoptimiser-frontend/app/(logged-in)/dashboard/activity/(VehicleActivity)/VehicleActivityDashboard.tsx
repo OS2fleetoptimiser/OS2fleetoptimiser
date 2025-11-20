@@ -41,7 +41,8 @@ const VehicleActivityDashboard = ({
         departments: departments,
         forvaltninger: forvaltninger,
         shiftsAggregate: availableshifts,
-        includeTripSegments: true,
+        includeTripSegments: false,
+        asTripSegments: true,
         selector: (data) => {
             return {
                 locationGroup: {
