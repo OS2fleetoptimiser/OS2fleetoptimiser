@@ -58,7 +58,23 @@ export default function Home() {
     });
     const completeVehicleList = vehicles.flatMap((q) => q.data?.locations ?? []).flatMap((loc) => loc.vehicles ?? []);
     // deduplicating vehicles by id in case same location is selected under multiple forvaltninger
-    const allVehicles = Array.from(new Map(completeVehicleList.map((v) => [v.id, v])).values());
+    console.log(locationForvaltning)
+    const selectedForvaltninger = locationForvaltning.map(v => v.forvaltning)
+
+    // filter by forvaltning if hierarchy exists - forvaltninger is not empty
+    const hasForvaltningHierarchy = forvaltninger && Object.keys(forvaltninger).length > 0;
+    const filteredVehicles = hasForvaltningHierarchy
+        ? completeVehicleList.filter(vehicle => {
+            // If "Ingen Forvaltning" is selected, only show vehicles with no forvaltning
+            if (selectedForvaltninger.includes("Ingen Forvaltning") && !vehicle.forvaltning) {
+                return true;
+            }
+            // require exact match - only vehicles with the selected forvaltning
+            return vehicle.forvaltning && selectedForvaltninger.includes(vehicle.forvaltning);
+          })
+        : completeVehicleList;
+
+    const allVehicles = Array.from(new Map(filteredVehicles.map((v) => [v.id, v])).values());
     const [selectedVehicleIds, setSelectedVehicleIds] = useState(selectedVehicles.map((v) => v.id));
     const handleVehicleChange = (selectedVehicleIds: number[]) => {
         const vehicleWithStatusSelected = allVehicles.filter((v) => selectedVehicleIds.includes(v.id));
