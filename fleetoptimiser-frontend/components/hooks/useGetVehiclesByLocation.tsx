@@ -35,6 +35,7 @@ export type vehicleLocationFilters<T> = {
     endPeriod: Dayjs;
     location?: number;
     locations?: number[];
+    forvaltning?: string;
     isReset?: boolean;
     selector?: (data: locations) => T;
     callback?: (data: locations) => void;
@@ -55,13 +56,16 @@ export async function fetchVehiclesByLocation<T>(options: vehicleLocationFilters
     if (options.locations && options.locations.length > 0 && options.savedLocs && Object.keys(options.savedLocs).length === 0) {
         locationQueryParam = options.locations.map((id) => 'locations=' + id).join('&');
     }
-
+    let forvaltningQueryParam = '';
+    if (options.forvaltning) {
+        forvaltningQueryParam = `&forvaltning=${options.forvaltning}`
+    }
     try {
         const prefix = AxiosBase.defaults.baseURL
         const response = await fetch(
             `${prefix}simulation-setup/locations-vehicles?start_date=${options.startPeriod.format('YYYY-MM-DD')}&end_date=${options.endPeriod
                 .add(1, 'day')
-                .format('YYYY-MM-DD')}${locationQueryParam ? `&${locationQueryParam}` : ''}`
+                .format('YYYY-MM-DD')}${locationQueryParam ? `&${locationQueryParam}` : ''}${forvaltningQueryParam}`
         ).then((res) => res.json());
         const data = response;
         if (options.callback) {
