@@ -258,28 +258,40 @@ def get_location_vehicles_loc(
     start_date: date,
     end_date: date,
     location_ids: list[int],
+    forvaltning: str | None = None,
 ) -> LocationsVehicleList | None:
     # køretøjer der har kørt i den valgte periode
-    contributed_vehicles = (
+    contributed_vehicles_query = (
         session.query(RoundTrips.car_id)
-        .filter(
+    )
+    if forvaltning:
+        contributed_vehicles_query = contributed_vehicles_query.join(Cars, RoundTrips.car_id == Cars.id).filter(
+            Cars.forvaltning == forvaltning if forvaltning != "Ingen Forvaltning" else Cars.forvaltning.is_(None)
+        )
+
+    contributed_vehicles = contributed_vehicles_query.filter(
             RoundTrips.start_location_id.in_(location_ids),
             RoundTrips.start_time >= start_date,
             RoundTrips.end_time <= end_date,
-        )
-        .distinct()
+        ).distinct()
+
+    other_cars_query = (
+        session.query(Cars.id)
+        .filter(Cars.id.not_in(contributed_vehicles), Cars.location.in_(location_ids))
     )
+
+    if forvaltning:
+        other_cars_query = other_cars_query.filter(
+            Cars.forvaltning == forvaltning if forvaltning != "Ingen Forvaltning" else Cars.forvaltning.is_(None)
+        )
 
     # all other cars
     other_cars = [
-        id_[0]
-        for id_ in session.query(Cars.id)
-        .filter(Cars.id.not_in(contributed_vehicles), Cars.location.in_(location_ids))
-        .distinct()
-        .all()
+        id_.id
+        for id_ in other_cars_query.distinct().all()
     ]
 
-    contributed_vehicles = [id_[0] for id_ in contributed_vehicles.all()]
+    contributed_vehicles = [id_.car_id for id_ in contributed_vehicles.all()]
     vehicles = contributed_vehicles + other_cars
     name_fields = load_name_settings(session)
     location = LocationsVehicleList(

@@ -59,7 +59,7 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
 
     const locationsByForvaltning = useMemo(() => {
         const grouped: { [key: string]: Location[] } = {};
-        if (forvaltninger) {
+        if (forvaltninger && Object.keys(forvaltninger).length > 0) {
             Object.entries(forvaltninger).forEach(([name, ids]) => {
                 grouped[name] = locations.filter((loc) => ids.includes(loc.id));
             });

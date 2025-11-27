@@ -28,6 +28,7 @@ async def locations_vehicles(
     start_date: date,
     end_date: date,
     locations: Optional[List[int]] = Query(None),
+    forvaltning: Optional[str] = Query(None),
     session: Session = Depends(get_session),
 ) -> LocationsVehicleList:
     """
@@ -39,7 +40,13 @@ async def locations_vehicles(
         location_vehicles = []
         for location in locations:
             # pooling (consider as one) happens in the function , hence we iterate locations list
-            location_vehicles += get_location_vehicles_loc(session, start_date, end_date, [location]).locations
+            location_vehicles += get_location_vehicles_loc(
+                session,
+                start_date,
+                end_date,
+                [location],
+                forvaltning
+            ).locations
 
         result = LocationsVehicleList(locations=location_vehicles)
     else:
