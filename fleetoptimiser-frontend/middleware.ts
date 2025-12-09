@@ -4,7 +4,14 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 export async function middleware(req: NextRequest) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    let token
+    try {
+        token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    } catch (e){
+        console.error('Token verification failed:', e);
+        return NextResponse.redirect(new URL('/login?message=notoken', req.url));
+    }
+
     if (process.env.ROLE_CHECK) {
         if (token && token.role_valid) {
             return NextResponse.next();
