@@ -1,14 +1,10 @@
-import pickle
 import redis
 
-import redis.asyncio as redisAsync
 from celery.result import AsyncResult
 from datetime import datetime
-from fastapi import APIRouter, Depends, WebSocket, Header
-import os
+from fastapi import APIRouter, Depends, Header
 from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
-from websockets.exceptions import ConnectionClosedError
 
 from fleetmanager.configuration import (
     get_all_configurations_from_db,
@@ -30,6 +26,7 @@ from ..configuration.schemas import (
 from ..dependencies import get_session
 from .schemas import GoalSimulationOptions, GoalSimulationOut, GoalSimulationHistory
 from fleetmanager.fleet_simulation import simulation_results_to_excel
+from fleetmanager.tasks.running_tasks import set_task_running, clear_task_signal
 
 router = APIRouter(
     prefix="/goal-simulation",
@@ -102,11 +99,9 @@ async def goal_simulate(
                 ],
             )
         ]
-    sim_start = datetime.now()
+    sim_start = datetime.now().isoformat()
     r = run_goal_simulation.apply_async(args=(simulation_in, sim_start,), task_id=get_task_id("goal_simulation"))
-    if os.path.exists("/fleetmanager/running_tasks"):
-        with open(f"/fleetmanager/running_tasks/{sim_start}.txt", "w") as f:
-            f.write("running")
+    set_task_running(sim_start, "goal_simulation")
     return GoalSimulationOut(
         id=r.id,
         status=r.status,
@@ -121,7 +116,7 @@ async def delete_or_stop_simulation(simulation_id: str):
     r = AsyncResult(simulation_id)
     if r.info is None:
         return {"task_terminating_on_next_iteration": False}
-    os.remove(f"/fleetmanager/running_tasks/{r.info['sim_start']}.txt")
+    clear_task_signal(r.info.get("sim_start"), "goal_simulation")
     return {"task_terminating_on_next_iteration": True}
 
 

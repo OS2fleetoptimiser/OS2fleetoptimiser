@@ -1,6 +1,7 @@
 import os
 
 from celery import Celery
+from celery.signals import worker_ready
 from kombu import Queue, serialization
 from datetime import datetime, timedelta
 from uuid import uuid4
@@ -11,6 +12,7 @@ from fleetmanager.api.location.schemas import PrecisionTestOptions
 from fleetmanager.fleet_simulation import fleet_simulator
 from fleetmanager.goal_simulation import goal_simulator, automatic_simulator
 from fleetmanager.location import precision_test
+from fleetmanager.tasks.cache_utils import get_redis_client
 
 app = Celery(
     os.getenv("CELERY_USER", f"fleetmanager_{uuid4().hex}"),
@@ -51,3 +53,9 @@ def run_precision_location_test(self, settings: PrecisionTestOptions):
         task=self,
         test_name=settings.test_name
     )
+
+
+@worker_ready.connect
+def verify_redis_connection(sender, **kwargs):
+    """fail fast if redis is not available when worker starts"""
+    get_redis_client()

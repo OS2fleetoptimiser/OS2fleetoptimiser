@@ -23,6 +23,7 @@ from fleetmanager.extractors.gamfleet.updatedb import location_precision_test as
 from fleetmanager.extractors.fleetcomplete.updatedb import location_precision_test as precision_test_fleetcomplete
 from fleetmanager.extractors.puma.updatedb import location_precision_test as precision_test_puma
 from fleetmanager.logging import logging
+from fleetmanager.tasks.running_tasks import clear_task_signal, is_task_running
 
 
 logger = logging.getLogger(__name__)
@@ -289,14 +290,11 @@ def precision_test(
         task=None,
         test_name=None
 ):
-    test_path = None
-
     if task is not None and test_name is not None:
         task.update_state(
             state="PROGRESS",
             meta={"progress": 0, "test_name": test_name}
         )
-        test_path = f"/fleetmanager/running_tasks/{test_name}.txt"
 
     extractor_to_test_mapper = {
         "SKYHOST": {"precision_function": precision_test_skyhost, "keys_key": "SKYHOST_KEYS"},
@@ -376,16 +374,15 @@ def precision_test(
                 )
         ):
             results.append(car_result)
-            if task is not None and test_path:
-                if not os.path.exists(test_path):
-                    return response
+            if not is_task_running(test_name, "location"):
+                return response
+            if task is not None:
                 task.update_state(
                     state="PROGRESS",
                     meta={"progress": len(results) / len_cars, "test_name": test_name}
                 )
 
-    if test_path and os.path.exists(test_path):
-        os.remove(test_path)
+    clear_task_signal(test_name, "location")
 
     response.roundtrip_km = sum(map(lambda car_test: car_test["kilometers"] * car_test["precision"], results))
     response.km = sum(map(lambda car_test: car_test["kilometers"], results))
