@@ -19,6 +19,8 @@ from fleetmanager.model.vehicle_optimisation import FleetOptimisation
 from sqlalchemy.orm import Session
 import redis
 
+from fleetmanager.tasks.running_tasks import clear_task_signal, is_task_running
+
 
 def goal_simulator(settings: GoalSimulationOptions, task=None, sim_start=None):
     if task is not None and sim_start is not None:
@@ -91,7 +93,7 @@ def goal_simulator(settings: GoalSimulationOptions, task=None, sim_start=None):
 
     response = {
         "number_of_trips": 0,
-        "solutions": None,
+        "solutions": [],
         "simulation_options": settings,
         "message": None,
     }
@@ -99,7 +101,7 @@ def goal_simulator(settings: GoalSimulationOptions, task=None, sim_start=None):
     # check if there are vehicles in the selected/active
     if len(vehicle_manager.proper) == 0:
         response["message"] = "Input vehicles does not exist in the database"
-        delete_running_file(f"/fleetmanager/running_tasks/{sim_start}.txt")
+        clear_task_signal(sim_start, "goal_simulation")
         return response
 
     tb = TabuSearch(
@@ -118,7 +120,7 @@ def goal_simulator(settings: GoalSimulationOptions, task=None, sim_start=None):
 
     if tb.total_trips is None:
         response["message"] = "No trips found"
-        delete_running_file(f"/fleetmanager/running_tasks/{sim_start}.txt")
+        clear_task_signal(sim_start, "goal_simulation")
         return response
 
     response["number_of_trips"] = len(tb.total_trips.trips)
@@ -127,16 +129,14 @@ def goal_simulator(settings: GoalSimulationOptions, task=None, sim_start=None):
     # workaround for allowing interruption of goal simulation
     if search_ready is False:
         response["message"] = "No cars selected."
-        if sim_start is not None and os.path.exists(f"/fleetmanager/running_tasks/{sim_start}.txt"):
-            os.remove(f"/fleetmanager/running_tasks/{sim_start}.txt")
+        clear_task_signal(sim_start, "goal_simulation")
         return response
 
     for a, b in tb.iterate_solutions():
+        if not is_task_running(sim_start, "goal_simulation"):
+            response["message"] = "Search aborted."
+            return response
         if task is not None:
-            if not os.path.exists(f"/fleetmanager/running_tasks/{sim_start}.txt"):
-                response["message"] = "Search aborted."
-                return response
-
             task.update_state(
                 state="PROGRESS",
                 meta={"progress": 0 if any([a == 0, b == 0]) else a / b, "sim_start": sim_start},
@@ -145,7 +145,7 @@ def goal_simulator(settings: GoalSimulationOptions, task=None, sim_start=None):
     tb.report = tb.sort_solutions()
     if len(tb.report) == 0:
         response["message"] = "No solutions found"
-        delete_running_file(f"/fleetmanager/running_tasks/{sim_start}.txt")
+        clear_task_signal(sim_start, "goal_simulation")
         return response
 
     current_expense = tb.cur_result[0]
@@ -174,7 +174,7 @@ def goal_simulator(settings: GoalSimulationOptions, task=None, sim_start=None):
         )
 
     response["solutions"] = solutions
-    delete_running_file(f"/fleetmanager/running_tasks/{sim_start}.txt")
+    clear_task_signal(sim_start, "goal_simulation")
     return response
 
 
@@ -248,7 +248,7 @@ def automatic_simulator(settings: GoalSimulationOptions, task=None, sim_start=No
     sim_settings: prepared_settings_type = sim_settings
     response = {
         "number_of_trips": 0,
-        "solutions": None,
+        "solutions": [],
         "simulation_options": settings,
         "message": None,
     }
@@ -263,39 +263,43 @@ def automatic_simulator(settings: GoalSimulationOptions, task=None, sim_start=No
         settings=sim_settings
     )
     if not update_progress(task, sim_start, 0.05, response, task_message="Estimerer cykel - og køretøjsbehov"):
+        response["message"] = "Search aborted."
         return response
 
     automatic.prepare_simulation()
-
     if automatic.th is None or len(automatic.th.trips.all_trips) == 0:
         response["message"] = "No trips found"
-        delete_running_file(f"/fleetmanager/running_tasks/{sim_start}.txt")
+        clear_task_signal(sim_start, "goal_simulation")
         return response
 
     if automatic.fh is None or len(automatic.fh.fleet) == 0:
         response["message"] = "No cars selected."
-        delete_running_file(f"/fleetmanager/running_tasks/{sim_start}.txt")
+        clear_task_signal(sim_start, "goal_simulation")
         return response
 
     if not update_progress(task, sim_start, 0.2, response, task_message="Afsøger optimale flådesammensætninger"):
+        response["message"] = "Search aborted."
         return response
 
     for n, x in automatic.run_search():
         step = (1 + n) / (1 + x) * 60 / 100
         if not update_progress(task, sim_start, step + 0.2, response, task_message="Tester løsninger"):
+            response["message"] = "Search aborted."
             return response
 
     for n, x in automatic.run_solutions():
         step = (1 + n) / (1 + x) * 20 / 100
         if not update_progress(task, sim_start, step + 0.8, response, task_message="Evaluerer resultater"):
+            response["message"] = "Search aborted."
             return response
 
     if len(automatic.reports) == 0:
         response["message"] = "No solutions found"
-        delete_running_file(f"/fleetmanager/running_tasks/{sim_start}.txt")
+        clear_task_signal(sim_start, "goal_simulation")
         return response
 
     if not update_progress(task, sim_start, 0.99, response, task_message="Sammenligner med nuværende flåde"):
+        response["message"] = "Search aborted."
         return response
 
     current_results = automatic.run_current()
@@ -343,7 +347,7 @@ def automatic_simulator(settings: GoalSimulationOptions, task=None, sim_start=No
         )
 
     response["solutions"] = solutions
-    delete_running_file(f"/fleetmanager/running_tasks/{sim_start}.txt")
+    clear_task_signal(sim_start, "goal_simulation")
     return response
 
 
@@ -425,11 +429,9 @@ def rank_solutions(solutions, prioritisation):
 
 
 def update_progress(task, sim_start, progress, response, task_message=None):
-    """Helper function to update task progress and check file existence."""
+    if not is_task_running(sim_start, "goal_simulation"):
+        return False
     if task is not None:
-        if not os.path.exists(f"/fleetmanager/running_tasks/{sim_start}.txt"):
-            response["message"] = "Search aborted."
-            return False
         meta = {"progress": progress, "sim_start": sim_start}
         if task_message:
             meta["task_message"] = task_message

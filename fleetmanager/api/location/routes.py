@@ -28,6 +28,7 @@ from .schemas import (
     PrecisionTestOut,
     PrecisionTestOptions,
 )
+from fleetmanager.tasks.running_tasks import set_task_running, clear_task_signal
 
 router = APIRouter(
     prefix="/locations"
@@ -126,11 +127,8 @@ async def location_precision_test(
     """
     Route to start a location precision test with new parking spots
     """
-    test_name = f"precision_test_{precision_test_config.location}_{datetime.now()}"
-    running_tasks_path = "/fleetmanager/running_tasks"
-    if os.path.exists(running_tasks_path):
-        with open(f"{running_tasks_path}/{test_name}.txt", "w") as f:
-            f.write("running")
+    test_name = f"precision_test_{precision_test_config.location}_{datetime.now().isoformat()}"
+    set_task_running(test_name, "location")
     extractors = os.getenv("EXTRACTORS")
     extractors = [] if extractors is None else extractors.split(",")
     r = run_precision_location_test.apply_async(args=(
@@ -172,6 +170,5 @@ async def delete_location_precision_test(
     r = AsyncResult(precision_test_id)
     if r.info is None:
         return {"task_terminating_on_next_iteration": False}
-
-    os.remove(f"/fleetmanager/running_tasks/{r.info['test_name']}.txt")
+    clear_task_signal(r.info["test_name"], "location")
     return {"task_terminating_on_next_iteration": True}
