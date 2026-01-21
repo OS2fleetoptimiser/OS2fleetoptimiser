@@ -1,15 +1,20 @@
+from datetime import datetime
 import os
 from importlib.resources import files
 
+from requests import Session
+
 import sqlalchemy
-from sqlalchemy import create_engine, select, inspect, text, Engine
+from sqlalchemy import create_engine, select, inspect, Engine, func
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from fleetmanager.data_access.seeding import seed_allowed_starts, seed_cars, seed_dynamic_roundtrips_and_segments
 
 from .dbschema import (
     Base,
     FuelTypes,
     LeasingTypes,
+    RoundTrips,
     SimulationSettings,
     VehicleTypes,
     get_default_fuel_types,
@@ -55,7 +60,7 @@ def engine_creator(
     if any((db_name, db_password, db_user, db_url, db_server)):
         dsn = f"{db_server}://{db_user}:{db_password}@{db_url}/{db_name}"
         if db_server == "mssql+pyodbc":
-            # add the driver query to the string
+            
             dsn += "?driver=ODBC+Driver+17+for+SQL+Server"
         db_engine = create_engine(
             dsn,
@@ -69,24 +74,17 @@ def engine_creator(
             poolclass=StaticPool,
             # encoding="latin-1",
         )
-        insp = inspect(db_engine)
-        if "cars" not in insp.get_table_names():
-            Base.metadata.create_all(db_engine)
-            file = open(
-                files("fleetmanager").joinpath("dummy_data.sql"), encoding="UTF-8"
-            ).read()
-            for a in file.split(";"):
-                with sessionmaker(bind=db_engine)() as s:
-                    e = (
-                        a.replace("\n", "").replace("\t", "").replace("  ", "") + ";"
-                    ).strip()
-                    if len(e) == 1:
-                        continue
-                    s.execute(text(e))
-                    s.commit()
+    insp = inspect(db_engine)
+        
+    if not insp.has_table("cars"):
+        Base.metadata.create_all(db_engine)
+        create_defaults(db_engine)
+            
+            
+    seed_allowed_starts(db_engine)                  
+    seed_cars(db_engine)
+    seed_dynamic_roundtrips_and_segments(db_engine)
 
-    Base.metadata.create_all(db_engine)
-    create_defaults(db_engine)
     return db_engine
 
 

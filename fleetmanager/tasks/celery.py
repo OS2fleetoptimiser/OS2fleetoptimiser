@@ -13,11 +13,15 @@ from fleetmanager.fleet_simulation import fleet_simulator
 from fleetmanager.goal_simulation import goal_simulator, automatic_simulator
 from fleetmanager.location import precision_test
 from fleetmanager.tasks.cache_utils import get_redis_client
+from dotenv import load_dotenv
+
+load_dotenv(".dev-env")
 
 app = Celery(
     os.getenv("CELERY_USER", f"fleetmanager_{uuid4().hex}"),
     broker=os.getenv("CELERY_BROKER_URL", "amqp://localhost"),
     backend=os.getenv("CELERY_BACKEND_URL", "redis://localhost"),
+    
 )
 app.log.already_setup = True
 app.conf.event_serializer = "pickle"

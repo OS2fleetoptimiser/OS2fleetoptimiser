@@ -1,0 +1,23 @@
+version: "3.7"
+
+networks:
+  backend_shared:
+    name: backend_shared
+
+services:
+  redis:
+    image: "redis:latest"
+    networks:
+      - backend_shared
+    ports:
+      - "6379:6379"
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    hostname: "rabbitmq"
+    ports:
+      - "5672:5672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=fleet
+      - RABBITMQ_DEFAULT_PASS=fleet
+    networks:
+      - backend_shared
