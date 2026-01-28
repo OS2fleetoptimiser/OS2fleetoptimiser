@@ -291,7 +291,7 @@ def create_single_vehicle(session: Session, vehicle: VehicleInput, test_vehicle:
     else:
         new_id = max_id + 1
 
-    vehicle_entry = {"id": new_id}
+    vehicle_entry = {}
     for key, value in vehicle:
         if key in ("id", "name"):
             continue
@@ -313,7 +313,9 @@ def create_single_vehicle(session: Session, vehicle: VehicleInput, test_vehicle:
 
     # manually creating a vehicle implies no fleet management synchronisation hence mark as test_vehicle
     vehicle_entry["test_vehicle"] = test_vehicle
-    session.add(Cars(**vehicle_entry))
+    car = Cars(**vehicle_entry)
+    car.id = new_id  # Set ID after creation since Cars model has init=False on id field
+    session.add(car)
     session.commit()
     return new_id
 

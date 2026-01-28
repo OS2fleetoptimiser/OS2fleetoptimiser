@@ -13,9 +13,7 @@ from fleetmanager.fleet_simulation import fleet_simulator
 from fleetmanager.goal_simulation import goal_simulator, automatic_simulator
 from fleetmanager.location import precision_test
 from fleetmanager.tasks.cache_utils import get_redis_client
-from dotenv import load_dotenv
 
-load_dotenv(".dev-env")
 
 app = Celery(
     os.getenv("CELERY_USER", f"fleetmanager_{uuid4().hex}"),
