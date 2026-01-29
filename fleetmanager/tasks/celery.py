@@ -14,7 +14,6 @@ from fleetmanager.goal_simulation import goal_simulator, automatic_simulator
 from fleetmanager.location import precision_test
 from fleetmanager.tasks.cache_utils import get_redis_client
 
-
 app = Celery(
     os.getenv("CELERY_USER", f"fleetmanager_{uuid4().hex}"),
     broker=os.getenv("CELERY_BROKER_URL", "amqp://localhost"),
