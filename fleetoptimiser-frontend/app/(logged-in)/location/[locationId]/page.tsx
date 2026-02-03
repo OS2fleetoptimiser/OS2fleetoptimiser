@@ -10,7 +10,7 @@ import {
 import { LocationHeader } from "@/app/(logged-in)/location/LocationHeader";
 import {Alert, Button, CircularProgress, Snackbar} from "@mui/material";
 import dynamic from "next/dynamic";
-import { useState, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import { ParkingSpotList } from "@/app/(logged-in)/location/ParkingSpotList";
 import { AllowedStart } from "@/components/hooks/useGetLocationPrecision";
 import LoadingOverlay from "@/components/LoadingOverlay";
@@ -37,7 +37,8 @@ const newLocationInformation: ExtendedLocationInformation = {
     km: 0
 }
 
-export default function Page({ params }: { params: { locationId?: string }}){
+export default function Page({ params }: { params: Promise<{ locationId?: string }> }){
+    const { locationId } = use(params);
     const { hasWritePrivilege } = useWritePrivilegeContext();
     const router = useRouter();
     const startDate = dayjs().subtract(1, 'month').toDate();
@@ -47,8 +48,8 @@ export default function Page({ params }: { params: { locationId?: string }}){
     const [noChanges, setNoChanges] = useState<boolean>(true);
     const [openSnackBar, setOpenSnackBar] = useState<boolean>(false);
     const [snackText, setSnackText] = useState<string>('');
-    const isEditMode = !!params.locationId;
-    const { data: fetchedData, isLoading, error } = useGetSingleLocationPrecision(startDate, parseInt(params.locationId ?? '0'));
+    const isEditMode = !!locationId;
+    const { data: fetchedData, isLoading, error } = useGetSingleLocationPrecision(startDate, parseInt(locationId ?? '0'));
     const data = isEditMode ? (fetchedData ?? newLocationInformation) : newLocationInformation;
     const testingEnabled = true; // todo make this an env
 
@@ -92,7 +93,7 @@ export default function Page({ params }: { params: { locationId?: string }}){
         }
     };
 
-    const testPrecision = useTestLocationPrecision(undefined, startDate, parseInt(params.locationId || '0'), parkingSpots);
+    const testPrecision = useTestLocationPrecision(undefined, startDate, parseInt(locationId || '0'), parkingSpots);
     return (
         <>
             <div>

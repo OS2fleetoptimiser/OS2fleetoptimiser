@@ -19,13 +19,14 @@ import {
 } from '@/components/redux/SimulationSlice';
 import { useAppDispatch } from '@/components/redux/hooks';
 import dayjs from 'dayjs';
-import { useEffect } from 'react';
+import { use, useEffect } from 'react';
 import { CircularProgress } from '@mui/material';
 import useGetVehicles from '@/components/hooks/useGetVehicles';
 import GoalSimulationHandler from '@/app/(logged-in)/goal/GoalSimulationHandler';
 
-export default function Page({ params }: { params: { simulationId: string } }) {
-    const simulation = useGetGoalSimulation(params.simulationId);
+export default function Page({ params }: { params: Promise<{ simulationId: string }> }) {
+    const { simulationId } = use(params);
+    const simulation = useGetGoalSimulation(simulationId);
     const vehicles = useGetVehiclesByLocation({
         startPeriod: dayjs(simulation.data?.result.simulation_options.start_date),
         endPeriod: dayjs(simulation.data?.result.simulation_options.end_date),
@@ -75,7 +76,7 @@ export default function Page({ params }: { params: { simulationId: string } }) {
                     </div>
                 </div>
             )}
-            {!vehicles.isLoading && <GoalSimulationHandler simulationId={params.simulationId}></GoalSimulationHandler>}
+            {!vehicles.isLoading && <GoalSimulationHandler simulationId={simulationId}></GoalSimulationHandler>}
         </>
     );
 }
