@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import TimeActivityDashboard from './(TimeActivity)/TimeActivityDashboard';
 import AddFilter from '@/components/AddFilter';
 import { Filters } from '../(filters)/FilterHeader';
@@ -9,10 +10,11 @@ import {CircularProgress} from "@mui/material";
 
 
 type Props = {
-    searchParams: Filters;
+    searchParams: Promise<Filters>;
 };
 
-export default function DrivingActivity({ searchParams }: Props) {
+export default function DrivingActivity({ searchParams: searchParamsPromise }: Props) {
+    const searchParams = use(searchParamsPromise);
     const enabled = searchParams.locations || searchParams.vehicles || searchParams.departments || searchParams.forvaltninger;
   const { data: settings, isLoading, error } = useGetSettings();
 
