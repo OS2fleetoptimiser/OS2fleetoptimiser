@@ -1,7 +1,7 @@
 'use client';
 
 import { usePatchGetLoginTime } from '@/components/hooks/userLoginTime';
-import { useSession } from 'next-auth/react';
+import { useSession } from '@/lib/auth-client';
 import LoginHeader from '@/app/(logged-in)/(landing-page)/LoginHeader';
 import LandingPageKPIs from '@/app/(logged-in)/(landing-page)/KPIs';
 import SimulationHighlights from '@/app/(logged-in)/(landing-page)/SimulationHighlights';
@@ -14,7 +14,8 @@ import NoSimulations from '@/app/(logged-in)/(landing-page)/NoSimulations';
 
 export default function Home() {
     const { data: session } = useSession();
-    const providerAccountId = session?.user?.providerAccountId || 'developer';
+    // Better Auth uses 'id' instead of 'providerAccountId'
+    const providerAccountId = session?.user?.id || 'developer';
     const { data: lastLogin, isLoading: loginIsLoading } = usePatchGetLoginTime(providerAccountId);
     const { data: kpiData, isLoading: isKPIsLoading } = useGetLandingPageKPIs();
     const { data: latestSimulations, isLoading: simulationsIsLoading } = useGetSimulationHighlights();
