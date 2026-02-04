@@ -1,18 +1,18 @@
-import { getServerSession } from "next-auth/next";
-import {authOptions} from "@/app/authOptions";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export async function checkWritePrivilege() {
     if (process.env.NODE_ENV === 'development') {
-        return true
+        return true;
     }
-    //@ts-ignore
-    const session = await getServerSession(authOptions);
-    if (!session){
-        return false
+
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+
+    if (!session?.user) {
+        return false;
     }
-    if (!session.user){
-        return false
-    }
-    //@ts-ignore
-    return session.user.write_privilege
+
+    return session.user.writePrivilege ?? false;
 }

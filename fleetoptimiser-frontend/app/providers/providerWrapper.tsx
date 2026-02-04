@@ -7,7 +7,6 @@ import { Provider } from 'react-redux';
 import 'dayjs/locale/da';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { SessionProvider } from "next-auth/react";
 import ValueCheckProvider from './ValueCheckProvider';
 import dayjs from 'dayjs';
 import weekday from 'dayjs/plugin/weekday';
@@ -19,17 +18,15 @@ const queryClient = new QueryClient();
 
 const ProviderWrapper = ({ children }: { children: React.ReactNode }) => {
     return (
-        <SessionProvider>
-            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="da">
-                <Provider store={store}>
-                    <QueryClientProvider client={queryClient}>
-                        <ValueCheckProvider />
-                        {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
-                        {children}
-                    </QueryClientProvider>
-                </Provider>
-            </LocalizationProvider>
-        </SessionProvider>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="da">
+            <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
+                    <ValueCheckProvider />
+                    {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
+                    {children}
+                </QueryClientProvider>
+            </Provider>
+        </LocalizationProvider>
     );
 };
 
