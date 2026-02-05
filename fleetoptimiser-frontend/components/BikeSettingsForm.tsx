@@ -1,5 +1,4 @@
 import ToolTip from '@/components/ToolTip';
-import { LoadingButton } from '@mui/lab';
 import { Alert, Button, Divider, TextField } from '@mui/material';
 import { FieldArray, Form, Formik } from 'formik';
 import { useState } from 'react';
@@ -250,7 +249,7 @@ const BikeForm = (props: FormData) => {
                                 )}
                             </FieldArray>
                             <div className="flex items-end flex-col">
-                                <LoadingButton
+                                <Button
                                     disabled={!hasWritePrivilege}
                                     type="button"
                                     onClick={() => {
@@ -264,8 +263,8 @@ const BikeForm = (props: FormData) => {
                                     className="mb-2"
                                 >
                                     <span>Gem for nuværende simulering</span>
-                                </LoadingButton>
-                                <LoadingButton
+                                </Button>
+                                <Button
                                     disabled={!hasWritePrivilege}
                                     type="button"
                                     onClick={() => {
@@ -278,7 +277,7 @@ const BikeForm = (props: FormData) => {
                                     variant="contained"
                                 >
                                     <span>Gem globalt</span>
-                                </LoadingButton>
+                                </Button>
                             </div>
                             {status === 'ServerError' && <p>Der opstod en fejl på serveren der forhindrede ændringerne i at blive gemt</p>}
                         </Form>

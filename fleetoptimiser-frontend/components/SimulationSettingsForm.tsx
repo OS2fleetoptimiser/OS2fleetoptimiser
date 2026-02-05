@@ -1,7 +1,6 @@
 import usePatchConfigurations from '@/components/hooks/usePatchConfigurations';
 import ToolTip from '@/components/ToolTip';
-import { LoadingButton } from '@mui/lab';
-import { Alert, FormControl, InputLabel, MenuItem, Modal, Select, TextField } from '@mui/material';
+import { Alert, Button, FormControl, InputLabel, MenuItem, Modal, Select, TextField } from '@mui/material';
 import { Form, Formik } from 'formik';
 import { InferType, number, object, string } from 'yup';
 import SaveIcon from '@mui/icons-material/Save';
@@ -323,7 +322,7 @@ export const SettingsForm = ({ initialValues }: { initialValues: FormData }) => 
                                     />
                                 </div>
                                 <div className="flex items-end flex-col">
-                                    <LoadingButton
+                                    <Button
                                         disabled={!hasWritePrivilege}
                                         type="button"
                                         onClick={() => {
@@ -337,8 +336,8 @@ export const SettingsForm = ({ initialValues }: { initialValues: FormData }) => 
                                         className="mb-2"
                                     >
                                         <span>Gem for nuværende simulation</span>
-                                    </LoadingButton>
-                                    <LoadingButton
+                                    </Button>
+                                    <Button
                                         disabled={!hasWritePrivilege}
                                         type="button"
                                         onClick={() => {
@@ -351,7 +350,7 @@ export const SettingsForm = ({ initialValues }: { initialValues: FormData }) => 
                                         variant="contained"
                                     >
                                         <span>Gem globalt</span>
-                                    </LoadingButton>
+                                    </Button>
                                 </div>
                             </Form>
                         </>

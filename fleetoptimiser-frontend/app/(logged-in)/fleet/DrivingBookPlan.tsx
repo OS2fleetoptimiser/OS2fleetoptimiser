@@ -72,33 +72,35 @@ export const DrivingBookTable = ({ data }: DrivingBookTableProps) => {
                     className="my-1 bg-[#F5F5F5] rounded-md px-1"
                     value={filterText}
                     onChange={(e) => setFilterText(e.target.value)}
-                    inputProps={{
-                        style: {
-                            padding: 0,
-                            fontSize: 14,
+                    slotProps={{
+                        input: {
+                            disableUnderline: true,
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon fontSize="small" />
+                                </InputAdornment>
+                            ),
+                            endAdornment: filterText && (
+                                <InputAdornment position="end">
+                                    <IconButton onClick={() => setFilterText('')}>
+                                        <ClearIcon fontSize="small" />
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                            sx: {
+                                height: 36,
+                                fontSize: 14,
+                                paddingX: 1,
+                            },
                         },
-                    }}
-                    InputProps={{
-                        disableUnderline: true,
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <SearchIcon fontSize="small" />
-                            </InputAdornment>
-                        ),
-                        endAdornment: filterText && (
-                            <InputAdornment position="end">
-                                <IconButton onClick={() => setFilterText('')}>
-                                    <ClearIcon fontSize="small" />
-                                </IconButton>
-                            </InputAdornment>
-                        ),
-                        sx: {
-                            height: 36,
-                            fontSize: 14,
-                            paddingX: 1,
-                        },
-                    }}
-                />
+
+                        htmlInput: {
+                            style: {
+                                padding: 0,
+                                fontSize: 14,
+                            },
+                        }
+                    }} />
             </div>
             <TableContainer className="shadow-none rounded-md border-none overflow-auto max-h-[calc(100vh-370px)]" component={Paper}>
                 <Table stickyHeader>

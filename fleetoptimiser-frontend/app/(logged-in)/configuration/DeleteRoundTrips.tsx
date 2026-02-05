@@ -1,7 +1,6 @@
 import ApiError from '@/components/ApiError';
 import API from '@/components/AxiosBase';
 import ToolTip from '@/components/ToolTip';
-import { LoadingButton } from '@mui/lab';
 import { Button, CircularProgress, Dialog, DialogContent, DialogTitle, TextField } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import { useQuery } from '@tanstack/react-query';
@@ -130,21 +129,23 @@ const DeleteRoundTrips = ({ open, onClose }: DeleteRoundTripsModalProps) => {
                                         setKeepData(inputValue);
                                     }
                                 }}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                                InputProps={{
-                                    inputProps: {
-                                        max: 24,
-                                        min: 0,
+                                slotProps={{
+                                    input: {
+                                        inputProps: {
+                                            max: 24,
+                                            min: 0,
+                                        },
                                     },
-                                }}
-                            />
+
+                                    inputLabel: {
+                                        shrink: true,
+                                    }
+                                }} />
                         </div>
                         <div className="mt-3 flex justify-end">
-                            <LoadingButton size="small" onClick={handleDelete} loading={loading} loadingPosition="center" variant="contained">
+                            <Button size="small" onClick={handleDelete} loading={loading} loadingPosition="center" variant="contained">
                                 <span>Gem</span>
-                            </LoadingButton>
+                            </Button>
                         </div>
                     </div>
                 )}
