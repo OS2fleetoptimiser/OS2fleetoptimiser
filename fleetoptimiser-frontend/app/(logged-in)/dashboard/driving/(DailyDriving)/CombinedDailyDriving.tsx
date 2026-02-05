@@ -38,7 +38,7 @@ const CombinedDailyDrivingGraph = ({ data, header, colorMapper }: Props) => {
                         return (
                             <div className="bg-gray-900 text-white p-2 rounded text-xs">
                                 <div>
-                                    <span className="font-bold">{point.serieId}</span>
+                                    <span className="font-bold">{point.seriesId}</span>
                                 </div>
                                 <div>{point.data.xFormatted}</div>
                                 <div>
