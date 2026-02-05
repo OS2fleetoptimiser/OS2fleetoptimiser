@@ -12,7 +12,6 @@
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@headlessui/react": "^1.7.14",
         "@hookform/resolvers": "^3.1.0",
         "@mui/icons-material": "^7.3.7",
         "@mui/lab": "^7.0.1-beta.21",
