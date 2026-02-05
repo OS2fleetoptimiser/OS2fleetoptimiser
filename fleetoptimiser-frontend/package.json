@@ -37,7 +37,7 @@
         "dayjs": "^1.11.7",
         "file-saver": "^2.0.5",
         "follow-redirects": "^1.15.6",
-        "formik": "^2.2.9",
+        "formik": "^2.4.9",
         "http-proxy-middleware": "^3.0.5",
         "leaflet": "^1.9.4",
         "lodash": "^4.17.21",
