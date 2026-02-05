@@ -46,11 +46,13 @@ const AmountInput = ({ availableVehicles }: amountProps) => {
             variant="standard"
             value={allGoalSimulationVehicles.filter((value) => availableVehicles.includes(value)).length}
             onChange={(e) => handleChange(e.target.value)}
-            InputProps={{
-                endAdornment: <InputAdornment position="start">/{availableVehicles.length}</InputAdornment>,
-                inputProps: {
-                    style: { textAlign: 'right' },
-                },
+            slotProps={{
+                input: {
+                    endAdornment: <InputAdornment position="start">/{availableVehicles.length}</InputAdornment>,
+                    inputProps: {
+                        style: { textAlign: 'right' },
+                    },
+                }
             }}
         ></TextField>
     );
@@ -65,21 +67,23 @@ const AmountEmpty = () => {
                 disabled={true}
                 value={0}
                 className="text-blue-600"
-                InputProps={{
-                    endAdornment: <InputAdornment position="start"><span style={{ color: '#ababab' }}> /0</span></InputAdornment>,
-                    inputProps: {
-                        style: { textAlign: 'right'},
-                    },
-                }}
                 sx={{
                     '& .MuiInputBase-root': {
                         color: '#2563eb',
                     },
                 }}
+                slotProps={{
+                    input: {
+                        endAdornment: <InputAdornment position="start"><span style={{ color: '#ababab' }}> /0</span></InputAdornment>,
+                        inputProps: {
+                            style: { textAlign: 'right'},
+                        },
+                    }
+                }}
             >
             </TextField>
         </Tooltip>
-    )
+    );
 }
 
 const defaultColumns = [

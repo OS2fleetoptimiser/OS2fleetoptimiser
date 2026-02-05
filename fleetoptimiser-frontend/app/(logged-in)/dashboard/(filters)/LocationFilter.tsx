@@ -53,17 +53,19 @@ export default function LocationFilter({
                             size="small"
                             type="text"
                             placeholder="Søg..."
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <IconButton>
-                                            <Search />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <IconButton>
+                                                <Search />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }
+                            }}
                         />
                         <Button
                             className="w-40"

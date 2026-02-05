@@ -102,8 +102,10 @@ const ExtraVehicleModal = ({ buttonAppearance = false }: { buttonAppearance?: bo
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     variant="outlined"
                                     size="small"
-                                    InputProps={{
-                                        startAdornment: <SearchIcon className="mr-2 text-gray-400" />,
+                                    slotProps={{
+                                        input: {
+                                            startAdornment: <SearchIcon className="mr-2 text-gray-400" />,
+                                        }
                                     }}
                                 />
                             </div>
