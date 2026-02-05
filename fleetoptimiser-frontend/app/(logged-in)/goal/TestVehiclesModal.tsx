@@ -61,7 +61,7 @@ const TestVehicleModal = () => {
                         <AiOutlineClose onClick={handleClose} size={30} className="cursor-pointer hover:text-blue-600" />
                     </div>
                     {cars.isError && <ApiError retryFunction={cars.refetch}>Testkøretøjerne kunne ikke hentes.</ApiError>}
-                    {cars.isLoading && <CircularProgress />}
+                    {cars.isPending && <CircularProgress />}
                     {cars.data && (
                         <>
                             <div className="flex justify-end">

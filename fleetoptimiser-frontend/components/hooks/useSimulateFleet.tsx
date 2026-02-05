@@ -100,36 +100,39 @@ function useSimulateFleet(initialDataId?: string) {
         };
     });
 
-    const simulationJob = useQuery(
-        ['simulate'],
-        async () => {
+    const simulationJob = useQuery({
+        queryKey: ['simulate'],
+
+        queryFn: async () => {
             const result = await AxiosBase.post<simulation>('/fleet-simulation/simulation', input);
             return result.data;
         },
-        {
-            enabled: false,
-        }
-    );
 
-    const simulationResult = useQuery(
-        ['simulation result', simulationJob.data?.id ?? initialDataId],
-        async () => {
+        enabled: false
+    });
+
+    const simulationResult = useQuery({
+        queryKey: ['simulation result', simulationJob.data?.id ?? initialDataId],
+
+        queryFn: async () => {
             const result = await AxiosBase.get<simulation>(`/fleet-simulation/simulation/${simulationJob.data?.id ?? initialDataId}`);
             return result.data;
         },
-        {
-            enabled: !!initialDataId || !!simulationJob.data,
-            refetchInterval: (data) =>
-                !data ||
+
+        enabled: !!initialDataId || !!simulationJob.data,
+
+        refetchInterval: (query) => {
+            const data = query.state.data;
+            return !data ||
                 data.status === 'PENDING' ||
                 data.status === 'STARTED' ||
                 data.status === 'RETRY' ||
                 data.status === 'PROGRESS' ||
                 data.status === 'RECIEVED'
                     ? 500
-                    : false,
+                    : false;
         }
-    );
+    });
 
     return {
         startSimulation: simulationJob.refetch,

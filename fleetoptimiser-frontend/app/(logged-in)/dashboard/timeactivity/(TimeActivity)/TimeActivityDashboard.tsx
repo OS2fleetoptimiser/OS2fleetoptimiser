@@ -76,7 +76,7 @@ function TimeActivityDashboard({ end, locations, forvaltninger, start, departmen
                     </p>
                 </div>
 
-                {heatMapData.isLoading && (
+                {heatMapData.isPending && (
                     <div className="p-10 flex justify-center">
                         <CircularProgress />
                     </div>

@@ -69,14 +69,14 @@ export default function Page({ params }: { params: Promise<{ simulationId: strin
 
     return (
         <>
-            {vehicles.isLoading && (
+            {vehicles.isPending && (
                 <div className="w-full h-full z-10 top-0 left-0 fixed bg-[#FFFFFF75]">
                     <div className="top-[40%] left-[50%] absolute transform -translate-x-1/2 -translate-y-1/2">
                         <CircularProgress />
                     </div>
                 </div>
             )}
-            {!vehicles.isLoading && <GoalSimulationHandler simulationId={simulationId}></GoalSimulationHandler>}
+            {!vehicles.isPending && <GoalSimulationHandler simulationId={simulationId}></GoalSimulationHandler>}
         </>
     );
 }

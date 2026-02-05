@@ -36,17 +36,17 @@ function useGetStatisticsOverview<T = timeSeriesData>({ startPeriod, endPeriod, 
         }
     }
 
-    return useQuery(
-        ['statoverview', dashboard, searchParams.toString()],
-        async () => {
+    return useQuery({
+        queryKey: ['statoverview', dashboard, searchParams.toString()],
+
+        queryFn: async () => {
             const result = await AxiosBase.get<timeSeriesData>(`/statistics/overview?${searchParams.toString()}`);
             return result.data;
         },
-        {
-            select: selector,
-            refetchOnWindowFocus: false,
-        }
-    );
+
+        select: selector,
+        refetchOnWindowFocus: false
+    });
 }
 
 export default useGetStatisticsOverview;

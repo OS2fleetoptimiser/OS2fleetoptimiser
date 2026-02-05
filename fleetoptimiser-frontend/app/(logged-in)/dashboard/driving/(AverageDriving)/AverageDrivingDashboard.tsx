@@ -100,7 +100,7 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
                 </div>
             )}
             {drivingData.isError && <ApiError retryFunction={drivingData.refetch}>Der opstod en netværksfejl</ApiError>}
-            {drivingData.isLoading && (
+            {drivingData.isPending && (
                 <div className="p-10 flex justify-center">
                     <CircularProgress />
                 </div>

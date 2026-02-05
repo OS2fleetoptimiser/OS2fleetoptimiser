@@ -92,7 +92,9 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                 try {
                     const response = await API.delete('configuration/vehicle/' + selectedRow.original.id);
                     if (response.status === 200) {
-                        await queryClient.invalidateQueries(['vehicles']);
+                        await queryClient.invalidateQueries({
+                            queryKey: ['vehicles']
+                        });
                         setIsDeletedInfoSnackBarOpen(true);
                     }
                 } catch (error: unknown) {
@@ -107,7 +109,9 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
     );
 
     const refetchVehicles = async () => {
-        await queryClient.invalidateQueries(['vehicles']);
+        await queryClient.invalidateQueries({
+            queryKey: ['vehicles']
+        });
     };
 
     const hasImei = useMemo(() => {

@@ -44,38 +44,39 @@ export interface LocationActivity extends BaseView {
 }
 
 export function useGetLandingPageKPIs(metrics?: KPIKeys[]) {
-    return useQuery(
-        ['landingpagekpis', metrics],
-        async () => {
+    return useQuery({
+        queryKey: ['landingpagekpis', metrics],
+
+        queryFn: async () => {
             const params = new URLSearchParams();
             metrics?.forEach(metric => params.append('metrics', metric));
             const queryString = params.toString() ? `?${params.toString()}` : '';
             return await AxiosBase.get<KPIs>(`/statistics/kpis${queryString}`).then((res) => res.data);
         },
-        {
-            refetchOnWindowFocus: false,
-        }
-    );
+
+        refetchOnWindowFocus: false
+    });
 }
 
 export function useGetSimulationHighlights(n_simulations: number = 5) {
-    return useQuery(
-        ['simulationhighlights', n_simulations],
-        async () => {
+    return useQuery({
+        queryKey: ['simulationhighlights', n_simulations],
+
+        queryFn: async () => {
             const params = new URLSearchParams({ n_simulations: n_simulations.toString() });
             const response = await AxiosBase.get<SimulationHighlight[]>(`fleet-simulation/highlights/latest?${params}`);
             return response.data;
         },
-        {
-            refetchOnWindowFocus: false,
-        }
-    );
+
+        refetchOnWindowFocus: false
+    });
 }
 
 export function useGetUsageGraphData(since_date?: Date) {
-    return useQuery(
-        ['usagegraphdata', since_date],
-        async () => {
+    return useQuery({
+        queryKey: ['usagegraphdata', since_date],
+
+        queryFn: async () => {
             const params = new URLSearchParams();
             if (since_date) {
                 params.append('since_date', since_date.toISOString());
@@ -84,16 +85,16 @@ export function useGetUsageGraphData(since_date?: Date) {
             const response = await AxiosBase.get<LocationUsage[]>(`/statistics/locations/usage${queryString}`);
             return response.data;
         },
-        {
-            refetchOnWindowFocus: false,
-        }
-    );
+
+        refetchOnWindowFocus: false
+    });
 }
 
 export function useGetActivityGraphData(since_date?: Date) {
-    return useQuery(
-        ['activitygraphdata', since_date],
-        async () => {
+    return useQuery({
+        queryKey: ['activitygraphdata', since_date],
+
+        queryFn: async () => {
             const params = new URLSearchParams();
             if (since_date) {
                 params.append('since_date', since_date.toISOString());
@@ -102,8 +103,7 @@ export function useGetActivityGraphData(since_date?: Date) {
             const response = await AxiosBase.get<LocationActivity[]>(`/statistics/locations/activity${queryString}`);
             return response.data;
         },
-        {
-            refetchOnWindowFocus: false,
-        }
-    );
+
+        refetchOnWindowFocus: false
+    });
 }

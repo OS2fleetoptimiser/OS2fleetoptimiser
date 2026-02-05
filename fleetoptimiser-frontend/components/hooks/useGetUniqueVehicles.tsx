@@ -3,7 +3,10 @@ import AxiosBase from '../AxiosBase';
 import { Vehicle } from './useGetVehicles';
 
 function useGetUniqueVehicles() {
-    return useQuery(['vehicles'], () => AxiosBase.get<{ vehicles: Vehicle[] }>('configuration/vehicles').then((response) => response.data), {
+    return useQuery({
+        queryKey: ['vehicles'],
+        queryFn: () => AxiosBase.get<{ vehicles: Vehicle[] }>('configuration/vehicles').then((response) => response.data),
+
         select: (data) =>
             data.vehicles.reduce((acc: Vehicle[], cur) => {
                 if (
@@ -19,7 +22,7 @@ function useGetUniqueVehicles() {
                     acc.push(cur);
                 }
                 return acc;
-            }, []),
+            }, [])
     });
 }
 

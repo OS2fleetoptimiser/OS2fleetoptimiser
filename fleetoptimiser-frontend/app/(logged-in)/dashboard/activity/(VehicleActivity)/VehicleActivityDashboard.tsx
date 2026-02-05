@@ -130,7 +130,7 @@ const VehicleActivityDashboard = ({
                         Der opstod en netværksfejl
                     </ApiError>
                 )}
-                {heatMapData.isLoading && (
+                {heatMapData.isPending && (
                     <div className="p-10 flex justify-center">
                         <CircularProgress />
                     </div>
@@ -162,7 +162,7 @@ const VehicleActivityDashboard = ({
                     </>
                 )}
             </TabContext>
-            {!heatMapData.data && !heatMapData.isLoading && !heatMapData.isError && (
+            {!heatMapData.data && !heatMapData.isPending && !heatMapData.isError && (
                 <p className="m-4">Simuleringen blev afbrudt / Der er ingen kørselsdata for de valgte filtre.</p>
             )}
         </div>

@@ -91,7 +91,7 @@ const ExtraVehicleModal = ({ buttonAppearance = false }: { buttonAppearance?: bo
                     </div>
 
                     {cars.isError && <ApiError retryFunction={cars.refetch}>Køretøjerne kunne ikke hentes.</ApiError>}
-                    {cars.isLoading && <CircularProgress />}
+                    {cars.isPending && <CircularProgress />}
                     {cars.data && (
                         <>
                             <div className="max-w-sm mb-2">

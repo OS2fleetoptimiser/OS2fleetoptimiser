@@ -30,8 +30,10 @@ export type DropDownData = {
 };
 
 function useGetDropDownData<T = DropDownData>(selector?: (data: DropDownData) => T) {
-    return useQuery(['dropDownData'], () => AxiosBase.get<DropDownData>('configuration/dropdown-data').then((res) => res.data), {
-        select: selector,
+    return useQuery({
+        queryKey: ['dropDownData'],
+        queryFn: () => AxiosBase.get<DropDownData>('configuration/dropdown-data').then((res) => res.data),
+        select: selector
     });
 }
 

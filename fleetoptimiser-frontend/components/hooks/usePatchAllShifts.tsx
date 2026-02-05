@@ -12,10 +12,12 @@ export type shifts = {
 function usePatchAllShifts() {
     const patchConfigurations = usePatchConfigurations();
 
-    return useMutation(async (values: shifts) => {
-        const locations = await AxiosBase.get<DropDownData>('configuration/dropdown-data').then((res) => res.data.locations.map((loc) => loc.id));
-        const updates = locations.map((id) => ({ location_id: id, shifts: values }));
-        patchConfigurations.mutate({ shift_settings: updates });
+    return useMutation({
+        mutationFn: async (values: shifts) => {
+            const locations = await AxiosBase.get<DropDownData>('configuration/dropdown-data').then((res) => res.data.locations.map((loc) => loc.id));
+            const updates = locations.map((id) => ({ location_id: id, shifts: values }));
+            patchConfigurations.mutate({ shift_settings: updates });
+        }
     });
 }
 
