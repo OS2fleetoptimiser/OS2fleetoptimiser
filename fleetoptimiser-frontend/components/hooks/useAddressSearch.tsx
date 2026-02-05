@@ -37,11 +37,9 @@ const fetchLatLon = async (address: string): Promise<LatLon | null> => {
 };
 
 export const useGetLatLonAddress = (address: string) => {
-  return useQuery<LatLon | null, Error>(
-    ['latlon', address],
-    () => fetchLatLon(address),
-    {
-      enabled: !!address,
-    }
-  );
+  return useQuery({
+    queryKey: ['latlon', address],
+    queryFn: () => fetchLatLon(address),
+    enabled: !!address
+  });
 };

@@ -19,22 +19,30 @@ const DeleteRoundTrips = ({ open, onClose }: DeleteRoundTripsModalProps) => {
     const [loading, setLoading] = useState(false);
     const [startDate] = useState<string>('1970-01-01');
 
-    const getSimSettings = useQuery(['settings'], async () => {
-        const result = await API.get<{
-            simulation_settings: {
-                keep_data: number;
-            };
-        }>('configuration/simulation-configurations');
-        setKeepData(result.data.simulation_settings.keep_data);
-        return result.data;
+    const getSimSettings = useQuery({
+        queryKey: ['settings'],
+
+        queryFn: async () => {
+            const result = await API.get<{
+                simulation_settings: {
+                    keep_data: number;
+                };
+            }>('configuration/simulation-configurations');
+            setKeepData(result.data.simulation_settings.keep_data);
+            return result.data;
+        }
     });
-    const getStatistics = useQuery(['statistics'], async () => {
-        const result = await API.get<{
-            first_date: string;
-            last_date: string;
-            total_roundtrips: number;
-        }>('/statistics/sum');
-        return result.data;
+    const getStatistics = useQuery({
+        queryKey: ['statistics'],
+
+        queryFn: async () => {
+            const result = await API.get<{
+                first_date: string;
+                last_date: string;
+                total_roundtrips: number;
+            }>('/statistics/sum');
+            return result.data;
+        }
     });
 
     const handleDelete = async () => {
@@ -100,7 +108,7 @@ const DeleteRoundTrips = ({ open, onClose }: DeleteRoundTripsModalProps) => {
                     <ApiError retryFunction={getSimSettings.refetch}>Data kunne ikke hentes</ApiError>
                 ) : getStatistics.isError ? (
                     <ApiError retryFunction={getStatistics.refetch}>Meta Data kunne ikke hentes</ApiError>
-                ) : getSimSettings.isLoading || getStatistics.isLoading ? (
+                ) : getSimSettings.isPending || getStatistics.isPending ? (
                     <CircularProgress />
                 ) : (
                     <div>

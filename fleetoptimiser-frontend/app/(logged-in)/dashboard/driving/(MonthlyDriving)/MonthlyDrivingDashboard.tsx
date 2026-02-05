@@ -84,7 +84,7 @@ const MonthlyDrivingDashboard = ({ availableshifts, end, start, departments, for
             </div>
             <>
                 {dashboardData.isError && <ApiError retryFunction={dashboardData.refetch}>Der opstod en netværksfejl</ApiError>}
-                {dashboardData.isLoading && (
+                {dashboardData.isPending && (
                     <div className="p-10 flex justify-center">
                         <CircularProgress />
                     </div>

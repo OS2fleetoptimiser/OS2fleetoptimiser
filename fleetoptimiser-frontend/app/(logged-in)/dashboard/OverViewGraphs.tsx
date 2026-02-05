@@ -66,7 +66,7 @@ export default function OverViewGraphs({ endDate, forvaltninger, locations, star
                 <div className="bg-white border border-gray-100 rounded-md shadow-sm p-4 text-center">
                     <h2 className="text-lg font-semibold">CO2e udledning (Ton)</h2>
                     {emissionSeries.isError && <ApiError retryFunction={emissionSeries.refetch}>Dashboard data kunne ikke hentes</ApiError>}
-                    {emissionSeries.isLoading && (
+                    {emissionSeries.isPending && (
                         <div className="p-10 flex justify-center">
                             <CircularProgress />
                         </div>
@@ -85,7 +85,7 @@ export default function OverViewGraphs({ endDate, forvaltninger, locations, star
                 <div className="bg-white border border-gray-100 rounded-md shadow-sm p-4 text-center">
                     <h2 className="text-lg font-semibold">Procentvis kørt i elbil</h2>
                     {shareSeries.isError && <ApiError retryFunction={shareSeries.refetch}>Dashboard data kunne ikke hentes</ApiError>}
-                    {shareSeries.isLoading && (
+                    {shareSeries.isPending && (
                         <div className="p-10 flex justify-center">
                             <CircularProgress />
                         </div>
@@ -104,7 +104,7 @@ export default function OverViewGraphs({ endDate, forvaltninger, locations, star
                 <div className="bg-white border border-gray-100 rounded-md shadow-sm p-4 text-center">
                     <h2 className="text-lg font-semibold">Kørte kilometer</h2>
                     {drivenSeries.isError && <ApiError retryFunction={drivenSeries.refetch}>Dashboard data kunne ikke hentes</ApiError>}
-                    {drivenSeries.isLoading && (
+                    {drivenSeries.isPending && (
                         <div className="p-10 flex justify-center">
                             <CircularProgress />
                         </div>

@@ -157,7 +157,7 @@ const TripSegmentsDashboard = ({ availableshifts, end, start, departments, locat
                 <span className="text-explanation text-xs ml-4 w-96">Turoverblik viser en samling af kvalificeret godkendte rundture, som er under grænseværdien; maks tur distance og over grænseværdien; minimum parkeringstid. Der vises antal ture pr. køretøj, som fremhæves i de detaljeret grafer under. Klik på en enkelt rundtur for at se længden på rundturens kørsels - og parkeringssegmenter.</span>
             </div>
             {drivingData.isError && <ApiError retryFunction={drivingData.refetch}>Der opstod en netværksfejl</ApiError>}
-            {drivingData.isLoading && (
+            {drivingData.isPending && (
                 <div className="p-10 flex justify-center">
                     <CircularProgress />
                 </div>

@@ -48,7 +48,9 @@ const MoveRoundTripsDialog = ({ isOpen, onClose, idValue, plateValue, makeValue,
                 )}&disable=${disableLocation}`
             );
             if (response.status === 200) {
-                await queryClient.invalidateQueries(['vehicles']);
+                await queryClient.invalidateQueries({
+                    queryKey: ['vehicles']
+                });
             }
         } catch (error: unknown) {
             console.log(error);

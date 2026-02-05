@@ -16,7 +16,7 @@ type Props = {
 export default function DrivingActivity({ searchParams: searchParamsPromise }: Props) {
     const searchParams = use(searchParamsPromise);
     const enabled = searchParams.locations || searchParams.vehicles || searchParams.departments || searchParams.forvaltninger;
-  const { data: settings, isLoading, error } = useGetSettings();
+  const { data: settings, isPending: isLoading, error } = useGetSettings();
 
   if (isLoading) return <div className="p-10 flex justify-center">
                         <CircularProgress />

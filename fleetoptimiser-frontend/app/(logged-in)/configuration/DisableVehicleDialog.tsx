@@ -14,7 +14,9 @@ const DisableVehicleDialog = ({ open, handleClose, vehicle }: props) => {
 
     const updateVehicle = async () => {
         await patchVehicle({ ...vehicle, disabled: !vehicle.disabled });
-        queryClient.invalidateQueries(['vehicles']);
+        queryClient.invalidateQueries({
+            queryKey: ['vehicles']
+        });
         handleClose();
     };
 

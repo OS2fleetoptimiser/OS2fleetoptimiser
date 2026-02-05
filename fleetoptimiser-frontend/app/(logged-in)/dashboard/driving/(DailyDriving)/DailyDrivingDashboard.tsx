@@ -124,7 +124,7 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
         <div>
             <h1 className="mb-4 text-xl">Kørte kilometer pr. dag</h1>
             {dashboardData.isError && <ApiError retryFunction={dashboardData.refetch}>Der opstod en netværksfejl</ApiError>}
-            {dashboardData.isLoading && (
+            {dashboardData.isPending && (
                 <div className="p-10 flex justify-center">
                     <CircularProgress />
                 </div>

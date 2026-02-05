@@ -53,27 +53,29 @@ type PrecisionTest = {
 export const useGetLocationPrecision = (startDate: Date) => {
     const formattedDate = dayjs(startDate).format('YYYY-MM-DD');
 
-    return useQuery(
-        ['location precision', formattedDate],
-        () => AxiosBase.get<ExtendedLocationInformation[]>('locations/precision', {
+    return useQuery({
+        queryKey: ['location precision', formattedDate],
+
+        queryFn: () => AxiosBase.get<ExtendedLocationInformation[]>('locations/precision', {
             params: { start_date: formattedDate},
         }).then(res => res.data),
-        {refetchOnWindowFocus: false}
-    );
+
+        refetchOnWindowFocus: false
+    });
 };
 
 export const useGetSingleLocationPrecision = (startDate: Date, locationId?: number) => {
     const formattedDate = dayjs(startDate).format('YYYY-MM-DD');
-    return useQuery(
-        ['single location precision', formattedDate],
-        () => AxiosBase.get<ExtendedLocationInformation[]>('locations/precision', {
+    return useQuery({
+        queryKey: ['single location precision', formattedDate],
+
+        queryFn: () => AxiosBase.get<ExtendedLocationInformation[]>('locations/precision', {
             params: { start_date: formattedDate, locations: locationId },
         }).then(res => res.data.filter(data => data.id === locationId)[0]),
-        {
-            refetchOnWindowFocus: false,
-            enabled: !!locationId,
-        }
-    );
+
+        refetchOnWindowFocus: false,
+        enabled: !!locationId
+    });
 };
 
 export const patchLocation = async (allowedStart?: AllowedStart) => {
@@ -120,16 +122,16 @@ export const ChangeLocationAddress = async (locationId: number, address: string)
 
 
 export const useTestLocationPrecision = (initialDataId?: string, startDate?: Date, locationId?: number, testSpecificStart?: AllowedStart) => {
-    const testPrecisionJob = useQuery(
-        ['test precision', testSpecificStart],
-        async () => {
+    const testPrecisionJob = useQuery({
+        queryKey: ['test precision', testSpecificStart],
+
+        queryFn: async () => {
             const result = await AxiosBase.post<PrecisionTest>('locations/precision-test', {location: locationId, start_date: startDate, test_specific_start: testSpecificStart});
             return result.data
         },
-        {
-            enabled: false,
-        }
-    );
+
+        enabled: false
+    });
     const [running, setRunning] = useState(false);
     const [cancelled, setCancel] = useState(false);
 
@@ -147,23 +149,28 @@ export const useTestLocationPrecision = (initialDataId?: string, startDate?: Dat
         setRunning(false);
     };
 
-    const precisionTestResult = useQuery(
-        ['precision test result', testPrecisionJob.data?.id ?? initialDataId],
-        async () => {
+    const precisionTestResult = useQuery({
+        queryKey: ['precision test result', testPrecisionJob.data?.id ?? initialDataId],
+
+        queryFn: async () => {
             const result = await AxiosBase.get<PrecisionTest>(`locations/precision-test/${ testPrecisionJob.data?.id ?? initialDataId}`);
             return result.data;
         },
-        {
-            refetchInterval: (data) =>
-                !data ||
+
+        refetchInterval: (query) => {
+            const data = query.state.data;
+            return !data ||
                 data.status === 'PENDING' ||
                 data.status === 'STARTED' ||
                 data.status === 'RETRY' ||
                 data.status === 'PROGRESS' ||
-                data.status === 'RECEIVED' ? 500 : false,
-            enabled: (!!initialDataId || !!testPrecisionJob.data) && !cancelled,
-        }
-    );
+                data.status === 'RECEIVED'
+                    ? 500
+                    : false;
+        },
+
+        enabled: (!!initialDataId || !!testPrecisionJob.data) && !cancelled
+    });
     return {
         startPrecisionTest: () => {
             setCancel(false);
