@@ -1,5 +1,4 @@
-import { LoadingButton } from '@mui/lab';
-import { Alert, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Alert, Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { Form, Formik } from 'formik';
 import SaveIcon from '@mui/icons-material/Save';
 import { array, InferType, object, string } from 'yup';
@@ -251,10 +250,12 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                                             error={touched.shifts?.[index]?.shift_start && Boolean(errors.shifts?.[index]?.shift_start)}
                                                             //@ts-ignore
                                                             helperText={touched.shifts?.[index]?.shift_start && errors.shifts?.[index]?.shift_start}
-                                                            InputLabelProps={{
-                                                                shrink: true,
-                                                            }}
                                                             className="w-30 subtle"
+                                                            slotProps={{
+                                                                inputLabel: {
+                                                                    shrink: true,
+                                                                }
+                                                            }}
                                                         />
                                                         <TextField
                                                             className="mx-2 w-30 subtle"
@@ -268,8 +269,10 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                                             error={touched.shifts?.[index]?.shift_end && Boolean(errors.shifts?.[index]?.shift_end)}
                                                             //@ts-ignore
                                                             helperText={touched.shifts?.[index]?.shift_end && errors.shifts?.[index]?.shift_end}
-                                                            InputLabelProps={{
-                                                                shrink: true,
+                                                            slotProps={{
+                                                                inputLabel: {
+                                                                    shrink: true,
+                                                                }
                                                             }}
                                                         />
                                                         <TextField
@@ -284,10 +287,12 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                                             error={touched.shifts?.[index]?.shift_break && Boolean(errors.shifts?.[index]?.shift_break)}
                                                             //@ts-ignore
                                                             helperText={touched.shifts?.[index]?.shift_break && errors.shifts?.[index]?.shift_break}
-                                                            InputLabelProps={{
-                                                                shrink: true,
-                                                            }}
                                                             className="w-30 subtle mb-8"
+                                                            slotProps={{
+                                                                inputLabel: {
+                                                                    shrink: true,
+                                                                }
+                                                            }}
                                                         />
                                                     </div>
                                                 </>
@@ -296,7 +301,7 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                     {touched.shifts && errors.shifts && typeof errors.shifts === 'string' && <p className="text-red-500">{errors.shifts}</p>}
                                 </>
                                 <div className="flex items-end flex-col">
-                                    <LoadingButton
+                                    <Button
                                         onClick={() => {
                                             setSubmitType('global');
                                             setSubmitAll(true);
@@ -311,8 +316,8 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                         name={'all'}
                                     >
                                         <span>Gem for alle lokationer</span>
-                                    </LoadingButton>
-                                    <LoadingButton
+                                    </Button>
+                                    <Button
                                         disabled={!hasWritePrivilege}
                                         onClick={() => {
                                             setSubmitType('global');
@@ -325,7 +330,7 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                         variant="contained"
                                     >
                                         <span>Gem for denne lokation</span>
-                                    </LoadingButton>
+                                    </Button>
                                 </div>
                             </Form>
                         </>

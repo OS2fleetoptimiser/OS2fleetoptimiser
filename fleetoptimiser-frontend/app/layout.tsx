@@ -5,7 +5,7 @@ import { Metadata } from 'next';
 import { Button } from '@mui/material';
 import logo from '../public/logo_shadows.svg';
 import Image from 'next/image';
-import ThemeProvider from '@mui/material/styles/ThemeProvider';
+import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from "@/theme";
 import { checkWritePrivilege } from "@/components/hooks/userPermissions";

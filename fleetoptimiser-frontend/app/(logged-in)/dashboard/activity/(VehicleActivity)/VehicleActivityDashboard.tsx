@@ -90,13 +90,15 @@ const VehicleActivityDashboard = ({
                     label="Grænseværdi"
                     id="outlined-start-adornment"
                     sx={{ m: 1, width: '25ch' }}
-                    InputProps={{
-                        endAdornment: <InputAdornment position="end">{'km'}</InputAdornment>,
-                    }}
                     className="ml-4 subtle w-40"
                     value={colorThreshold}
                     onChange={(e) => {
                         setColorThreshold(e.target.value.includes(',') ? e.target.value.replace(',', '.') : e.target.value);
+                    }}
+                    slotProps={{
+                        input: {
+                            endAdornment: <InputAdornment position="end">{'km'}</InputAdornment>,
+                        }
                     }}
                 />
                 <p className="text-explanation text-xs ml-4 block w-96">
