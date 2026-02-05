@@ -96,7 +96,9 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                 //This is not great
                 const response = await API.patch('configuration/vehicle', values);
                 if (response.status === 200) {
-                    await queryClient.invalidateQueries(['vehicles']);
+                    await queryClient.invalidateQueries({
+                        queryKey: ['vehicles']
+                    });
                     submit(values);
                     onClose();
                 }
@@ -111,7 +113,9 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                 const response = await API.post<{ id: string }>('configuration/vehicle', values);
 
                 if (response.status === 200) {
-                    await queryClient.invalidateQueries(['vehicles']);
+                    await queryClient.invalidateQueries({
+                        queryKey: ['vehicles']
+                    });
                     values.id = parseInt(response.data.id);
                     submit(values);
                     onClose();

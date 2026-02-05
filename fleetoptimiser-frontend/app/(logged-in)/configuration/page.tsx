@@ -29,7 +29,7 @@ export default function Page() {
                 <ApiError retryFunction={tableData.refetch}>Bil data kunne ikke hentes</ApiError>
             ) : dropDownValues.isError ? (
                 <ApiError retryFunction={dropDownValues.refetch}>Meta Data kunne ikke hentes</ApiError>
-            ) : tableData.isLoading || dropDownValues.isLoading ? (
+            ) : tableData.isPending || dropDownValues.isPending ? (
                 <CircularProgress />
             ) : (
                 <div>

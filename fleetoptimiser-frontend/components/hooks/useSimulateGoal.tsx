@@ -78,16 +78,16 @@ function useSimulateGoal(initialDataId?: string) {
         };
     });
 
-    const simulationJob = useQuery(
-        ['goal'],
-        async () => {
+    const simulationJob = useQuery({
+        queryKey: ['goal'],
+
+        queryFn: async () => {
             const result = await AxiosBase.post<goalSimulation>('/goal-simulation/simulation', goalSimulationSettings);
             return result.data;
         },
-        {
-            enabled: false,
-        }
-    );
+
+        enabled: false
+    });
     const [running, setRunning] = useState(false);
     const [cancelled, setCancel] = useState(false);
 
@@ -105,25 +105,28 @@ function useSimulateGoal(initialDataId?: string) {
         setRunning(false);
     };
 
-    const simulationResult = useQuery(
-        ['goal result', simulationJob.data?.id ?? initialDataId],
-        async () => {
+    const simulationResult = useQuery({
+        queryKey: ['goal result', simulationJob.data?.id ?? initialDataId],
+
+        queryFn: async () => {
             const result = await AxiosBase.get<goalSimulation>(`/goal-simulation/simulation/${simulationJob.data?.id ?? initialDataId}`);
             return result.data;
         },
-        {
-            refetchInterval: (data) =>
-                !data ||
+
+        refetchInterval: (query) => {
+            const data = query.state.data;
+            return !data ||
                 data.status === 'PENDING' ||
                 data.status === 'STARTED' ||
                 data.status === 'RETRY' ||
                 data.status === 'PROGRESS' ||
                 data.status === 'RECIEVED'
                     ? 500
-                    : false,
-            enabled: (!!initialDataId || !!simulationJob.data) && !cancelled,
-        }
-    );
+                    : false;
+        },
+
+        enabled: (!!initialDataId || !!simulationJob.data) && !cancelled
+    });
 
     return {
         startSimulation: () => {

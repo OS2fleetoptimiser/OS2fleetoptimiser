@@ -13,7 +13,7 @@ type Props = {
 
 export default function DrivingActivity({ searchParams: searchParamsPromise }: Props) {
     const searchParams = use(searchParamsPromise);
-    const { data: settings, isLoading, error } = useGetSettings();
+    const { data: settings, isPending: isLoading, error } = useGetSettings();
 
     if (isLoading)
         return (

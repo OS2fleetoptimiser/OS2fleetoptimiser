@@ -16,9 +16,9 @@ export default function Home() {
     const { data: session } = useSession();
     // Better Auth uses 'id' instead of 'providerAccountId'
     const providerAccountId = session?.user?.id || 'developer';
-    const { data: lastLogin, isLoading: loginIsLoading } = usePatchGetLoginTime(providerAccountId);
-    const { data: kpiData, isLoading: isKPIsLoading } = useGetLandingPageKPIs();
-    const { data: latestSimulations, isLoading: simulationsIsLoading } = useGetSimulationHighlights();
+    const { data: lastLogin, isPending: loginIsLoading } = usePatchGetLoginTime(providerAccountId);
+    const { data: kpiData, isPending: isKPIsLoading } = useGetLandingPageKPIs();
+    const { data: latestSimulations, isPending: simulationsIsLoading } = useGetSimulationHighlights();
     const { data: usageGraphData } = useGetUsageGraphData();
     const { data: activityGraphData } = useGetActivityGraphData();
 

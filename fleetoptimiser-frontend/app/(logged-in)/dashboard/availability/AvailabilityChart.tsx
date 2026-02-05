@@ -29,7 +29,7 @@ export default function AvailabilityChart({ start, end, locations, departments, 
     const fileNameAppendix = `${start}-${end}-${locations?.length ?? 'alle'}_lokationer-${vehicles?.length ?? 'alle'}_koeretoejer`;
     return (
         <div>
-            {vehicle_availability.isLoading && (
+            {vehicle_availability.isPending && (
                 <div className="flex justify-center items-center h-[500px]">
                     <CircularProgress></CircularProgress>
                 </div>

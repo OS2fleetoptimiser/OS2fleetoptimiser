@@ -49,7 +49,7 @@ export default function Page({ params }: { params: Promise<{ locationId?: string
     const [openSnackBar, setOpenSnackBar] = useState<boolean>(false);
     const [snackText, setSnackText] = useState<string>('');
     const isEditMode = !!locationId;
-    const { data: fetchedData, isLoading, error } = useGetSingleLocationPrecision(startDate, parseInt(locationId ?? '0'));
+    const { data: fetchedData, isPending: isLoading, error } = useGetSingleLocationPrecision(startDate, parseInt(locationId ?? '0'));
     const data = isEditMode ? (fetchedData ?? newLocationInformation) : newLocationInformation;
     const testingEnabled = true; // todo make this an env
 

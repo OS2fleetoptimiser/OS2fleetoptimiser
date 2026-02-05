@@ -69,8 +69,8 @@ export default function Page({ params }: { params: Promise<{ simulationId: strin
     }, [simulation, vehiclesByLocation, allVehicles]);
     return (
         <>
-            {!vehiclesByLocation.isLoading && <FleetSimulationHandler simulationId={simulationId} />}
-            {vehiclesByLocation.isLoading && (
+            {!vehiclesByLocation.isPending && <FleetSimulationHandler simulationId={simulationId} />}
+            {vehiclesByLocation.isPending && (
                 <div className="w-full h-full z-10 top-0 left-0 fixed bg-[#FFFFFF75]">
                     <div className="top-[40%] left-[50%] absolute transform -translate-x-1/2 -translate-y-1/2">
                         <CircularProgress />
