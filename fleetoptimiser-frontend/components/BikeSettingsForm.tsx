@@ -103,7 +103,13 @@ const BikeForm = (props: FormData) => {
                             {
                                 onError: () => helpers.setStatus('ServerError'),
                                 onSuccess: () => {
-                                    dispatch(setBikeSettings);
+                                    dispatch(setBikeSettings({
+                                        max_km_pr_trip: +values.maxTripDistance,
+                                        percentage_of_trips: +values.percentTaken,
+                                        bike_slots: values.bikeIntervals?.map((slot) => ({ bike_start: slot.start, bike_end: slot.end })) ?? [],
+                                        electrical_bike_speed: +values.electricalBikeSpeed,
+                                        bike_speed: +values.bikeSpeed,
+                                    }));
                                     helpers.setSubmitting(false);
                                     helpers.setStatus('success');
                                 },

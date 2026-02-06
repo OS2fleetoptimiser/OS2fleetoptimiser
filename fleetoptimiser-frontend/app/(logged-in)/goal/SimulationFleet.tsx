@@ -5,8 +5,7 @@ import dayjs from 'dayjs';
 import { Vehicle } from '@/components/hooks/useGetVehicles';
 import { useMemo } from 'react';
 import { InputAdornment, TextField } from '@mui/material';
-import { useAppSelector } from '@/components/redux/hooks';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/components/redux/hooks';
 import { setGoalSimulationVehicles } from '@/components/redux/SimulationSlice';
 import Tooltip from "@mui/material/Tooltip";
 
@@ -29,7 +28,7 @@ type amountProps = {
 };
 
 const AmountInput = ({ availableVehicles }: amountProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
     const allGoalSimulationVehicles = useAppSelector((state) => state.simulation.goalSimulationSettings.fixed_vehicles);
 

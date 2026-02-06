@@ -7,7 +7,6 @@ import { reduceDuplicateVehicles } from '../DuplicateReducer';
 import { bike_settings, settings, shift_settings, simulation_settings } from '../hooks/useGetSettings';
 import AxiosBase from '../AxiosBase';
 import { DropDownData } from '../hooks/useGetDropDownData';
-import { RootState } from '@/components/redux/store';
 
 type fleetSimulationSettings = {
     simulation_vehicles: {
@@ -100,12 +99,12 @@ const initialCars: Simulation = {
     locationIdAddresses: [],
 };
 
-export const prepareGoalSimulation = createAsyncThunk<number[], void, { state: RootState }>(
+export const prepareGoalSimulation = createAsyncThunk(
     'simulation/prepareGoalSimulation',
     async (_, { getState, dispatch }): Promise<number[]> => {
         // thunk to enforce that it's not allowed to bring above current vehicle type values / test vehicle values from manual sim to goal sim
         // ensures that the count is "reset" whenever the user clicks to the automatic simulation page from navigation or setup
-        const state = getState();
+        const state = getState() as { simulation: Simulation };
         const updatedFixedVehicles: number[] = [];
         const duplicateGroups = reduceDuplicateVehicles(state.simulation.selectedVehicles);
 
