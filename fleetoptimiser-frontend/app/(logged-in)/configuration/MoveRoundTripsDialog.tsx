@@ -62,7 +62,7 @@ const MoveRoundTripsDialog = ({ isOpen, onClose, idValue, plateValue, makeValue,
         <Dialog open={isOpen} onClose={handleCancel}>
             <DialogTitle>Flyt eller slet rundture</DialogTitle>
             <DialogContent>
-                <DialogContentText>
+                <DialogContentText component="div">
                     <form>
                         <div className="container mx-auto my-4 p-4">
                             <div className="mb-4">
