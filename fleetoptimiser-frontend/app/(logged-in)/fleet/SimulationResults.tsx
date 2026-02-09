@@ -39,74 +39,76 @@ export const SimulationResultsPage = ({
                 </div>
             )}
             <div className="w-auto rounded-md m-auto">
-                <Tabs
-                    value={tabValue}
-                    onChange={(e, v) => setTabValue(v)}
-                    aria-label="resultstabs"
-                    TabIndicatorProps={{
-                        hidden: true,
-                    }}
-                    sx={{
-                        '& .MuiTabs-flexContainer': {
-                            backgroundColor: '#f5f5f5',
-                            borderRadius: '5px',
-                            padding: '6px',
-                            width: 'fit-content',
-                            height: '35px',
-                        },
-                        '& .MuiTab-root': {
-                            borderRadius: '5px',
-                            backgroundColor: '#f5f5f5',
-                            color: 'gray',
-                            minWidth: 120,
-                            minHeight: 20,
-                            padding: '6px 6px',
-                            '&:hover': {
-                                backgroundColor: '#e0e0e0',
-                            },
-                        },
-                        '& .MuiTab-root.Mui-selected': {
-                            backgroundColor: 'white',
-                            color: 'black',
-                            fontWeight: 'bold',
-                        },
-                    }}
-                >
-                    <Tab
-                        label="Oversigt"
-                        value={0}
+                <div className="flex items-center gap-2">
+                    <Tabs
+                        value={tabValue}
+                        onChange={(e, v) => setTabValue(v)}
+                        aria-label="resultstabs"
+                        TabIndicatorProps={{
+                            hidden: true,
+                        }}
                         sx={{
-                            '&.Mui-selected': {
+                            '& .MuiTabs-flexContainer': {
+                                backgroundColor: '#f5f5f5',
+                                borderRadius: '5px',
+                                padding: '6px',
+                                width: 'fit-content',
+                                height: '35px',
+                            },
+                            '& .MuiTab-root': {
+                                borderRadius: '5px',
+                                backgroundColor: '#f5f5f5',
+                                color: 'gray',
+                                minWidth: 120,
+                                minHeight: 20,
+                                padding: '6px 6px',
+                                '&:hover': {
+                                    backgroundColor: '#e0e0e0',
+                                },
+                            },
+                            '& .MuiTab-root.Mui-selected': {
                                 backgroundColor: 'white',
+                                color: 'black',
+                                fontWeight: 'bold',
                             },
                         }}
-                    />
-                    <Tab
-                        label="Køretøjsdetaljer"
-                        disabled={!simulationResults}
-                        value={1}
-                        sx={{
-                            '&.Mui-selected': {
-                                backgroundColor: 'white',
-                            },
-                        }}
-                    />
-                    <Tab
-                        label="Ruter"
-                        disabled={!simulationResults}
-                        value={2}
-                        sx={{
-                            '&.Mui-selected': {
-                                backgroundColor: 'white',
-                            },
-                        }}
-                    />
+                    >
+                        <Tab
+                            label="Oversigt"
+                            value={0}
+                            sx={{
+                                '&.Mui-selected': {
+                                    backgroundColor: 'white',
+                                },
+                            }}
+                        />
+                        <Tab
+                            label="Køretøjsdetaljer"
+                            disabled={!simulationResults}
+                            value={1}
+                            sx={{
+                                '&.Mui-selected': {
+                                    backgroundColor: 'white',
+                                },
+                            }}
+                        />
+                        <Tab
+                            label="Ruter"
+                            disabled={!simulationResults}
+                            value={2}
+                            sx={{
+                                '&.Mui-selected': {
+                                    backgroundColor: 'white',
+                                },
+                            }}
+                        />
+                    </Tabs>
                     {simulationId && (
                         <IconButton href={downloadLink} disabled={!simulationId} className="border-none text-gray-700 hover:text-black" download>
                             <DownloadIcon fontSize="small" />
                         </IconButton>
                     )}
-                </Tabs>
+                </div>
                 {tabValue === 0 && simulationResults && <ResultsOverviewTab simulationResults={simulationResults} />}
                 {tabValue === 0 && !simulationResults && !isLoading && (
                     <div className="mt-8">
