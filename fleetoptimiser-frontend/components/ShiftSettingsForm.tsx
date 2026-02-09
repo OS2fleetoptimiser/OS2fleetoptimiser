@@ -280,7 +280,7 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                                             id={`shifts.${index}.shift_break`}
                                                             label="Pause"
                                                             onChange={handleChange}
-                                                            value={shift.shift_break}
+                                                            value={shift.shift_break ?? ''}
                                                             type="time"
                                                             required={false}
                                                             //@ts-ignore
