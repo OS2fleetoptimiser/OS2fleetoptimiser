@@ -2,7 +2,7 @@ import { Alert, Button, FormControl, InputLabel, MenuItem, Select, TextField } f
 import { Form, Formik } from 'formik';
 import SaveIcon from '@mui/icons-material/Save';
 import { array, InferType, object, string } from 'yup';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import usePatchConfigurations from '@/components/hooks/usePatchConfigurations';
 import usePatchAllShifts from '@/components/hooks/usePatchAllShifts';
 import { useAppDispatch } from './redux/hooks';
@@ -236,9 +236,9 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                     <>
                                         {values.shifts &&
                                             values.shifts.map((shift, index) => (
-                                                <>
+                                                <Fragment key={index}>
                                                     <h3 className="mb-2 text-lg">Vagt {index + 1}</h3>
-                                                    <div className="flex mb-2" key={index}>
+                                                    <div className="flex mb-2">
                                                         <TextField
                                                             name={`shifts.${index}.shift_start`}
                                                             id={`shifts.${index}.shift_start`}
@@ -295,7 +295,7 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                                             }}
                                                         />
                                                     </div>
-                                                </>
+                                                </Fragment>
                                             ))}
                                     </>
                                     {touched.shifts && errors.shifts && typeof errors.shifts === 'string' && <p className="text-red-500">{errors.shifts}</p>}
