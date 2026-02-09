@@ -15,9 +15,9 @@ import dayjs from "dayjs";
 import {useEffect, useState} from "react";
 
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x.src,
-  iconUrl: markerIcon.src,
-  shadowUrl: markerShadow.src,
+  iconRetinaUrl: typeof markerIcon2x === 'string' ? markerIcon2x : markerIcon2x.src,
+  iconUrl: typeof markerIcon === 'string' ? markerIcon : markerIcon.src,
+  shadowUrl: typeof markerShadow === 'string' ? markerShadow : markerShadow.src,
 });
 
 type ParkingMapProps = {
