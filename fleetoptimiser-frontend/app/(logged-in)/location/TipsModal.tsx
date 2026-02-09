@@ -49,33 +49,39 @@ export default function TipsModal() {
               </ListItem>
               <ListItem className="mb-4" sx={{ display: 'list-item' }}>
                 <span className="font-semibold">Hold køretøjerne opdateret på den korrekte lokation.</span>
-                <ListItem>
-                  Justér køretøjernes tilknyttet lokation enten i dit flådestyringssystem eller direkte i FleetOptimiser køretøjskonfiguration.
-                </ListItem>
-                <ListItem>
-                  Det kan have indvirkning på rundturspræcisionen, hvis køretøjet kører fra andre lokationer.
-                </ListItem>
+                <List sx={{ listStyleType: 'circle', pl: 2 }}>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Justér køretøjernes tilknyttet lokation enten i dit flådestyringssystem eller direkte i FleetOptimiser køretøjskonfiguration.
+                  </ListItem>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Det kan have indvirkning på rundturspræcisionen, hvis køretøjet kører fra andre lokationer.
+                  </ListItem>
+                </List>
               </ListItem>
               <ListItem className="mb-4" sx={{ display: 'list-item' }}>
                 <span className="font-semibold">Tjek at parkeringspunkt(erne) er præcise og repræsentative for lokationen.</span>
-                <ListItem>
-                  Juster de enkelte parkingspunkter ved at klikke ind på en lokation.
-                </ListItem>
-                <ListItem>
-                  Sørg for at køretøjerne typisk parkeres tæt på parkeringspunkterne.
-                </ListItem>
-                <ListItem>
-                  Hav ikke for stor geografisk spredning på parkeringspunkterne (+300 meter).
-                </ListItem>
+                <List sx={{ listStyleType: 'circle', pl: 2 }}>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Juster de enkelte parkingspunkter ved at klikke ind på en lokation.
+                  </ListItem>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Sørg for at køretøjerne typisk parkeres tæt på parkeringspunkterne.
+                  </ListItem>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Hav ikke for stor geografisk spredning på parkeringspunkterne (+300 meter).
+                  </ListItem>
+                </List>
               </ListItem>
               <ListItem className="" sx={{ display: 'list-item' }}>
                 <span className="font-semibold">Sikre spredning mellem lokationer der geografisk ligger tæt på hinanden.</span>
-                <ListItem>
-                  Parkeringspunkter mellem lokationer der ligger tæt på hinanden kan forstyrre aggregeringen.
-                </ListItem>
-                <ListItem>
-                  Overvej om geografiske tætte lokationer kan sammenlægges og benyt afdeling og forvaltning til adskillelse af køretøjer.
-                </ListItem>
+                <List sx={{ listStyleType: 'circle', pl: 2 }}>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Parkeringspunkter mellem lokationer der ligger tæt på hinanden kan forstyrre aggregeringen.
+                  </ListItem>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Overvej om geografiske tætte lokationer kan sammenlægges og benyt afdeling og forvaltning til adskillelse af køretøjer.
+                  </ListItem>
+                </List>
               </ListItem>
           </List>
           <DialogActions>
