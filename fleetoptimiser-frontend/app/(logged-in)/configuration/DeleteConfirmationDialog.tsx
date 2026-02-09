@@ -18,7 +18,7 @@ const DeleteConfirmationDialog = ({ isOpen, onClose, idValue, plateValue, makeVa
         <Dialog open={isOpen} onClose={handleCancel}>
             <DialogTitle>Slet Køretøj</DialogTitle>
             <DialogContent>
-                <DialogContentText>
+                <DialogContentText component="div">
                     Er du sikker på at du vil slette?
                     <div className="mt-3">
                         <ul>
