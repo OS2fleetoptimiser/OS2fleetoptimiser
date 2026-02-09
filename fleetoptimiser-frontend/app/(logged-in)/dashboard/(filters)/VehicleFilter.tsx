@@ -91,9 +91,9 @@ export default function VehicleFilter({
                             const selectableVehiclesKeys = selectableVehicles.map(vehicle => vehicle.id);
                             return selectedVehicles.some(selectedVeh => !selectableVehiclesKeys.includes(selectedVeh));
                           })() &&
-                          <p className="text-explanation text-xs">Frigør andre filtre for at se alle valgte køretøjer</p>
+                          <ListItem className="text-explanation text-xs">Frigør andre filtre for at se alle valgte køretøjer</ListItem>
                         }
-                        {selectableVehicles && selectableVehicles.length === 0 && <p>Der er ingen tilgængelige Køretøjer</p>}
+                        {selectableVehicles && selectableVehicles.length === 0 && <ListItem>Der er ingen tilgængelige Køretøjer</ListItem>}
                         {selectableVehicles && selectableVehicles
                             .filter((vehicle) => vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()))
                             .sort((a, b) => a.name.localeCompare(b.name))

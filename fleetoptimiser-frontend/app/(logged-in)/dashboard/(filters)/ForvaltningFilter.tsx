@@ -86,9 +86,9 @@ export default function ForvaltningFilter({
                     </div>
                     <List>
                         {selectableForvaltninger && selectedForvaltninger.some(selFor => !selectableForvaltninger.includes(selFor)) &&
-                          <p className="text-explanation text-xs">Frigør andre filtre for at se alle valgte forvaltninger</p>
+                          <ListItem className="text-explanation text-xs">Frigør andre filtre for at se alle valgte forvaltninger</ListItem>
                         }
-                        {selectableForvaltninger && selectableForvaltninger.length === 0 && <p>Der er ingen tilgængelige forvaltninger</p>}
+                        {selectableForvaltninger && selectableForvaltninger.length === 0 && <ListItem>Der er ingen tilgængelige forvaltninger</ListItem>}
                         {selectableForvaltninger &&
                             selectableForvaltninger.length > 0 &&
                             selectableForvaltninger.map((dep) => (
