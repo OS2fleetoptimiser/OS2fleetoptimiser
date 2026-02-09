@@ -161,10 +161,9 @@ const CustomLines = (props: CustomLineInput): React.JSX.Element => {
                 const isLastItem = i === series.length - 1;
 
                 return (
-                    <>
+                    <React.Fragment key={i}>
                         {linePath ? (
                             <path
-                                key={i}
                                 d={linePath}
                                 fill="none"
                                 stroke={serie.color}
@@ -212,7 +211,7 @@ const CustomLines = (props: CustomLineInput): React.JSX.Element => {
                                 ) : null}
                             </>
                         ) : null}
-                    </>
+                    </React.Fragment>
                 );
             })}
         </g>

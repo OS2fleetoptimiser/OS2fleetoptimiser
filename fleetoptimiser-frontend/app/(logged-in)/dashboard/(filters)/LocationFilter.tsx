@@ -88,9 +88,9 @@ export default function LocationFilter({
                             const selectableLocationKeys = selectableLocations.map(loc => loc.key);
                             return selectedLocations.some(selectedLoc => !selectableLocationKeys.includes(selectedLoc));
                           })() &&
-                          <p className="text-explanation text-xs">Frigør andre filtre for at se alle valgte lokationer</p>
+                          <ListItem className="text-explanation text-xs">Frigør andre filtre for at se alle valgte lokationer</ListItem>
                         }
-                        {selectableLocations?.length === 0 && <p>Der er ingen tilgængelige lokationer</p>}
+                        {selectableLocations?.length === 0 && <ListItem>Der er ingen tilgængelige lokationer</ListItem>}
                         {
                             selectableLocations && selectableLocations?.length > 0 &&
                             selectableLocations?.filter((loc) => loc.value.toLowerCase().includes(searchQuery.toLowerCase()))
