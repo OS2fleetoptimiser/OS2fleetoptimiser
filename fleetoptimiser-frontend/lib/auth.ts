@@ -93,12 +93,13 @@ export const auth = betterAuth({
     },
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 30,
-    updateAge: 60 * 60 * 24,
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: 60 * 60 * 24, // 1 day (matches updateAge)
+      strategy: "compact",  // smallest size, HMAC-signed
     },
+    expiresIn: 60 * 60 * 24 * 30,
+    updateAge: 60 * 60 * 24,
   },
 });
 
