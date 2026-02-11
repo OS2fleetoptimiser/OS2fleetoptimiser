@@ -18,7 +18,7 @@ export const ParkingSpotList = ({ setNoChanges, parkingSpots, changeParkingSpots
     const [confirmDeletionInfo, setConfirmDeletionInfo] = useState<{open: boolean, parkingType: string, parkingId?: number}>({open: false, parkingType: '', parkingId: undefined});
 
     const handleDelete = (parkingType: string, id?: number) => {
-        let copyPs = {...parkingSpots}
+        const copyPs = {...parkingSpots}
         if (id && parkingType === 'addition' && parkingSpots?.additional_starts) {
             copyPs.additional_starts = parkingSpots?.additional_starts.filter(start => start.id != id)
         } else if (parkingType === 'parent'){

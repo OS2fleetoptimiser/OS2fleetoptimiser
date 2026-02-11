@@ -30,7 +30,7 @@ const TripSegmentGraph = ({ data, setFocus, focus }: { data: ogData; setFocus: (
         const department = entry.department || '';
         const departmentWords = department.split(' ');
 
-        let children: React.JSX.Element[] = [];
+        const children: React.JSX.Element[] = [];
 
         children.push(
             <tspan

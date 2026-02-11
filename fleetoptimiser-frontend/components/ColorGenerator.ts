@@ -1,7 +1,7 @@
 import seedrandom from 'seedrandom';
 
 const hashCode = function (string: string) {
-    var hash = 0,
+    let hash = 0,
         i,
         chr;
     if (string.length === 0) return hash;
