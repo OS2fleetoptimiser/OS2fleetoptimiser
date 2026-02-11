@@ -27,7 +27,7 @@ const theme = createTheme({
             WebkitFontSmoothing: 'antialiased',
             textRendering: 'optimizeLegibility',
         },
-        //@ts-ignore
+        // @ts-expect-error MUI typography fontWeight non-standard keys
         fontWeight: {
             regular: 400,
             bold: 700,
