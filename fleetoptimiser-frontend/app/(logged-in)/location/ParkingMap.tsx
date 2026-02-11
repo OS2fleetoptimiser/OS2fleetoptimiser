@@ -54,7 +54,7 @@ const ParkingMap = ({
     const LocationMarker = () => {
         useMapEvents({
             click(e: { latlng: { lat: number | null ; lng: number | null; }; }) {
-                let copyPs = {...parkingSpots} as AllowedStart
+                const copyPs = {...parkingSpots} as AllowedStart
                 if (!copyPs.additional_starts){
                     copyPs.additional_starts = []
                 }

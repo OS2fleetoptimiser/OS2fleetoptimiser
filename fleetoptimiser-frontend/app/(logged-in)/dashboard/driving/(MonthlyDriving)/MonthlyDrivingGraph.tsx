@@ -14,7 +14,7 @@ const MonthlyDrivingGraph = ({ data, colorMapper }: { data: dataPoint[]; colorMa
     const getColors = (bar: any) => {
         return colorMapper(bar.id);
     };
-    let keys = [...new Set(data.flatMap(dataPoint =>
+    const keys = [...new Set(data.flatMap(dataPoint =>
         Object.keys(dataPoint).filter(key => key !== 'monthYear')
     ))];
 

@@ -156,7 +156,7 @@ export const simulationSlice = createSlice({
                 state.goalSimulationSettings.fixed_vehicles.push(action.payload.id);
         },
         removeCarById: (state, action: PayloadAction<number>) => {
-            let index = state.selectedVehicles.findIndex((car) => car.id === action.payload);
+            const index = state.selectedVehicles.findIndex((car) => car.id === action.payload);
             if (index != -1) {
                 state.selectedVehicles.splice(index, 1);
             }

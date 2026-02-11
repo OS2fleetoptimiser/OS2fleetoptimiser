@@ -22,8 +22,8 @@ function TimeActivityDashboard({ end, locations, forvaltninger, start, departmen
         shiftFilter: shifts,
         timeDelta: true,
         selector: (data0) => {
-            let timeDelta = data0.timedelta;
-            let result = [];
+            const timeDelta = data0.timedelta;
+            const result = [];
             const date = dayjs(data0.query_end_date);
             const vName = data0.query_vehicles.reduce((a, v) => {
                 a[v.id] = v.name;
@@ -31,7 +31,7 @@ function TimeActivityDashboard({ end, locations, forvaltninger, start, departmen
             }, {} as { [id: number]: string });
 
             for (const id in vName) {
-                let data = [];
+                const data = [];
                 let date0 = dayjs(data0.query_start_date);
 
                 do {

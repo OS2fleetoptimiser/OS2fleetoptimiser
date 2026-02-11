@@ -25,7 +25,7 @@ export default function ShiftFilter({ selectedShifts, setSelectedShifts, availab
     };
 
     const checkedEvent = (id: number) => {
-        let updated: number[] = [...selectedShifts];
+        const updated: number[] = [...selectedShifts];
         const checkedIndex = selectedShifts.indexOf(id);
 
         if (checkedIndex === -1) {

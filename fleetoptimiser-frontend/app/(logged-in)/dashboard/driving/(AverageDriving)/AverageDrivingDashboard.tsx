@@ -31,7 +31,7 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
                 };
 
             const groupedByPlate = data.driving_data.reduce((acc, data) => {
-                let existing = acc.find((car) => car.vehicle_id == data.vehicle_id && car.plate === data.plate && car.department === data.department);
+                const existing = acc.find((car) => car.vehicle_id == data.vehicle_id && car.plate === data.plate && car.department === data.department);
                 if (existing) {
                     existing.trips.push(data);
                 } else {
@@ -40,12 +40,12 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
                 return acc;
             }, [] as { vehicle_id: number; plate: string; department: string; trips: drivingData[] }[]);
 
-            let dataPoints = [];
+            const dataPoints = [];
 
             // For each car get trips for each shift and get average length over days
             for (let i = 0; i < groupedByPlate.length; i++) {
-                let car = groupedByPlate[i];
-                let dataEntry = {
+                const car = groupedByPlate[i];
+                const dataEntry = {
                     vehicle_id: car.vehicle_id,
                     plate: car.plate,
                     department: car.department, // Adding the department here
@@ -60,7 +60,7 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
                     if (averageDistance > 0) dataEntry['Hele dagen'] = averageDistance;
                 } else {
                     for (let j = 0; j < data.shifts.length; j++) {
-                        let tripsInShift = car.trips.reduce((acc: drivingData[], trip) => {
+                        const tripsInShift = car.trips.reduce((acc: drivingData[], trip) => {
                             if (trip.shift_id === j) acc.push(trip);
                             return acc;
                         }, []);
