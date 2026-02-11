@@ -246,9 +246,9 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                                             onChange={handleChange}
                                                             value={shift.shift_start}
                                                             type="time"
-                                                            //@ts-ignore
+                                                            // @ts-expect-error Formik nested array touched/errors type mismatch
                                                             error={touched.shifts?.[index]?.shift_start && Boolean(errors.shifts?.[index]?.shift_start)}
-                                                            //@ts-ignore
+                                                            // @ts-expect-error Formik nested array touched/errors type mismatch
                                                             helperText={touched.shifts?.[index]?.shift_start && errors.shifts?.[index]?.shift_start}
                                                             className="w-30 subtle"
                                                             slotProps={{
@@ -265,9 +265,9 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                                             onChange={handleChange}
                                                             value={shift.shift_end}
                                                             type="time"
-                                                            //@ts-ignore
+                                                            // @ts-expect-error Formik nested array touched/errors type mismatch
                                                             error={touched.shifts?.[index]?.shift_end && Boolean(errors.shifts?.[index]?.shift_end)}
-                                                            //@ts-ignore
+                                                            // @ts-expect-error Formik nested array touched/errors type mismatch
                                                             helperText={touched.shifts?.[index]?.shift_end && errors.shifts?.[index]?.shift_end}
                                                             slotProps={{
                                                                 inputLabel: {
@@ -283,9 +283,9 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                                             value={shift.shift_break ?? ''}
                                                             type="time"
                                                             required={false}
-                                                            //@ts-ignore
+                                                            // @ts-expect-error Formik nested array touched/errors type mismatch
                                                             error={touched.shifts?.[index]?.shift_break && Boolean(errors.shifts?.[index]?.shift_break)}
-                                                            //@ts-ignore
+                                                            // @ts-expect-error Formik nested array touched/errors type mismatch
                                                             helperText={touched.shifts?.[index]?.shift_break && errors.shifts?.[index]?.shift_break}
                                                             className="w-30 subtle mb-8"
                                                             slotProps={{

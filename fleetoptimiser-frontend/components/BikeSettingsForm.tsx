@@ -216,9 +216,9 @@ const BikeForm = (props: FormData) => {
                                                         onChange={handleChange}
                                                         value={interval.start}
                                                         type="time"
-                                                        //@ts-ignore
+                                                        // @ts-expect-error Formik nested array touched/errors type mismatch
                                                         error={touched.bikeIntervals?.[index].start && Boolean(errors.bikeIntervals?.[index].start)}
-                                                        //@ts-ignore
+                                                        // @ts-expect-error Formik nested array touched/errors type mismatch
                                                         helperText={touched.bikeIntervals?.[index].start && errors.bikeIntervals?.[index].start}
                                                     />
                                                     <TextField
@@ -229,9 +229,9 @@ const BikeForm = (props: FormData) => {
                                                         onChange={handleChange}
                                                         value={interval.end}
                                                         type="time"
-                                                        //@ts-ignore
+                                                        // @ts-expect-error Formik nested array touched/errors type mismatch
                                                         error={touched.bikeIntervals?.[index].end && Boolean(errors.bikeIntervals?.[index].end)}
-                                                        //@ts-ignore
+                                                        // @ts-expect-error Formik nested array touched/errors type mismatch
                                                         helperText={touched.bikeIntervals?.[index].end && errors.bikeIntervals?.[index].end}
                                                     />
 
