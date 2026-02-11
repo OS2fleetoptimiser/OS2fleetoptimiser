@@ -77,7 +77,7 @@ export default function Page({ params }: { params: Promise<{ locationId?: string
             setOpenSnackBar(true);
         } else {
             setSnackText("Lokationen blev oprettet");
-            let copyPs = {
+            const copyPs = {
                 ...parkingSpots,
                 id: null,
                 address: givenTitle || "",

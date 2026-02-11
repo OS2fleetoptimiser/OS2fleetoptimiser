@@ -24,7 +24,7 @@ const MonthlyDrivingDashboard = ({ availableshifts, end, start, departments, for
         selector: (data) => {
             if (!data.driving_data) return { uniqueVehicles: 0, totalDriven: 0, drivingData: [] };
             let totalDistance = 0;
-            let uniqueVehicles: number[] = [];
+            const uniqueVehicles: number[] = [];
             const result: {
                 [monthYear: string]: { [shift: string]: number };
             } = {};

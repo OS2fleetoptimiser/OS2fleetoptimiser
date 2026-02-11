@@ -17,7 +17,7 @@ const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; k
         return colorMapper(bar.id);
     };
 
-    let sorted = data.sort((a, b) => {
+    const sorted = data.sort((a, b) => {
         let aSum = 0;
         let bSum = 0;
         keys.forEach((k) => {

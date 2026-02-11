@@ -14,7 +14,7 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
     const fillDays = (data: { x: string; y: number }[], start: string, end: string) => {
         let dt = dayjs(start);
         const endDate = dayjs(end);
-        let tempArr = [];
+        const tempArr = [];
         while (dt <= endDate) {
             tempArr.push(dt);
             dt = dt.add(1, 'day');
@@ -95,7 +95,7 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
             // Find the first and last day for all shifts. Pick the biggest and smallest
             const startDates: string[] = [];
             const endDates: string[] = [];
-            for (let key in final) {
+            for (const key in final) {
                 if (final[key].data.length === 0) {
                     continue;
                 }
