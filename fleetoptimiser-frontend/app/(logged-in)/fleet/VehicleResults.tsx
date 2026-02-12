@@ -23,6 +23,7 @@ export const VehicleResults = ({ simulationResults }: { simulationResults: Simul
     }, [simulationResults.vehicleUsage.simulation]);
     const currentVehicleUsage = useMemo(() => {
         return simulationResults.vehicleUsage.current.map((item) => convertUsageItemToRow(item));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [simulationResults.vehicleUsage.current]);
 
     return (

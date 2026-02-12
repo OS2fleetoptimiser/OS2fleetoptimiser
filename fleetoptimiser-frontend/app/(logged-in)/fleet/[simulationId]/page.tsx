@@ -66,7 +66,7 @@ export default function Page({ params }: { params: Promise<{ simulationId: strin
             const extraVehicles = simulationOptions.simulation_vehicles.filter((vehicleId) => !selectedVehicles.find((vehicle) => vehicle.id === vehicleId.id));
             dispatch(addExtraVehicles(allVehicles.data.vehicles.filter((vehicle) => extraVehicles.find((extra) => extra.id === vehicle.id))));
         }
-    }, [simulation, vehiclesByLocation, allVehicles]);
+    }, [simulation, vehiclesByLocation, allVehicles, dispatch]);
     return (
         <>
             {!vehiclesByLocation.isPending && <FleetSimulationHandler simulationId={simulationId} />}
