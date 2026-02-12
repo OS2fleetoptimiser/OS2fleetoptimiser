@@ -20,8 +20,7 @@ export const GoalResultsOverview = ({ simulation }: GoalResultsOverviewProps) =>
             return convertGoalDataToSimulationResults(simulation.query.data);
         }
         return undefined;
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
-    }, [simulation.query.data?.status, simulation.query.data?.result]);
+    }, [simulation.query.data]);
 
     const solutions = simulation?.query?.data?.result?.solutions;
     const displayTips =
