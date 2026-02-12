@@ -47,7 +47,7 @@ const MonthlyDrivingDashboard = ({ availableshifts, end, start, departments, for
                     }
                     result[yearMonth][shiftName] += distance;
                     totalDistance += distance;
-                    !uniqueVehicles.find((id) => id === entry.vehicle_id) && uniqueVehicles.push(entry.vehicle_id);
+                    if (!uniqueVehicles.find((id) => id === entry.vehicle_id)) uniqueVehicles.push(entry.vehicle_id);
                 }
             });
 
