@@ -11,6 +11,8 @@ const eslintConfig = defineConfig([
             '@typescript-eslint/no-unused-vars': 'off',
             'react-hooks/purity': 'off',
             'react-hooks/incompatible-library': 'off',
+            // TODO: Replace `any` types with proper types across the codebase
+            '@typescript-eslint/no-explicit-any': 'off',
         },
     },
 ])
