@@ -241,6 +241,7 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
             baseColumns.splice(1, 0, imeiColumn);
         }
         return baseColumns;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hasImei]);
 
     const table = useMaterialReactTable({
