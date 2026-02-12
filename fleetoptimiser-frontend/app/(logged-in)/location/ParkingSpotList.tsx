@@ -1,4 +1,4 @@
-import {AllowedStart, ExtendedLocationInformation} from "@/components/hooks/useGetLocationPrecision";
+import {AllowedStart} from "@/components/hooks/useGetLocationPrecision";
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import {useState} from "react";

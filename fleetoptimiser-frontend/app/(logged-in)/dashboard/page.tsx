@@ -2,7 +2,7 @@
 
 import { use } from 'react';
 import CollectiveStatistics from './CollectiveStatistics';
-import FilterHeader, { Filters } from './(filters)/FilterHeader';
+import { Filters } from './(filters)/FilterHeader';
 import OverViewGraphs from './OverViewGraphs';
 import {FilterHeaderWrapper} from "@/app/(logged-in)/dashboard/(filters)/FilterWrapper";
 

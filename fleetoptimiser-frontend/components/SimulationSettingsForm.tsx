@@ -1,6 +1,6 @@
 import usePatchConfigurations from '@/components/hooks/usePatchConfigurations';
 import ToolTip from '@/components/ToolTip';
-import { Alert, Button, FormControl, InputLabel, MenuItem, Modal, Select, TextField } from '@mui/material';
+import { Alert, Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { Form, Formik } from 'formik';
 import { InferType, number, object, string } from 'yup';
 import SaveIcon from '@mui/icons-material/Save';

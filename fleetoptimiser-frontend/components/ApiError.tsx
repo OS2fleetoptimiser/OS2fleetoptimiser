@@ -1,5 +1,4 @@
-import { Button, Snackbar } from '@mui/material';
-import WifiOffIcon from '@mui/icons-material/WifiOff';
+import { Button } from '@mui/material';
 import { MdOutlineWifiOff } from 'react-icons/md';
 
 type props = {

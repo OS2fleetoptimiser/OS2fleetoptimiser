@@ -1,5 +1,5 @@
 import React from 'react';
-import {generateColor, generateFromPalette} from '@/components/ColorGenerator';
+import {generateFromPalette} from '@/components/ColorGenerator';
 import { ResponsiveBar } from '@nivo/bar';
 import { getYTicks } from "@/app/(logged-in)/fleet/UnallocatedTripsLine";
 
