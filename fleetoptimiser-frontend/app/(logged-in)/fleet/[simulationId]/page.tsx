@@ -1,6 +1,6 @@
 'use client';
 import FleetSimulationHandler from '@/app/(logged-in)/fleet/FleetSimulationHandler';
-import { use, useEffect, useState } from 'react';
+import { use, useEffect } from 'react';
 import useGetFleetSimulation from '@/components/hooks/useGetFleetSimulation';
 import useGetVehiclesByLocation from '@/components/hooks/useGetVehiclesByLocation';
 import dayjs from 'dayjs';

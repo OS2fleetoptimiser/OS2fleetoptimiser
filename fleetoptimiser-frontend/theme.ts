@@ -1,6 +1,5 @@
 'use client';
 import {createTheme} from '@mui/material/styles'
-import {TextFieldProps} from "@mui/material";
 
 declare module '@mui/material/Button' {
     interface ButtonPropsVariantOverrides {
