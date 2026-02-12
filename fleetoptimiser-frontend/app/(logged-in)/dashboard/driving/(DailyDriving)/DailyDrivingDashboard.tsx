@@ -53,7 +53,7 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
                         y: distance,
                     });
 
-                    result[0].uniqueCars.find((id) => id === vehicle_id) ?? result[0].uniqueCars.push(vehicle_id);
+                    if (!result[0].uniqueCars.find((id) => id === vehicle_id)) result[0].uniqueCars.push(vehicle_id);
                 });
             } else {
                 for (let i = 0; i < data.shifts.length; i++) {
@@ -70,7 +70,7 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
                         y: distance,
                     });
 
-                    result[shift_id].uniqueCars.find((id) => id === vehicle_id) ?? result[shift_id].uniqueCars.push(vehicle_id);
+                    if (!result[shift_id].uniqueCars.find((id) => id === vehicle_id)) result[shift_id].uniqueCars.push(vehicle_id);
                 });
             }
 
