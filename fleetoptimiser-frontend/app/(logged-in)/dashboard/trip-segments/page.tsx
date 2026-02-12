@@ -1,8 +1,7 @@
 'use client';
 import { use } from 'react';
 import TripSegmentsDashboard from './TripSegmentsDashboard';
-import FilterHeader, { Filters } from '../(filters)/FilterHeader';
-import { getSettings } from '@/components/data/settings';
+import { Filters } from '../(filters)/FilterHeader';
 import AddFilter from "@/components/AddFilter";
 import {FilterHeaderWrapper} from "@/app/(logged-in)/dashboard/(filters)/FilterWrapper";
 import useGetSettings from "@/components/hooks/useGetSettings";

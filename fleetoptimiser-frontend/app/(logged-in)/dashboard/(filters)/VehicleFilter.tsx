@@ -1,7 +1,7 @@
 import { Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, TextField } from '@mui/material';
 import { useState } from 'react';
 import { Search } from '@mui/icons-material';
-import useGetVehicles, {Vehicle} from '@/components/hooks/useGetVehicles';
+import {Vehicle} from '@/components/hooks/useGetVehicles';
 
 export type props = {
     selectedLocations: number[];

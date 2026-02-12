@@ -1,7 +1,7 @@
 'use client';
 
 import useGetDrivingData from '@/components/hooks/useGetDrivingData';
-import { CircularProgress, InputAdornment, TextField, Tooltip } from '@mui/material';
+import { CircularProgress, InputAdornment, TextField } from '@mui/material';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import ParkingTimeScatterPlot, { scatterplotProps } from './StopsParkingScatterPlot';

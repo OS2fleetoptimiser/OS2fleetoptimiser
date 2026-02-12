@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import AxiosBase from '../AxiosBase';
 import {shift} from './useGetSettings';
-import {useEffect, useRef} from "react";
 
 export type drivingData = {
     vehicle_id: number;
