@@ -159,7 +159,7 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                 onError: () => helpers.setStatus('ServerError'),
                                 onSuccess: () => {
                                     helpers.setStatus('success');
-                                    closeIt ? closeIt() : null;
+                                    closeIt?.();
                                 },
                             });
                         } else {
@@ -182,14 +182,14 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                     onError: () => helpers.setStatus('ServerError'),
                                     onSuccess: () => {
                                         helpers.setStatus('success');
-                                        closeIt ? closeIt() : null;
+                                        closeIt?.();
                                     },
                                 }
                             );
                         }
                     } else {
                         helpers.setStatus('success');
-                        closeIt ? closeIt() : null;
+                        closeIt?.();
                         dispatch(setLocationSpecificShifts({ location_id: locationId, shifts: values.shifts ?? [] }));
                     }
                     helpers.setSubmitting(false);
