@@ -20,6 +20,7 @@ export default function FleetSimulationHandler({ simulationId }: { simulationId?
             return convertDataToSimulationResults(simulation.query.data.result);
         }
         return undefined;
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     }, [simulation.query.data?.status, simulation.query.data?.result]);
 
     return (
