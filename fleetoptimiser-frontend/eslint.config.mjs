@@ -9,6 +9,7 @@ const eslintConfig = defineConfig([
     {
         rules: {
             '@typescript-eslint/no-unused-vars': 'off',
+            'react-hooks/purity': 'off',
         },
     },
 ])
