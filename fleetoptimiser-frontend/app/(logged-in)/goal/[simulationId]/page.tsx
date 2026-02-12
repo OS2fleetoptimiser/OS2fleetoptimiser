@@ -65,7 +65,7 @@ export default function Page({ params }: { params: Promise<{ simulationId: strin
             dispatch(addTestVehicles(simulationOptions.test_vehicles));
             dispatch(addTestVehiclesMeta(allVehicles.data?.vehicles.filter((vehicle) => simulationOptions.test_vehicles.includes(vehicle.id))));
         }
-    }, [simulation, vehicles, allVehicles]);
+    }, [simulation, vehicles, allVehicles, dispatch]);
 
     return (
         <>

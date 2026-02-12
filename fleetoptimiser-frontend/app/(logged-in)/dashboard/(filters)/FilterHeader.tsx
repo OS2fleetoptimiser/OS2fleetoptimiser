@@ -131,6 +131,7 @@ export default function FilterHeader({
         setSelectableDepartments(newSelectableDepartments);
         setSelectableForvaltninger(newSelectableForvaltninger);
 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dbLocations, dbVehicles, dbDepartments, dbForvaltninger]);
 
     const recalculateFiltersWithMappings = (
