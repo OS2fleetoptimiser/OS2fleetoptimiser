@@ -266,7 +266,6 @@ function useGetDrivingData<TData = drivingDataResult>({
     selector,
     shiftFilter,
     asTripSegments,
-    apply,
     applyShiftFilter,
     timeDelta,
 }: inputParameters<TData>) {

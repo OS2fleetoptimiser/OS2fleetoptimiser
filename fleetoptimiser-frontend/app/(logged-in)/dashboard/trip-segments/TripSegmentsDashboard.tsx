@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import ParkingTimeScatterPlot, { scatterplotProps } from './StopsParkingScatterPlot';
 import TripSegmentGraph, { ogData } from './TripSegmentGraph';
-import { getInterval } from '../ShiftNameTranslater';
+
 import ApiError from '@/components/ApiError';
 import RoundTripChart from './RoundTripGraph';
 import { filterProps } from '../(filters)/FilterHeader';
@@ -41,8 +41,6 @@ const TripSegmentsDashboard = ({ availableshifts, end, start, departments, locat
                 (roundtrip) => roundtrip.aggregation_type != null && roundtrip.aggregation_type.includes('complete')
             );
             const underDistanceLimit = completeRoundtrip.filter((roundtrip) => roundtrip.distance < (distanceLimit ?? 0) && roundtrip.distance > 0.2);
-
-            const shiftNames = data.shifts.map((shift) => getInterval(shift.shift_start, shift.shift_end));
 
             const barChartData: ogData = [];
             const stopsParkingScatterPlotData: scatterplotProps = [];

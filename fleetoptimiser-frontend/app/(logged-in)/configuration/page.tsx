@@ -6,13 +6,10 @@ import ApiError from '@/components/ApiError';
 import useGetDropDownData from '@/components/hooks/useGetDropDownData';
 import useGetVehicles from '@/components/hooks/useGetVehicles';
 import { Button, CircularProgress } from '@mui/material';
-import { Inter } from 'next/font/google';
 import { useState } from 'react';
 import VehicleTable from './ConfigTable';
 import {useWritePrivilegeContext} from "@/app/providers/WritePrivilegeProvider";
 import DeleteIcon from "@mui/icons-material/Delete";
-
-const inter = Inter({ subsets: ['latin'] });
 
 export default function Page() {
     const [showDeleteRoundtripsModal, setShowDeleteRoundtripsModal] = useState(false);

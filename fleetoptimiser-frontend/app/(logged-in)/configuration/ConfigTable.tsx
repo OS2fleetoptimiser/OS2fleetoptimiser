@@ -131,11 +131,6 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
         return dayjs(row.end_leasing).isBefore(now);
     };
 
-    const getCellColor = (vehicle: Vehicle) => {
-        if (hasMissingData(vehicle)) return 'text-red-600';
-        if (hasEndedLeasing(vehicle)) return 'text-yellow-600';
-    };
-
     const getStatus = (vehicle: Vehicle) => {
         if (vehicle.disabled) return <Chip variant="outlined" style={{ color: '#888', borderColor: '#888' }} label="Deaktiveret"></Chip>;
         if (hasMissingData(vehicle)) return <Chip variant="outlined" color="error" label="Manglende metadata"></Chip>;

@@ -1,5 +1,5 @@
 import ToolTip from '@/components/ToolTip';
-import { Alert, Button, Divider, TextField } from '@mui/material';
+import { Button, Divider, TextField } from '@mui/material';
 import { FieldArray, Form, Formik } from 'formik';
 import { useState } from 'react';
 import { InferType, number, object, array, string } from 'yup';
@@ -66,24 +66,6 @@ const BikeForm = (props: FormData) => {
     const dispatch = useAppDispatch();
 
     const { bikeSpeed, electricalBikeSpeed, maxTripDistance, percentTaken, bikeIntervals } = props;
-
-    const renderAlert = (status?: string) => {
-        if (!status) {
-            return undefined;
-        } else if (status === 'success') {
-            return (
-                <Alert className="mb-2" severity="success">
-                    Ændringerne er blevet gemt
-                </Alert>
-            );
-        } else {
-            return (
-                <Alert className="mb-2" severity="error">
-                    Der opstod en fejl
-                </Alert>
-            );
-        }
-    };
 
     return (
         <div>
