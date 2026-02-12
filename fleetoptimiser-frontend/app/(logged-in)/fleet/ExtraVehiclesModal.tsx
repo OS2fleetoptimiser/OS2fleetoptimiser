@@ -6,7 +6,7 @@ import ApiError from '@/components/ApiError';
 import ExtraVehicleTable from './ExtraVehicleTable';
 import { useAppDispatch, useAppSelector } from '@/components/redux/hooks';
 import useGetUniqueVehicles from '@/components/hooks/useGetUniqueVehicles';
-import { addExtraVehicles, addTestVehicles, addTestVehiclesMeta, clearExtraVehicles, clearTestVehicles } from '@/components/redux/SimulationSlice';
+import { clearExtraVehicles, clearTestVehicles } from '@/components/redux/SimulationSlice';
 import { Vehicle } from '@/components/hooks/useGetVehicles';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import AddIcon from '@mui/icons-material/Add';
@@ -54,16 +54,6 @@ const ExtraVehicleModal = ({ buttonAppearance = false }: { buttonAppearance?: bo
             const model = v.model?.toLowerCase() || '';
             return make.includes(lowerQuery) || model.includes(lowerQuery);
         });
-    };
-
-    const selectAllVehicles = () => {
-        if (!cars.data) {
-            return;
-        }
-        const filteredPreselected = filterPreselectedVehicles(cars.data, selectedVehicles);
-        dispatch(addExtraVehicles(filteredPreselected));
-        dispatch(addTestVehiclesMeta(filteredPreselected));
-        dispatch(addTestVehicles(filteredPreselected.map((v) => v.id)));
     };
 
     const clearAllVehicles = () => {

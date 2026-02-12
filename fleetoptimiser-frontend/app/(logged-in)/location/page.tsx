@@ -11,7 +11,7 @@ import Link from "next/link";
 
 export default function Page() {
     const startDate = dayjs().subtract(1, 'month').toDate();
-    const { data, isPending: isLoading, error } = useGetLocationPrecision(startDate);
+    const { data, isPending: isLoading } = useGetLocationPrecision(startDate);
     return (
         <>
             <h2>Lokationer</h2>

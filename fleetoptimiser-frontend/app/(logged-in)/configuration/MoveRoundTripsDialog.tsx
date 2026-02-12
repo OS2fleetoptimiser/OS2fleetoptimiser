@@ -35,12 +35,6 @@ const MoveRoundTripsDialog = ({ isOpen, onClose, idValue, plateValue, makeValue,
     const queryClient = useQueryClient();
 
     const handleRequest = async () => {
-        const values = {
-            vehicle_id: idValue,
-            from_date: dateMove,
-            to_location: disableLocation ? null : locationValue,
-            disable: disableLocation,
-        };
         try {
             const response = await API.patch(
                 `configuration/move-vehicle?vehicle_id=${idValue}&to_location=${locationValue}&from_date=${dateMove.format(

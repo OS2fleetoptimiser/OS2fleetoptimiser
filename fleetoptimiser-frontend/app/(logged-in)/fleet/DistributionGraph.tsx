@@ -21,7 +21,7 @@ type Colors = {
 
 export const VehicleTripDistributionBar = ({ data }: props) => {
     const sumsY = data.map((bucket) => {
-        const { km, ...counts } = bucket;
+        const { km: _km, ...counts } = bucket;
         return Object.values(counts).reduce((sum: number, val) => sum + (typeof val === 'number' ? val : 0), 0);
     });
     const yTicks = getYTicks(sumsY);
