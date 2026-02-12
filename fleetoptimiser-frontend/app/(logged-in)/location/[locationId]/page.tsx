@@ -10,7 +10,7 @@ import {
 import { LocationHeader } from "@/app/(logged-in)/location/LocationHeader";
 import {Alert, Button, CircularProgress, Snackbar} from "@mui/material";
 import dynamic from "next/dynamic";
-import { use, useState, useEffect } from "react";
+import { use, useState } from "react";
 import { ParkingSpotList } from "@/app/(logged-in)/location/ParkingSpotList";
 import { AllowedStart } from "@/components/hooks/useGetLocationPrecision";
 import LoadingOverlay from "@/components/LoadingOverlay";
@@ -43,7 +43,6 @@ export default function Page({ params }: { params: Promise<{ locationId?: string
     const router = useRouter();
     const startDate = dayjs().subtract(1, 'month').toDate();
 
-    const [parkingSpots, changeParkingSpots] = useState<AllowedStart>();
     const [clickEnabled, setClickEnabled] = useState<boolean>(false);
     const [noChanges, setNoChanges] = useState<boolean>(true);
     const [openSnackBar, setOpenSnackBar] = useState<boolean>(false);
@@ -53,12 +52,15 @@ export default function Page({ params }: { params: Promise<{ locationId?: string
     const data = isEditMode ? (fetchedData ?? newLocationInformation) : newLocationInformation;
     const testingEnabled = true; // todo make this an env
 
+    const [parkingSpots, changeParkingSpots] = useState<AllowedStart | undefined>(data);
     const [givenTitle, setGivenTitle] = useState<string>(isEditMode ? '' : 'Indtast adresse');
-    useEffect(() => {
-      if (data) {
-        changeParkingSpots(data);
-      }
-    }, [data]);
+    const [prevFetchedData, setPrevFetchedData] = useState(fetchedData);
+    if (fetchedData !== prevFetchedData) {
+        setPrevFetchedData(fetchedData);
+        if (data) {
+            changeParkingSpots(data);
+        }
+    }
     const isTesting = (status: string | undefined) => {
         switch (status) {
             case 'PENDING':

@@ -3,7 +3,7 @@
 import { ExtendedLocationInformation, ChangeLocationAddress } from "@/components/hooks/useGetLocationPrecision";
 import Typography from "@mui/material/Typography";
 import EditIcon from '@mui/icons-material/Edit';
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {Alert, Snackbar, TextField} from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from '@mui/icons-material/Close';
@@ -21,11 +21,12 @@ export const LocationHeader = ({locationData, testPrecision, title, setGivenTitl
     const [openSnackBar, setOpenSnackBar] = useState<boolean>(false);
     const [editTitle, setEditTitle] = useState<boolean>(false);
     const [localTitle, setLocalTitle] = useState(title ?? '');
-
-    useEffect(() => {
+    const [prevTitle, setPrevTitle] = useState(title);
+    if (title !== prevTitle) {
+        setPrevTitle(title);
         setLocalTitle(title ?? '');
         setGivenTitle(title ?? '');
-    }, [title]);
+    }
 
     const handleSaveName = () => {
         setEditTitle(false);
