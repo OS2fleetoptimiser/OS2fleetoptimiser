@@ -13,19 +13,6 @@ const hashCode = function (string: string) {
     return hash;
 };
 
-function hslToHex(h: number, s: number, l: number) {
-    l /= 100;
-    const a = (s * Math.min(l, 1 - l)) / 100;
-    const f = (n: number) => {
-        const k = (n + h / 30) % 12;
-        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-        return Math.round(255 * color)
-            .toString(16)
-            .padStart(2, '0'); // convert to Hex and prefix "0" if needed
-    };
-    return `#${f(0)}${f(8)}${f(4)}`;
-}
-
 // Generate random pastel colors from seed. Used to generate colors in dashboard
 export function generateColor(seed: string, opacity?: number) {
     const rng = seedrandom(hashCode(seed).toString());
@@ -37,19 +24,6 @@ export function generateColor(seed: string, opacity?: number) {
 }
 
 
-const colorPalette = ['#052528', '#134d54', '#038696', '#048a9d', '#15b3c5', '#63d4e0', '#73979a', '#d1eff3'];
-const softColorPalette = [
-  '#A8D5BA', // Soft Mint Green
-  '#F6D8AE', // Gentle Peach
-  '#FFD3B4', // Light Coral
-  '#D4A5A5', // Soft Rose
-  '#A0C1B8', // Muted Aqua
-  '#F1E1A6', // Light Honey Yellow
-  '#BFD7EA', // Pale Sky Blue
-  '#E8D9B5', // Soft Beige
-  '#C8B8DB', // Lavender Mist
-  '#EFD9CE'  // Blush Pink
-];
 const extendedSoftColorPalette = [
   '#A8D5BA', // Soft Mint Green
   '#F6D8AE', // Gentle Peach
