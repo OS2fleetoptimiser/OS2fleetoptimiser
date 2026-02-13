@@ -516,8 +516,7 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                         )}
                         <DialogActions className="m-2 mt-4">
                             <Button
-                                // @ts-expect-error MUI variant type mismatch
-                                variant="outline"
+                                variant="outlined"
                                 onClick={handleOnClose}
                             >
                                 Annuller
