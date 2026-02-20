@@ -1502,7 +1502,7 @@ def group_by_vehicle_location(
                 roundtrip_start = record["start_time"]
                 roundtrip_end = record["end_time"]
                 segments = record["trip_segments"]
-                roundtrip_key = (vehicle_id, record.get("roundtrip_id", id(record)))
+                roundtrip_key = (vehicle_id, record["roundtrip_id"])
             else:
                 roundtrip_start = record["roundtrip_start_time"]
                 roundtrip_end = record["roundtrip_end_time"]
