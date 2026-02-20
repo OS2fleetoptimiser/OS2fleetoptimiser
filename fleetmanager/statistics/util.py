@@ -74,6 +74,83 @@ drivmidler = {
 }
 
 
+def parse_shifts(session: Session, shifts_input):
+    """
+    Parse shifts from database or input.
+
+    Args:
+        session: Database session
+        shifts_input: Either None (load from DB), or a shifts object with .shifts attribute
+
+    Returns:
+        List of shift dicts with 'shift_start', 'shift_end', 'break' as datetime.time objects
+    """
+    if shifts_input is None:
+        # Load from database
+        shifts_result = (
+            session.query(SimulationSettings.value)
+            .filter(SimulationSettings.name == "vagt_dashboard")
+            .first()
+        )
+        if shifts_result:
+            return [
+                {
+                    "shift_start": datetime.time(
+                        hour=int(slot["shift_start"].split(":")[0]),
+                        minute=int(slot["shift_start"].split(":")[-1]),
+                    ),
+                    "shift_end": datetime.time(
+                        hour=int(slot["shift_end"].split(":")[0]),
+                        minute=int(slot["shift_end"].split(":")[-1]),
+                    ),
+                    "break": None
+                    if slot.get("break") is None
+                    else datetime.time(
+                        hour=int(slot["break"].split(":")[0]),
+                        minute=int(slot["break"].split(":")[-1]),
+                    ),
+                }
+                for slot in literal_eval(shifts_result[0])
+            ]
+        else:
+            return []
+    else:
+        # Parse from input object
+        return [
+            {
+                "break" if key == "shift_break" else key: value
+                for key, value in shift.dict().items()
+            }
+            for shift in shifts_input.shifts
+        ]
+
+
+def calculate_shift_id(start_time, end_time, shifts):
+    """
+    Calculate which shift a trip belongs to based on overlap.
+
+    Args:
+        start_time: Trip start time
+        end_time: Trip end time
+        shifts: List of shift dicts with 'shift_start' and 'shift_end'
+
+    Returns:
+        Index of the shift with maximum overlap, or None if no shifts
+    """
+    if not shifts:
+        return None
+    return np.argmax(
+        [
+            alternate(
+                {"start_time": start_time, "end_time": end_time},
+                ssh=shift["shift_start"],
+                seh=shift["shift_end"],
+            )
+            for shift in shifts
+        ]
+    )
+
+
 def get_summed_statistics(
     session: Session,
     start_date: datetime.date = None,
@@ -435,44 +512,7 @@ def daily_driving(
 ):
     # todo shifts should not be done in driving activity
     # todo rethink the shifts, we don't need to do this heavy processing for showing the shift id
-    if shifts is None:
-        # not explicitly set, so we'll look for saved shifts
-        shifts = (
-            session.query(SimulationSettings.value)
-            .filter(SimulationSettings.name == "vagt_dashboard")
-            .first()
-        )
-        if shifts:
-            shifts = [
-                {
-                    "shift_start": datetime.time(
-                        hour=int(slot["shift_start"].split(":")[0]),
-                        minute=int(slot["shift_start"].split(":")[-1]),
-                    ),
-                    "shift_end": datetime.time(
-                        hour=int(slot["shift_end"].split(":")[0]),
-                        minute=int(slot["shift_end"].split(":")[-1]),
-                    ),
-                    "break": None
-                    if slot.get("break") is None
-                    else datetime.time(
-                        hour=int(slot["break"].split(":")[0]),
-                        minute=int(slot["break"].split(":")[-1]),
-                    ),
-                }
-                for slot in literal_eval(shifts[0])
-            ]
-        else:
-            # shifts was not previously saved in the database
-            shifts = []
-    else:
-        shifts = [
-            {
-                "break" if key == "shift_break" else key: value
-                for key, value in shift.dict().items()
-            }
-            for shift in shifts.shifts
-        ]
+    shifts = parse_shifts(session, shifts)
     # avoid using functions or calculations on indexed columns in where clause
     # use direct comparison where possible, due not wrap columns in a function
     # if function is needed, create a computed column or a function based index if the db supports it
@@ -917,46 +957,48 @@ def get_daily_driving_data(
     include_trip_segments: bool | None = False,
     as_segments: bool | None = False,
 ):
-    # todo prøv med sql statements uden om sqlalchemy
+    """
+    Retrieve daily driving data for dashboards with optional segment granularity.
+
+    Filters data to "eligible" vehicles only (non-disabled, non-deleted, with valid
+    cost and fuel consumption data).
+
+    Modes:
+        - Default (both False): Returns plain roundtrips
+        - include_trip_segments=True: Returns roundtrips with embedded 'trip_segments' array
+        - as_segments=True: Returns flat segment records for granular time allocation
+
+        Note: include_trip_segments takes precedence over as_segments for backward
+        compatibility. If both are True, embedded segments mode is used.
+
+    When as_segments=True:
+        Each segment record includes 'roundtrip_start_time' and 'roundtrip_end_time'
+        from the parent roundtrip. This allows tracking "in use but not driving" periods
+        (e.g., when a vehicle is parked at a destination between segments).
+
+    Args:
+        session: Database session
+        start_date: Start of date range
+        end_date: End of date range
+        locations: Filter by location IDs
+        vehicles: Filter by vehicle IDs
+        shifts: Shift configuration (loaded from DB if None)
+        departments: Filter by department names
+        forvaltninger: Filter by forvaltning names
+        include_trip_segments: Include embedded trip_segments array in roundtrips
+        as_segments: Return flat segment records instead of roundtrips
+
+    Returns:
+        dict with keys:
+            - query_start_date, query_end_date: Date range
+            - query_locations: List of location dicts
+            - query_vehicles: List of vehicle dicts
+            - shifts: Parsed shift configuration
+            - driving_data: List of roundtrip/segment records
+    """
+
     try:
-        if shifts is None:
-            # not explicitly set, so we'll look for saved shifts
-            shifts = (
-                session.query(SimulationSettings.value)
-                .filter(SimulationSettings.name == "vagt_dashboard")
-                .first()
-            )
-            if shifts:
-                shifts = [
-                    {
-                        "shift_start": datetime.time(
-                            hour=int(slot["shift_start"].split(":")[0]),
-                            minute=int(slot["shift_start"].split(":")[-1]),
-                        ),
-                        "shift_end": datetime.time(
-                            hour=int(slot["shift_end"].split(":")[0]),
-                            minute=int(slot["shift_end"].split(":")[-1]),
-                        ),
-                        "break": None
-                        if slot.get("break") is None
-                        else datetime.time(
-                            hour=int(slot["break"].split(":")[0]),
-                            minute=int(slot["break"].split(":")[-1]),
-                        ),
-                    }
-                    for slot in literal_eval(shifts[0])
-                ]
-            else:
-                # shifts was not previously saved in the database
-                shifts = []
-        else:
-            shifts = [
-                {
-                    "break" if key == "shift_break" else key: value
-                    for key, value in shift.dict().items()
-                }
-                for shift in shifts.shifts
-            ]
+        shifts = parse_shifts(session, shifts)
 
         vehicles_query = session.query(Cars.id).filter(
             Cars.omkostning_aar.isnot(None),
@@ -1005,18 +1047,8 @@ def get_daily_driving_data(
 
         query = roundtrips
 
-        if as_segments:
-            sub = roundtrips.subquery()
-            query = session.query(
-                RoundTripSegments.id,
-                sub.c.car_id,
-                sub.c.start_location_id,
-                RoundTripSegments.distance,
-                RoundTripSegments.start_time,
-                RoundTripSegments.end_time,
-            ).join(sub, sub.c.id == RoundTripSegments.round_trip_id)
-
-        if include_trip_segments and as_segments is False:
+        # include_trip_segments takes precedence over as_segments for backward compatibility
+        if include_trip_segments:
             sub = query.subquery()
             query = session.query(
                 sub.c.id,
@@ -1028,6 +1060,19 @@ def get_daily_driving_data(
                 sub.c.distance,
                 RoundTripSegments,
             ).join(RoundTripSegments)
+        elif as_segments:
+            sub = roundtrips.subquery()
+            query = session.query(
+                RoundTripSegments.id,
+                sub.c.car_id,
+                sub.c.start_location_id,
+                RoundTripSegments.distance,
+                RoundTripSegments.start_time,
+                RoundTripSegments.end_time,
+                sub.c.id.label("roundtrip_id"),
+                sub.c.start_time.label("roundtrip_start_time"),
+                sub.c.end_time.label("roundtrip_end_time"),
+            ).join(sub, sub.c.id == RoundTripSegments.round_trip_id)
 
         alls = query.all()
 
@@ -1055,9 +1100,7 @@ def get_daily_driving_data(
             .all()
         }
 
-        use_shifts = False if shifts is None or len(shifts) == 0 else True
-
-        if include_trip_segments and as_segments is False:
+        if include_trip_segments:
             roundtrip_data = {}
             visited = set()
             for rt in alls:
@@ -1071,23 +1114,7 @@ def get_daily_driving_data(
                         "distance": rt.distance,
                         "location_id": rt.start_location_id,
                         "aggregation_type": rt.aggregation_type,
-                        "shift_id": None
-                        if use_shifts is False
-                        else np.argmax(
-                            list(
-                                map(
-                                    lambda shift: alternate(
-                                        {
-                                            "start_time": rt.start_time,
-                                            "end_time": rt.end_time,
-                                        },
-                                        ssh=shift["shift_start"],
-                                        seh=shift["shift_end"],
-                                    ),
-                                    shifts,
-                                )
-                            )
-                        ),
+                        "shift_id": calculate_shift_id(rt.start_time, rt.end_time, shifts),
                         "plate": query_vehicles[rt.car_id]["plate"],
                         "vehicle_id": rt.car_id,
                         "make": query_vehicles[rt.car_id]["make"],
@@ -1105,40 +1132,26 @@ def get_daily_driving_data(
         else:
             roundtrip_data = []
             for rt in alls:
-                roundtrip_data.append(
-                    {
-                        "roundtrip_id": rt.id,
-                        "location_id": rt.start_location_id,
-                        # it's only the turoverblik dashboard that uses this (trip_segments)
-                        "aggregation_type": None,
-                        "distance": rt.distance,
-                        "start_time": rt.start_time,
-                        "end_time": rt.end_time,
-                        "trip_segments": [],
-                        "shift_id": None
-                        if use_shifts is False
-                        else np.argmax(
-                            list(
-                                map(
-                                    lambda shift: alternate(
-                                        {
-                                            "start_time": rt.start_time,
-                                            "end_time": rt.end_time,
-                                        },
-                                        ssh=shift["shift_start"],
-                                        seh=shift["shift_end"],
-                                    ),
-                                    shifts,
-                                )
-                            )
-                        ),
-                        "plate": query_vehicles[rt.car_id]["plate"],
-                        "vehicle_id": rt.car_id,
-                        "make": query_vehicles[rt.car_id]["make"],
-                        "model": query_vehicles[rt.car_id]["model"],
-                        "department": query_vehicles[rt.car_id]["department"],
-                    }
-                )
+                record = {
+                    "roundtrip_id": rt.roundtrip_id if as_segments else rt.id,
+                    "location_id": rt.start_location_id,
+                    "aggregation_type": None,
+                    "distance": rt.distance,
+                    "start_time": rt.start_time,
+                    "end_time": rt.end_time,
+                    "trip_segments": [],
+                    "shift_id": calculate_shift_id(rt.start_time, rt.end_time, shifts),
+                    "plate": query_vehicles[rt.car_id]["plate"],
+                    "vehicle_id": rt.car_id,
+                    "make": query_vehicles[rt.car_id]["make"],
+                    "model": query_vehicles[rt.car_id]["model"],
+                    "department": query_vehicles[rt.car_id]["department"],
+                }
+                # add roundtrip boundaries when working with segments to allow marking "non-driving active periods"
+                if as_segments:
+                    record["roundtrip_start_time"] = rt.roundtrip_start_time
+                    record["roundtrip_end_time"] = rt.roundtrip_end_time
+                roundtrip_data.append(record)
         query_locations = [
             {"id": location.id, "address": location.address}
             for location in session.query(AllowedStarts)
@@ -1384,13 +1397,73 @@ def date_duration_getter(start_date, end_date, level):
     return sorted(list(set(list_of_keys)), key=lambda item: item[1])
 
 
+def mark_period_as_in_use(grouped_dict, key):
+    """
+    Mark a period as 'in use but not driving' by setting distance to None.
+    Only sets to None if the period hasn't been processed yet (distance is exactly 0).
+
+    Args:
+        grouped_dict: Dictionary of {key: {"distance": value, ...}}
+        key: The key to mark
+    """
+    current_distance = grouped_dict[key]["distance"]
+    if current_distance is not None and current_distance == 0:
+        grouped_dict[key]["distance"] = None
+
+
+def add_distance_to_period(grouped_dict, key, distance):
+    """
+    Add distance to a period, handling None values (in-use periods).
+
+    Args:
+        grouped_dict: Dictionary of {key: {"distance": value, ...}}
+        key: The key to add distance to
+        distance: The distance to add
+    """
+    if grouped_dict[key]["distance"] is None:
+        grouped_dict[key]["distance"] = 0
+    grouped_dict[key]["distance"] += distance
+
+
 def group_by_vehicle_location(
-    driving_data: list[ddata],
+    driving_data: list[dict],
     start_date: datetime.datetime | datetime.date,
     end_date: datetime.datetime | datetime.date,
     vehicles: list[int],
     locations: list[int],
 ):
+    """
+    Aggregate driving data by vehicle and location over time periods.
+
+    Automatically determines aggregation level based on date range:
+        - <= 31 days: daily aggregation
+        - <= 90 days: weekly aggregation
+        - > 90 days: monthly aggregation
+
+    Handles three data formats:
+        - Embedded segments: roundtrips with 'trip_segments' array
+        - Flat segments: individual segment records with 'roundtrip_start_time'/'roundtrip_end_time'
+        - Plain roundtrips: simple roundtrip records without segment detail
+
+    For segment data, tracks "in use but not driving" periods by setting distance to None
+    for time periods where a vehicle was active (within roundtrip boundaries) but has no
+    recorded segment distance. This distinguishes between:
+        - 0: No activity in period
+        - None: Vehicle in use but not driving (e.g., parked at destination)
+        - >0: Actual driven distance
+
+    Args:
+        driving_data: List of driving records (roundtrips or segments)
+        start_date: Start of date range
+        end_date: End of date range
+        vehicles: List of vehicle IDs to include
+        locations: List of location IDs to include
+
+    Returns:
+        tuple of (vehicle_grouped, location_grouped) where each is a dict:
+            - Key: (id, aggregation_period_string)
+            - Value: {"distance": float|None, "startDate": date, "endDate": date}
+    """
     duration_days = (end_date - start_date).days
     if duration_days <= 31:
         aggregation_level = "day"
@@ -1413,46 +1486,51 @@ def group_by_vehicle_location(
         for it in unique_keys
     }
 
+    processed_roundtrips = set()
+
     for record in driving_data:
-        # Also do the segment thing here
         location_id = record["location_id"]
         vehicle_id = record["vehicle_id"]
 
-        if record["trip_segments"] != None and len(record["trip_segments"]) != 0:
-            # Get aggregation keys for current trip and initialize ONLY unprocessed periods to None
-            # This represents times where the car is currently active but not driving
-            trip_day_keys = date_duration_getter(
-                record["start_time"], record["end_time"], aggregation_level)
-            for aggregation_key, _, _ in trip_day_keys:
-                # Only set to None if this period hasn't been processed yet (is exactly 0, not None or accumulated value)
-                current_distance = vehicle_grouped[(vehicle_id, aggregation_key)]["distance"]
-                if current_distance is not None and current_distance == 0:
-                    vehicle_grouped[(vehicle_id, aggregation_key)]["distance"] = None
+        # normalise segment data - check for embedded segments or flattened segments
+        has_embedded_segments = record.get("trip_segments") and len(record["trip_segments"]) > 0
+        has_flat_segments = "roundtrip_start_time" in record
 
-            for segment in record["trip_segments"]:
-                trip_segment_aggregation_key, _, _ = get_aggregation_key(
+        if has_embedded_segments or has_flat_segments:
+            # normalise common structure
+            if has_embedded_segments:
+                roundtrip_start = record["start_time"]
+                roundtrip_end = record["end_time"]
+                segments = record["trip_segments"]
+                roundtrip_key = (vehicle_id, record["roundtrip_id"])
+            else:
+                roundtrip_start = record["roundtrip_start_time"]
+                roundtrip_end = record["roundtrip_end_time"]
+                segments = [{"start_time": record["start_time"], "distance": record["distance"]}]
+                roundtrip_key = (vehicle_id, record["roundtrip_id"])
+
+            # marking roundtrip period as "in use" only once per roundtrip
+            if roundtrip_key not in processed_roundtrips:
+                processed_roundtrips.add(roundtrip_key)
+                trip_day_keys = date_duration_getter(roundtrip_start, roundtrip_end, aggregation_level)
+                for aggregation_key, _, _ in trip_day_keys:
+                    mark_period_as_in_use(vehicle_grouped, (vehicle_id, aggregation_key))
+
+            # accounting the distance on the key
+            for segment in segments:
+                segment_aggregation_key, _, _ = get_aggregation_key(
                     segment["start_time"], aggregation_level
                 )
-
-                if vehicle_grouped[(vehicle_id, trip_segment_aggregation_key)]["distance"] is None:
-                    vehicle_grouped[(vehicle_id, trip_segment_aggregation_key)]["distance"] = 0
-                vehicle_grouped[(vehicle_id, trip_segment_aggregation_key)
-                                ]["distance"] += segment["distance"]
-
-                location_grouped[(location_id, trip_segment_aggregation_key)]["distance"] += segment[
-                    "distance"
-                ]
+                add_distance_to_period(vehicle_grouped, (vehicle_id, segment_aggregation_key), segment["distance"])
+                location_grouped[(location_id, segment_aggregation_key)]["distance"] += segment["distance"]
 
         else:
+            # plain roundtrip without segments
             aggregation_key, _, _ = get_aggregation_key(
                 record["start_time"], aggregation_level
             )
-
-            vehicle_grouped[(vehicle_id, aggregation_key)
-                            ]["distance"] += record["distance"]
-            location_grouped[(location_id, aggregation_key)]["distance"] += record[
-                "distance"
-            ]
+            vehicle_grouped[(vehicle_id, aggregation_key)]["distance"] += record["distance"]
+            location_grouped[(location_id, aggregation_key)]["distance"] += record["distance"]
 
     return vehicle_grouped, location_grouped
 
