@@ -1,18 +1,23 @@
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
+
+# Use dynamic dates relative to now to match seeded data (last 14 days)
+_now = datetime.now()
+_start_date = _now - timedelta(days=14)
+_end_date = _now
 
 simulation_request_naive = {
-    "start_date": datetime(2020, 7, 31),
-    "end_date": datetime(2023, 8, 8),
+    "start_date": _start_date,
+    "end_date": _end_date,
     "location_id": 1,
     "intelligent_allocation": False,
     "limit_km": False,
+    # Car IDs 1, 4, 7 are at location 1 (seeding cycles locations 1,2,3)
     "simulation_vehicles": [
-        {"id": 202, "simulation_count": 1},
-        {"id": 221, "simulation_count": 2},
-        {"id": 270, "simulation_count": 3},
-        {"id": 407, "simulation_count": 1},
+        {"id": 1, "simulation_count": 1},
+        {"id": 4, "simulation_count": 2},
+        {"id": 7, "simulation_count": 1},
     ],
-    "current_vehicles": [202, 221, 239, 270, 274, 275],
+    "current_vehicles": [1, 4, 7],
     "settings": {
         "simulation_settings": {
             "el_udledning": 0.09,
@@ -72,5 +77,6 @@ simulation_request_naive = {
 
 simulation_request_intelligent = simulation_request_naive.copy()
 simulation_request_intelligent["intelligent_allocation"] = True
-simulation_request_intelligent["start_date"] = datetime(2022, 3, 1, 16, 1, 9)
-simulation_request_intelligent["end_date"] = datetime(2022, 3, 4, 16, 1, 9)
+# Use a 3-day window within the seeded data range
+simulation_request_intelligent["start_date"] = _now - timedelta(days=7)
+simulation_request_intelligent["end_date"] = _now - timedelta(days=4)

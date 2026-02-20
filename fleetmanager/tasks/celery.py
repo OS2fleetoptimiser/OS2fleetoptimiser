@@ -18,6 +18,7 @@ app = Celery(
     os.getenv("CELERY_USER", f"fleetmanager_{uuid4().hex}"),
     broker=os.getenv("CELERY_BROKER_URL", "amqp://localhost"),
     backend=os.getenv("CELERY_BACKEND_URL", "redis://localhost"),
+    
 )
 app.log.already_setup = True
 app.conf.event_serializer = "pickle"

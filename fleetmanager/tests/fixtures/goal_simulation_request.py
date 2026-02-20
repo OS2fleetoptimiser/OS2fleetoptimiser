@@ -1,49 +1,19 @@
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
+
+# Use dynamic dates relative to now to match seeded data (last 14 days)
+_now = datetime.now()
+_start_date = _now - timedelta(days=14)
+_end_date = _now
 
 simulation_request = {
-    "start_date": datetime(2021, 8, 1),
-    "end_date": datetime(2023, 8, 9),
+    "start_date": _start_date,
+    "end_date": _end_date,
     "location_id": 2,
     "intelligent_allocation": False,
     "limit_km": False,
-    "current_vehicles": [
-        203,
-        211,
-        220,
-        224,
-        245,
-        246,
-        247,
-        250,
-        254,
-        257,
-        277,
-        282,
-        322,
-        332,
-        333,
-        352,
-        355,
-    ],
-    "fixed_vehicles": [
-        203,
-        211,
-        220,
-        224,
-        245,
-        246,
-        247,
-        250,
-        254,
-        257,
-        277,
-        282,
-        322,
-        332,
-        333,
-        352,
-        355,
-    ],
+    # Car IDs 2, 5, 8 are at location 2 (seeding cycles locations 1,2,3)
+    "current_vehicles": [2, 5, 8],
+    "fixed_vehicles": [2, 5, 8],
     "extra_expenses": 0,
     "co2e_saving": 0,
     "prioritisation": 5,

@@ -67,7 +67,7 @@ class AllowedStarts(Base):
     address: Mapped[Optional[str]] = mapped_column(String(128))
     latitude: Mapped[Optional[float]]
     longitude: Mapped[Optional[float]]
-    id: Mapped[Optional[int]] = mapped_column(primary_key=True, nullable=False, default=None)
+    id: Mapped[Optional[int]] = mapped_column(primary_key=True, nullable=False, default=None, init=False)
     addition_date: Mapped[Optional[datetime]] = mapped_column(
         DateTime, default_factory=datetime.now
     )
@@ -84,7 +84,7 @@ class AllowedStartAdditions(Base):
     latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=False)
     longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=False)
     allowed_start_id: Mapped[int] = mapped_column(
-        ForeignKey('allowed_starts.id'), index=True, nullable=False
+        ForeignKey('allowed_starts.id'), index=True, nullable=False, init=False
     )
     allowed_start: Mapped["AllowedStarts"] = relationship(
         "AllowedStarts", back_populates="additions"
@@ -92,7 +92,7 @@ class AllowedStartAdditions(Base):
     addition_date: Mapped[Optional[datetime]] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
-    id: Mapped[int | None] = mapped_column(Integer, primary_key=True, nullable=False, default=None)
+    id: Mapped[int | None] = mapped_column(Integer, primary_key=True, nullable=False, default=None, init=False)
 
 
 class LeasingTypes(Base):
@@ -117,7 +117,7 @@ class VehicleTypes(Base):
 
 class Cars(Base):
     __tablename__ = "cars"
-    id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, nullable=False, init=False)
     imei: Mapped[str] = mapped_column(String(20), nullable=True, default=None)
     plate: Mapped[Optional[str]] = mapped_column(String(128), default=None)
     make: Mapped[Optional[str]] = mapped_column(String(128), default=None)
