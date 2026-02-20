@@ -58,7 +58,7 @@ export async function fetchVehiclesByLocation<T>(options: vehicleLocationFilters
     }
     let forvaltningQueryParam = '';
     if (options.forvaltning) {
-        forvaltningQueryParam = `&forvaltning=${options.forvaltning}`
+        forvaltningQueryParam = `&forvaltning=${encodeURIComponent(options.forvaltning)}`
     }
     try {
         const prefix = AxiosBase.defaults.baseURL
