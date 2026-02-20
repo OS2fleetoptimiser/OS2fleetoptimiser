@@ -51,14 +51,14 @@ export default function Home() {
     // vehicle stuff
     const vehicles = useQueries({
         queries: locationForvaltning.map((location) => ({
-            queryKey: ['vehiclesByLocation', startPeriod, endPeriod, location.id],
-            queryFn: () => fetchVehiclesByLocation({ startPeriod, endPeriod, location: location.id }),
+            queryKey: ['vehiclesByLocation', startPeriod, endPeriod, location.id, location.forvaltning],
+            queryFn: () => {
+                return fetchVehiclesByLocation({startPeriod, endPeriod, location: location.id, forvaltning: location.forvaltning})
+            },
             staleTime: Infinity,
         })),
     });
-    const completeVehicleList = vehicles.flatMap((q) => q.data?.locations ?? []).flatMap((loc) => loc.vehicles ?? []);
-    // deduplicating vehicles by id in case same location is selected under multiple forvaltninger
-    const allVehicles = Array.from(new Map(completeVehicleList.map((v) => [v.id, v])).values());
+    const allVehicles = vehicles.flatMap((q) => q.data?.locations ?? []).flatMap((loc) => loc.vehicles ?? []);
     const [selectedVehicleIds, setSelectedVehicleIds] = useState(selectedVehicles.map((v) => v.id));
     const handleVehicleChange = (selectedVehicleIds: number[]) => {
         const vehicleWithStatusSelected = allVehicles.filter((v) => selectedVehicleIds.includes(v.id));
