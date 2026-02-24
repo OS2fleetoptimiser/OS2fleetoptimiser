@@ -8,16 +8,15 @@ _end_date = _now
 simulation_request = {
     "start_date": _start_date,
     "end_date": _end_date,
-    "location_id": 2,
+    "location_id": 1,
     "intelligent_allocation": False,
     "limit_km": False,
-    # Car IDs 2, 5, 8 are at location 2 (seeding cycles locations 1,2,3)
-    "current_vehicles": [2, 5, 8],
-    "fixed_vehicles": [2, 5, 8],
+    "current_vehicles": [0, 3],
+    "fixed_vehicles": [0, 3],
     "extra_expenses": 0,
     "co2e_saving": 0,
     "prioritisation": 5,
-    "test_vehicles": [],
+    "test_vehicles": [4, 5],
     "settings": {
         "simulation_settings": {
             "el_udledning": 0.09,

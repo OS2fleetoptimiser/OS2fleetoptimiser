@@ -23,17 +23,15 @@ def test_get_location_vehicles(db_session):
         db_session, start_date=start, end_date=end
     )
 
-    # Seeded data: loc1 has cars 1,4,7 (3), loc2 has cars 2,5,8 (3), loc3 has cars 3,6 (2)
     vehicle_expectations = [
         {"id": 1, "count": 3},
-        {"id": 2, "count": 3},
-        {"id": 3, "count": 2},
+        {"id": 2, "count": 1},
+        {"id": 3, "count": 1},
     ]
-    # After moving car 2 from loc2 to loc1
     vehicle_moved_expectations = [
-        {"id": 1, "count": 4},  # car 2 now also at location 1
-        {"id": 2, "count": 3},  # car 2 still shows at location 2 with changed status
-        {"id": 3, "count": 2},
+        {"id": 1, "count": 4},
+        {"id": 2, "count": 1},
+        {"id": 3, "count": 1},
     ]
 
     assert len(location_vehicles.locations) == len(
@@ -86,11 +84,11 @@ def test_get_location_vehicles(db_session):
         )
 
     vehicle_location_1_2 = vehicle_getter(location_vehicles_moved.locations, 2, 1)
-    vehicle_location_2_2 = vehicle_getter(location_vehicles_moved.locations, 2, 2)
+    vehicle_location_3_2 = vehicle_getter(location_vehicles_moved.locations, 2, 3)
 
     assert (
         vehicle_location_1_2.status == "ok"
     ), 'Vehicle 2 did not have the expected "ok" status at location 1'
     assert (
-        vehicle_location_2_2.status == "locationChanged"
-    ), 'Vehicle 2 did not have the expected "locationChanged" at its old location; 2'
+        vehicle_location_3_2.status == "locationChanged"
+    ), 'Vehicle 2 did not have the expected "locationChanged"'

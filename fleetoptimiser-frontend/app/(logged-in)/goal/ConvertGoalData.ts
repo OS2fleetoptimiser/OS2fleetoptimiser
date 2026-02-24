@@ -1,11 +1,10 @@
-import { goalSimulation, goalSolution } from '@/components/hooks/useSimulateGoal';
+import {goalSimulation, goalSolution} from '@/components/hooks/useSimulateGoal';
 import { SimulationResults, VehicleDifference } from '@/app/(logged-in)/fleet/ConvertData';
 import { drivingBook, simulationOptions, VehicleResult } from '@/components/hooks/useSimulateFleet';
 
 export function convertGoalDataToSimulationResults(input: goalSimulation): { solutions: SimulationResults[] } {
     const { result } = input;
-    const { solutions, simulation_options } = result;
-    const goalSolutions = Array.isArray(solutions) ? solutions : [];
+    const { solutions: goalSolutions, simulation_options } = result;
 
     const convertedSolutions: SimulationResults[] = goalSolutions.map((sol: goalSolution, i: number) => {
         const drivingBook =

@@ -27,10 +27,9 @@ from fleetmanager.data_access import AllowedStarts, VehicleTypes, FuelTypes, Lea
 
 def test_get_vehicles(db_session):
     vehicles = get_vehicles(db_session)
-    # Seeding creates 8 vehicles by default
     assert (
-        len(vehicles) == 8
-    ), f"Number of vehicles not the expected 8, but {len(vehicles)}"
+        len(vehicles) == 7
+    ), f"Number of vehicles not the expected 7, but {len(vehicles)}"
     assert all(
         [
             all([key in vehicle.keys() for key in Vehicle.__fields__.keys()])
@@ -64,8 +63,7 @@ def test_get_dropdown_data(db_session):
     assert len(fuel_types) == 11
     assert len(leasing_types) == 3
     assert len(locations) == 3
-    # Seeding creates 3 departments: Hjemmepleje, Administration, Teknik og Miljø
-    assert len(departments) == 3
+    assert len(departments) == 2
 
 
 def test_create_delete_vehicle(db_session):
@@ -148,7 +146,6 @@ def test_create_delete_vehicle(db_session):
 
 
 def test_move_vehicle(db_session):
-    # Use car 2 which is at location 2 in seeded data
     # Use dynamic date within the seeded trip range (last 14 days)
     move_date = date.today() - timedelta(days=7)
 
@@ -158,24 +155,24 @@ def test_move_vehicle(db_session):
     len_before_moving = len(
         list(
             filter(
-                lambda roundtrip: roundtrip.start_location_id == 2,
+                lambda roundtrip: roundtrip.start_location_id == 3,
                 roundtrips_before_moving,
             )
         )
     )
     assert len_before_moving == len(
         roundtrips_before_moving
-    ), "RoundTrips did not all have start location 2"
+    ), "RoundTrips did not all have start location 3"
 
     move_vehicle(db_session, 2, move_date, 1)
 
     roundtrips_after_moving = (
         db_session.query(RoundTrips).filter(RoundTrips.car_id == 2).all()
     )
-    len_location_2_after_moving = len(
+    len_location_3_after_moving = len(
         list(
             filter(
-                lambda roundtrip: roundtrip.start_location_id == 2,
+                lambda roundtrip: roundtrip.start_location_id == 3,
                 roundtrips_after_moving,
             )
         )
@@ -189,9 +186,9 @@ def test_move_vehicle(db_session):
         )
     )
 
-    assert len_location_2_after_moving != len_before_moving, "RoundTrips were not moved"
+    assert len_location_3_after_moving != len_before_moving, "RoundTrips were not moved"
     assert (
-        len_location_1_after_moving + len_location_2_after_moving == len_before_moving
+        len_location_1_after_moving + len_location_3_after_moving == len_before_moving
     ), "Lost some RoundTrips in the move"
 
     move_vehicle(db_session, 2, move_date, delete=True)
@@ -202,7 +199,7 @@ def test_move_vehicle(db_session):
     len_car_2_after_deleting = len(roundtrips_after_deleting)
 
     assert (
-        len_car_2_after_deleting == len_location_2_after_moving
+        len_car_2_after_deleting == len_location_3_after_moving
     ), f"All expected RoundTrips were not deleted"
     roundtrips_after_deleting = (
         db_session.query(RoundTrips)

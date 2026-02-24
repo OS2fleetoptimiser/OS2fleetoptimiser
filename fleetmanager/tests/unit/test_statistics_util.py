@@ -22,9 +22,8 @@ extra_day = timedelta(days=3)
 def test_summed_statistics(db_session):
     statistics_overview = get_summed_statistics(db_session)
 
-    # Seeding creates 8 cars with 6 trips each = 48 trips
     assert (
-        statistics_overview.total_roundtrips == 48
+        statistics_overview.total_roundtrips == 252
     ), f"Number of total roundtrips was unexpected, {statistics_overview.total_roundtrips}"
     # First date should be within the seeded range
     assert (
@@ -105,12 +104,11 @@ def test_daily_driving_and_export(db_session):
         locations=[1, 2, 3],
     )
 
-    # Use seeded vehicle IDs (1-8)
     response_with_additional_filters = daily_driving(
         db_session,
         start_date=datetime.combine(start_date, time(0, 0, 0)),
         end_date=datetime.combine(end_date, time(0, 0, 0)) + extra_day,
-        vehicles=[1, 2, 3, 4, 5, 6, 7, 8],
+        vehicles=[0, 1, 2, 3, 4, 5, 6],
     )
 
     assert (

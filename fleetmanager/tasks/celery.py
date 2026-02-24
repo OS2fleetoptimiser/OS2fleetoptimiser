@@ -9,6 +9,8 @@ from uuid import uuid4
 from fleetmanager.api.fleet_simulation.schemas import FleetSimulationOptions
 from fleetmanager.api.goal_simulation.schemas import GoalSimulationOptions
 from fleetmanager.api.location.schemas import PrecisionTestOptions
+from fleetmanager.data_access.db_engine import engine_creator
+from fleetmanager.data_access.seeding import seed_db
 from fleetmanager.fleet_simulation import fleet_simulator
 from fleetmanager.goal_simulation import goal_simulator, automatic_simulator
 from fleetmanager.location import precision_test
@@ -18,7 +20,6 @@ app = Celery(
     os.getenv("CELERY_USER", f"fleetmanager_{uuid4().hex}"),
     broker=os.getenv("CELERY_BROKER_URL", "amqp://localhost"),
     backend=os.getenv("CELERY_BACKEND_URL", "redis://localhost"),
-    
 )
 app.log.already_setup = True
 app.conf.event_serializer = "pickle"
@@ -57,6 +58,9 @@ def run_precision_location_test(self, settings: PrecisionTestOptions):
 
 
 @worker_ready.connect
-def verify_redis_connection(sender, **kwargs):
-    """fail fast if redis is not available when worker starts"""
+def on_worker_ready(sender, **kwargs):
+    """fail fast if redis is not available. Seed dev data if SEED_DUMMY_DATA=true."""
     get_redis_client()
+    if os.getenv("SEED_DUMMY_DATA", "false").lower() == "true":
+        _engine = engine_creator()
+        seed_db(_engine)

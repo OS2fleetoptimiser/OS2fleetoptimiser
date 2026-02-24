@@ -1,14 +1,9 @@
-from datetime import datetime
 import os
-from importlib.resources import files
-
-from requests import Session
 
 import sqlalchemy
-from sqlalchemy import create_engine, select, inspect, Engine, func
+from sqlalchemy import create_engine, select, inspect, Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from fleetmanager.data_access.seeding import seed_allowed_starts, seed_cars, seed_dynamic_roundtrips_and_segments
 
 from .dbschema import (
     Base,
@@ -57,7 +52,7 @@ def engine_creator(
     if db_server is None:
         db_server = os.getenv("DB_SERVER")
 
-    if any((db_name, db_password, db_user, db_url, db_server)):
+    if all((db_name, db_password, db_user, db_url, db_server)):
         dsn = f"{db_server}://{db_user}:{db_password}@{db_url}/{db_name}"
         if db_server == "mssql+pyodbc":
             
@@ -74,16 +69,12 @@ def engine_creator(
             poolclass=StaticPool,
             # encoding="latin-1",
         )
+
     insp = inspect(db_engine)
         
     if not insp.has_table("cars"):
         Base.metadata.create_all(db_engine)
         create_defaults(db_engine)
-            
-            
-    seed_allowed_starts(db_engine)                  
-    seed_cars(db_engine)
-    seed_dynamic_roundtrips_and_segments(db_engine)
 
     return db_engine
 

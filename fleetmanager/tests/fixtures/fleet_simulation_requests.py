@@ -11,13 +11,11 @@ simulation_request_naive = {
     "location_id": 1,
     "intelligent_allocation": False,
     "limit_km": False,
-    # Car IDs 1, 4, 7 are at location 1 (seeding cycles locations 1,2,3)
     "simulation_vehicles": [
-        {"id": 1, "simulation_count": 1},
-        {"id": 4, "simulation_count": 2},
-        {"id": 7, "simulation_count": 1},
+        {"id": 0, "simulation_count": 1},
+        {"id": 3, "simulation_count": 1},
     ],
-    "current_vehicles": [1, 4, 7],
+    "current_vehicles": [0, 3],
     "settings": {
         "simulation_settings": {
             "el_udledning": 0.09,
