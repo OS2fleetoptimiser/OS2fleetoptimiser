@@ -1,3 +1,6 @@
+import os
+from contextlib import asynccontextmanager
+
 from fastapi import BackgroundTasks, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_redoc_html
@@ -10,6 +13,16 @@ from fleetmanager.api.location.routes import router as location_routes
 from fleetmanager.api.simulation_setup.routes import router as simulation_setup_routes
 from fleetmanager.api.statistics.routes import router as statistics_routes
 from fleetmanager.api.user.routes import router as user_routes
+from fleetmanager.api.dependencies import engine
+from fleetmanager.data_access.seeding import seed_db
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if os.getenv("SEED_DUMMY_DATA", "false").lower() == "true":
+        seed_db(engine)
+    yield
+
 
 app = FastAPI(
     title="FleetOptimiser",
@@ -17,6 +30,7 @@ app = FastAPI(
     docs_url=None,
     redoc_url=None,
     openapi_url=None,
+    lifespan=lifespan,
 )
 app.include_router(simulation_setup_routes)
 app.include_router(configuration_routes)
