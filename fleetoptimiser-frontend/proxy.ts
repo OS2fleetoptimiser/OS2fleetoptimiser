@@ -4,10 +4,6 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export async function proxy(req: NextRequest) {
-  if (!process.env.ROLE_CHECK) {
-    return NextResponse.next();
-  }
-
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -16,7 +12,7 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL("/login?message=notoken", req.url));
   }
 
-  if (!session.user.roleValid) {
+  if (process.env.ROLE_CHECK && !session.user.roleValid) {
     return NextResponse.redirect(new URL("/login?message=invalidrole", req.url));
   }
 
