@@ -19,13 +19,14 @@ import {
 } from '@/components/redux/SimulationSlice';
 import { useAppDispatch } from '@/components/redux/hooks';
 import dayjs from 'dayjs';
-import { useEffect } from 'react';
+import { use, useEffect } from 'react';
 import { CircularProgress } from '@mui/material';
 import useGetVehicles from '@/components/hooks/useGetVehicles';
 import GoalSimulationHandler from '@/app/(logged-in)/goal/GoalSimulationHandler';
 
-export default function Page({ params }: { params: { simulationId: string } }) {
-    const simulation = useGetGoalSimulation(params.simulationId);
+export default function Page({ params }: { params: Promise<{ simulationId: string }> }) {
+    const { simulationId } = use(params);
+    const simulation = useGetGoalSimulation(simulationId);
     const vehicles = useGetVehiclesByLocation({
         startPeriod: dayjs(simulation.data?.result.simulation_options.start_date),
         endPeriod: dayjs(simulation.data?.result.simulation_options.end_date),
@@ -64,18 +65,18 @@ export default function Page({ params }: { params: { simulationId: string } }) {
             dispatch(addTestVehicles(simulationOptions.test_vehicles));
             dispatch(addTestVehiclesMeta(allVehicles.data?.vehicles.filter((vehicle) => simulationOptions.test_vehicles.includes(vehicle.id))));
         }
-    }, [simulation, vehicles, allVehicles]);
+    }, [simulation, vehicles, allVehicles, dispatch]);
 
     return (
         <>
-            {vehicles.isLoading && (
+            {vehicles.isPending && (
                 <div className="w-full h-full z-10 top-0 left-0 fixed bg-[#FFFFFF75]">
                     <div className="top-[40%] left-[50%] absolute transform -translate-x-1/2 -translate-y-1/2">
                         <CircularProgress />
                     </div>
                 </div>
             )}
-            {!vehicles.isLoading && <GoalSimulationHandler simulationId={params.simulationId}></GoalSimulationHandler>}
+            {!vehicles.isPending && <GoalSimulationHandler simulationId={simulationId}></GoalSimulationHandler>}
         </>
     );
 }

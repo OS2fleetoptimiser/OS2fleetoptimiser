@@ -47,35 +47,41 @@ export default function TipsAutomatic() {
               <ListItem className="mb-4" sx={{ display: 'list-item' }}>
                 <span className="font-semibold">Hvis du ikke ser store ændringer sammenlignet med din simuleringsflåde, skyldes det typisk,
                   at der ikke er ekstra kapacitet i simuleringsflåden.</span>
-                <ListItem>
-                  Juster <span className="font-medium italic">Antal i beholdning</span> for at frigøre pladser i flåden til at udskifte med andre køretøjer.
-                </ListItem>
-                <ListItem>
-                  Modellen vil kun foreslå nye køretøjer, hvis kørselsbehovet ikke kan tilfredsstilles med den nuværende simuleringsflåde.
-                </ListItem>
+                <List sx={{ listStyleType: 'circle', pl: 2 }}>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Juster <span className="font-medium italic">Antal i beholdning</span> for at frigøre pladser i flåden til at udskifte med andre køretøjer.
+                  </ListItem>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Modellen vil kun foreslå nye køretøjer, hvis kørselsbehovet ikke kan tilfredsstilles med den nuværende simuleringsflåde.
+                  </ListItem>
+                </List>
               </ListItem>
               <ListItem className="mb-4" sx={{ display: 'list-item' }}>
                 <span className="font-semibold">Hvis du ser løsninger der har mere udledning og/eller større omkostning end den nuværende.</span>
-                <ListItem>
-                  Juster prioritering mellem omkostning og CO2e udledning. 50/50 anbefales, da der her vægtes lige mellem de to.
-                </ListItem>
-                <ListItem>
-                  Vælg flere testkøretøjer i <span className="font-medium italic">Testkøretøjer</span> så modellen har flere valg.
-                </ListItem>
+                <List sx={{ listStyleType: 'circle', pl: 2 }}>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Juster prioritering mellem omkostning og CO2e udledning. 50/50 anbefales, da der her vægtes lige mellem de to.
+                  </ListItem>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Vælg flere testkøretøjer i <span className="font-medium italic">Testkøretøjer</span> så modellen har flere valg.
+                  </ListItem>
+                </List>
               </ListItem>
               <ListItem className="mb-4" sx={{ display: 'list-item' }}>
                 <span className="font-semibold">Hvis du ikke ser nogen cykler i løsningen.</span>
-                <ListItem>
-                  Sikre at du har cykler blandt dine testkøretøjer.
-                </ListItem>
-                <ListItem>
-                  Det bliver testet i modellen, om det er fordelagtigt at tilføje cykler til løsningerne for det valgte kørselsdata.
-                  Hvis effekten ikke er stor nok, så biler kan fjernes i stedet for cykler, vil cykler ikke blive tilføjet.
-                </ListItem>
-                <ListItem>
-                  Sørg for at cykelkonfigurationen og vagtlag muliggøre at rundture kan allokeres til cykler. Hvis der på lokationen primært køres
-                  lange ture, vil det have begrænset effekt at tilføje cykler til løsningen.
-                </ListItem>
+                <List sx={{ listStyleType: 'circle', pl: 2 }}>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Sikre at du har cykler blandt dine testkøretøjer.
+                  </ListItem>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Det bliver testet i modellen, om det er fordelagtigt at tilføje cykler til løsningerne for det valgte kørselsdata.
+                    Hvis effekten ikke er stor nok, så biler kan fjernes i stedet for cykler, vil cykler ikke blive tilføjet.
+                  </ListItem>
+                  <ListItem sx={{ display: 'list-item' }}>
+                    Sørg for at cykelkonfigurationen og vagtlag muliggøre at rundture kan allokeres til cykler. Hvis der på lokationen primært køres
+                    lange ture, vil det have begrænset effekt at tilføje cykler til løsningen.
+                  </ListItem>
+                </List>
               </ListItem>
           </List>
           <DialogActions>

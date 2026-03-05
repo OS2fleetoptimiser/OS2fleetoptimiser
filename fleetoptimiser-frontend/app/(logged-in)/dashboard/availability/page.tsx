@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import { Filters } from '../(filters)/FilterHeader';
 import AvailabilityChart from './AvailabilityChart';
 import AddFilter from "@/components/AddFilter";
@@ -7,10 +8,11 @@ import {FilterHeaderWrapper} from "@/app/(logged-in)/dashboard/(filters)/FilterW
 
 
 type Props = {
-    searchParams: Filters;
+    searchParams: Promise<Filters>;
 };
 
-export default function Availability({ searchParams }: Props) {
+export default function Availability({ searchParams: searchParamsPromise }: Props) {
+    const searchParams = use(searchParamsPromise);
     const timeFrame =
         searchParams.enddate && searchParams.startdate
             ? (new Date(searchParams.enddate).getTime() - new Date(searchParams.startdate).getTime()) / 1000 / 60 / 60 / 24

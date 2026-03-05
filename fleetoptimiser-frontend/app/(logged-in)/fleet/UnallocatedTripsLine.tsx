@@ -10,7 +10,7 @@ export const getYTicks = (sums: number[], maxTicks: number = 5) => {
         return [0];
     }
     const increment = Math.ceil(maxAntal / (maxTicks - 1));
-    let ticks = [];
+    const ticks = [];
     for (let i = 0; i <= maxAntal; i += increment) {
         ticks.push(i);
     }
@@ -25,7 +25,7 @@ export const UnallocatedTripsLineChart = ({ simulationResults }: { simulationRes
         let tripsByDate = [{ id: 'Simulation', data: [] as { x: string; y: number }[] }];
         tripsByDate = data.reduce((acc, cur) => {
             const day = dayjs(cur.start_time).format('YYYY-MM-DD');
-            let existingSim = acc[0].data.find((item) => item.x === day);
+            const existingSim = acc[0].data.find((item) => item.x === day);
             if (!existingSim) {
                 acc[0].data.push({
                     x: day,
@@ -34,7 +34,7 @@ export const UnallocatedTripsLineChart = ({ simulationResults }: { simulationRes
             }
 
             if (cur.simulation_type === -1) {
-                let existing = acc[0].data.find((item) => item.x === day);
+                const existing = acc[0].data.find((item) => item.x === day);
                 if (existing) existing.y++;
             }
             return acc;

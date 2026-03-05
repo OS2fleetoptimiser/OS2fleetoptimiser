@@ -14,13 +14,17 @@ type simulatioHistory = {
 const dateSort = (a: simulatioHistory, b: simulatioHistory) => dayjs(b.simulation_date).unix() - dayjs(a.simulation_date).unix();
 
 export const useGetFleetSimulationHistory = () => {
-    return useQuery(['fleet history'], () => AxiosBase.get<simulatioHistory[]>('fleet-simulation/simulation-history').then((res) => res.data), {
-        select: (data) => data.sort(dateSort),
+    return useQuery({
+        queryKey: ['fleet history'],
+        queryFn: () => AxiosBase.get<simulatioHistory[]>('fleet-simulation/simulation-history').then((res) => res.data),
+        select: (data) => data.sort(dateSort)
     });
 };
 
 export const useGetGoalSimulationHistory = () => {
-    return useQuery(['goal history'], () => AxiosBase.get<simulatioHistory[]>('goal-simulation/simulation-history').then((res) => res.data), {
-        select: (data) => data.sort(dateSort),
+    return useQuery({
+        queryKey: ['goal history'],
+        queryFn: () => AxiosBase.get<simulatioHistory[]>('goal-simulation/simulation-history').then((res) => res.data),
+        select: (data) => data.sort(dateSort)
     });
 };

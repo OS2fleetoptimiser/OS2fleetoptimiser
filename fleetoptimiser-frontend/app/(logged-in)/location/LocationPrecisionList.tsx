@@ -5,7 +5,6 @@ import {AllowedStart, ExtendedLocationInformation} from "@/components/hooks/useG
 import Link from "next/link";
 import dayjs from "dayjs";
 import { Tooltip } from '@mui/material';
-import AddIcon from "@mui/icons-material/Add";
 
 type Props = {
     data?: ExtendedLocationInformation[]

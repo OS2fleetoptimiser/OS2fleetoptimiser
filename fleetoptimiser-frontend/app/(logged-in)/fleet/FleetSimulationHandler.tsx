@@ -20,7 +20,7 @@ export default function FleetSimulationHandler({ simulationId }: { simulationId?
             return convertDataToSimulationResults(simulation.query.data.result);
         }
         return undefined;
-    }, [simulation.query.data?.status, simulation.query.data?.result]);
+    }, [simulation.query.data]);
 
     return (
         <div className="w-auto max-w-[1800px] rounded-md m-auto p-1">

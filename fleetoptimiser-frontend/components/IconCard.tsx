@@ -22,8 +22,14 @@ const IconTextCard = ({ icon, text, onClick }: IconTextCardProps) => {
       <CardActionArea onClick={onClick} sx={{ padding: 2, textAlign: 'center' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {icon}
-            {/*//@ts-ignore*/}
-          <Typography variant="subtitle" mt={1} fontWeight="fontWeightMedium" sx={{ textTransform: 'uppercase' }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              mt: 1,
+              fontSize: '8pt',
+              fontWeight: "fontWeightMedium",
+              textTransform: 'uppercase'
+            }}>
               {text}
           </Typography>
         </Box>

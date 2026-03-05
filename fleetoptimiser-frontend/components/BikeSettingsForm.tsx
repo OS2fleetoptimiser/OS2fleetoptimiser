@@ -1,6 +1,5 @@
 import ToolTip from '@/components/ToolTip';
-import { LoadingButton } from '@mui/lab';
-import { Alert, Button, Divider, TextField } from '@mui/material';
+import { Button, Divider, TextField } from '@mui/material';
 import { FieldArray, Form, Formik } from 'formik';
 import { useState } from 'react';
 import { InferType, number, object, array, string } from 'yup';
@@ -68,24 +67,6 @@ const BikeForm = (props: FormData) => {
 
     const { bikeSpeed, electricalBikeSpeed, maxTripDistance, percentTaken, bikeIntervals } = props;
 
-    const renderAlert = (status?: string) => {
-        if (!status) {
-            return undefined;
-        } else if (status === 'success') {
-            return (
-                <Alert className="mb-2" severity="success">
-                    Ændringerne er blevet gemt
-                </Alert>
-            );
-        } else {
-            return (
-                <Alert className="mb-2" severity="error">
-                    Der opstod en fejl
-                </Alert>
-            );
-        }
-    };
-
     return (
         <div>
             <Formik
@@ -104,7 +85,13 @@ const BikeForm = (props: FormData) => {
                             {
                                 onError: () => helpers.setStatus('ServerError'),
                                 onSuccess: () => {
-                                    dispatch(setBikeSettings);
+                                    dispatch(setBikeSettings({
+                                        max_km_pr_trip: +values.maxTripDistance,
+                                        percentage_of_trips: +values.percentTaken,
+                                        bike_slots: values.bikeIntervals?.map((slot) => ({ bike_start: slot.start, bike_end: slot.end })) ?? [],
+                                        electrical_bike_speed: +values.electricalBikeSpeed,
+                                        bike_speed: +values.bikeSpeed,
+                                    }));
                                     helpers.setSubmitting(false);
                                     helpers.setStatus('success');
                                 },
@@ -211,9 +198,9 @@ const BikeForm = (props: FormData) => {
                                                         onChange={handleChange}
                                                         value={interval.start}
                                                         type="time"
-                                                        //@ts-ignore
+                                                        // @ts-expect-error Formik nested array touched/errors type mismatch
                                                         error={touched.bikeIntervals?.[index].start && Boolean(errors.bikeIntervals?.[index].start)}
-                                                        //@ts-ignore
+                                                        // @ts-expect-error Formik nested array touched/errors type mismatch
                                                         helperText={touched.bikeIntervals?.[index].start && errors.bikeIntervals?.[index].start}
                                                     />
                                                     <TextField
@@ -224,9 +211,9 @@ const BikeForm = (props: FormData) => {
                                                         onChange={handleChange}
                                                         value={interval.end}
                                                         type="time"
-                                                        //@ts-ignore
+                                                        // @ts-expect-error Formik nested array touched/errors type mismatch
                                                         error={touched.bikeIntervals?.[index].end && Boolean(errors.bikeIntervals?.[index].end)}
-                                                        //@ts-ignore
+                                                        // @ts-expect-error Formik nested array touched/errors type mismatch
                                                         helperText={touched.bikeIntervals?.[index].end && errors.bikeIntervals?.[index].end}
                                                     />
 
@@ -250,7 +237,7 @@ const BikeForm = (props: FormData) => {
                                 )}
                             </FieldArray>
                             <div className="flex items-end flex-col">
-                                <LoadingButton
+                                <Button
                                     disabled={!hasWritePrivilege}
                                     type="button"
                                     onClick={() => {
@@ -264,8 +251,8 @@ const BikeForm = (props: FormData) => {
                                     className="mb-2"
                                 >
                                     <span>Gem for nuværende simulering</span>
-                                </LoadingButton>
-                                <LoadingButton
+                                </Button>
+                                <Button
                                     disabled={!hasWritePrivilege}
                                     type="button"
                                     onClick={() => {
@@ -278,7 +265,7 @@ const BikeForm = (props: FormData) => {
                                     variant="contained"
                                 >
                                     <span>Gem globalt</span>
-                                </LoadingButton>
+                                </Button>
                             </div>
                             {status === 'ServerError' && <p>Der opstod en fejl på serveren der forhindrede ændringerne i at blive gemt</p>}
                         </Form>

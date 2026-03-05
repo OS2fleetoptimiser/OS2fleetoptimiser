@@ -14,7 +14,7 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
     const fillDays = (data: { x: string; y: number }[], start: string, end: string) => {
         let dt = dayjs(start);
         const endDate = dayjs(end);
-        let tempArr = [];
+        const tempArr = [];
         while (dt <= endDate) {
             tempArr.push(dt);
             dt = dt.add(1, 'day');
@@ -53,7 +53,7 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
                         y: distance,
                     });
 
-                    result[0].uniqueCars.find((id) => id === vehicle_id) ?? result[0].uniqueCars.push(vehicle_id);
+                    if (!result[0].uniqueCars.find((id) => id === vehicle_id)) result[0].uniqueCars.push(vehicle_id);
                 });
             } else {
                 for (let i = 0; i < data.shifts.length; i++) {
@@ -70,7 +70,7 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
                         y: distance,
                     });
 
-                    result[shift_id].uniqueCars.find((id) => id === vehicle_id) ?? result[shift_id].uniqueCars.push(vehicle_id);
+                    if (!result[shift_id].uniqueCars.find((id) => id === vehicle_id)) result[shift_id].uniqueCars.push(vehicle_id);
                 });
             }
 
@@ -95,7 +95,7 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
             // Find the first and last day for all shifts. Pick the biggest and smallest
             const startDates: string[] = [];
             const endDates: string[] = [];
-            for (let key in final) {
+            for (const key in final) {
                 if (final[key].data.length === 0) {
                     continue;
                 }
@@ -124,7 +124,7 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
         <div>
             <h1 className="mb-4 text-xl">Kørte kilometer pr. dag</h1>
             {dashboardData.isError && <ApiError retryFunction={dashboardData.refetch}>Der opstod en netværksfejl</ApiError>}
-            {dashboardData.isLoading && (
+            {dashboardData.isPending && (
                 <div className="p-10 flex justify-center">
                     <CircularProgress />
                 </div>

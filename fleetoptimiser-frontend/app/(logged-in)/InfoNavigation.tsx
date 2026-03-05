@@ -28,7 +28,7 @@ const InfoNav = () => {
 
     if (pathname !== '/') {
         for (let pi = pathnameSplit.length; pi > 0; pi--) {
-            let pathPart = pathnameSplit[pi];
+            const pathPart = pathnameSplit[pi];
             if (Object.keys(pageTitle).includes(pathPart)) {
                 pathname = pathPart;
                 break;

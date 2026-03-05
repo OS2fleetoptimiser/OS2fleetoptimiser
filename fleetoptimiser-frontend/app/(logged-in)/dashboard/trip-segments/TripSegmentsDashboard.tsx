@@ -1,12 +1,12 @@
 'use client';
 
 import useGetDrivingData from '@/components/hooks/useGetDrivingData';
-import { CircularProgress, InputAdornment, TextField, Tooltip } from '@mui/material';
+import { CircularProgress, InputAdornment, TextField } from '@mui/material';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import ParkingTimeScatterPlot, { scatterplotProps } from './StopsParkingScatterPlot';
 import TripSegmentGraph, { ogData } from './TripSegmentGraph';
-import { getInterval } from '../ShiftNameTranslater';
+
 import ApiError from '@/components/ApiError';
 import RoundTripChart from './RoundTripGraph';
 import { filterProps } from '../(filters)/FilterHeader';
@@ -41,8 +41,6 @@ const TripSegmentsDashboard = ({ availableshifts, end, start, departments, locat
                 (roundtrip) => roundtrip.aggregation_type != null && roundtrip.aggregation_type.includes('complete')
             );
             const underDistanceLimit = completeRoundtrip.filter((roundtrip) => roundtrip.distance < (distanceLimit ?? 0) && roundtrip.distance > 0.2);
-
-            const shiftNames = data.shifts.map((shift) => getInterval(shift.shift_start, shift.shift_end));
 
             const barChartData: ogData = [];
             const stopsParkingScatterPlotData: scatterplotProps = [];
@@ -129,31 +127,35 @@ const TripSegmentsDashboard = ({ availableshifts, end, start, departments, locat
                 className="mx-4 subtle w-44 my-8"
                 label="Maks tur distance"
                 value={distanceLimit}
-                InputProps={{
-                    endAdornment: <InputAdornment position="end">km</InputAdornment>,
-                }}
                 onBlur={(e) => {
                     if (distanceLimit === undefined) setDistanceLimit(0);
                 }}
                 onChange={(e) => setDistanceLimit(isNaN(Number.parseFloat(e.target.value)) ? undefined : +e.target.value)}
+                slotProps={{
+                    input: {
+                        endAdornment: <InputAdornment position="end">km</InputAdornment>,
+                    }
+                }}
             ></TextField>
             <TextField
                 label="Minimum parkeringstid"
                 className="subtle w-44 my-8"
                 value={minParkingTime}
-                InputProps={{
-                    endAdornment: <InputAdornment position="end">min</InputAdornment>,
-                }}
                 onBlur={(e) => {
                     if (minParkingTime === undefined) setDistanceLimit(0);
                 }}
                 onChange={(e) => setMinParkingTime(isNaN(Number.parseFloat(e.target.value)) ? undefined : +e.target.value)}
+                slotProps={{
+                    input: {
+                        endAdornment: <InputAdornment position="end">min</InputAdornment>,
+                    }
+                }}
             ></TextField>
             <div className="w-96 inline-flex mb-8 mt-6">
                 <span className="text-explanation text-xs ml-4 w-96">Turoverblik viser en samling af kvalificeret godkendte rundture, som er under grænseværdien; maks tur distance og over grænseværdien; minimum parkeringstid. Der vises antal ture pr. køretøj, som fremhæves i de detaljeret grafer under. Klik på en enkelt rundtur for at se længden på rundturens kørsels - og parkeringssegmenter.</span>
             </div>
             {drivingData.isError && <ApiError retryFunction={drivingData.refetch}>Der opstod en netværksfejl</ApiError>}
-            {drivingData.isLoading && (
+            {drivingData.isPending && (
                 <div className="p-10 flex justify-center">
                     <CircularProgress />
                 </div>

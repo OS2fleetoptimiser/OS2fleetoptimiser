@@ -38,7 +38,7 @@ const CostChart = ({ data }: { data: dataEntry[] }) => {
                 legendPosition: 'middle',
                 legendOffset: -40,
                 format: (v) => {
-                    let value = v as number;
+                    const value = v as number;
                     if (value !== 0) return value / 1000 + 'k';
                     else return 0;
                 },

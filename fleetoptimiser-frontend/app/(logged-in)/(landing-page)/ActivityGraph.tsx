@@ -95,7 +95,7 @@ const ActivityHeatmap = ({ data, showKeys = true }: ActivityHeatmapProps & { sho
                     tickSize: 5,
                     tickPadding: 5,
                     tickRotation: 0,
-                    renderTick: ({ value, x, y, textAnchor }) => (
+                    renderTick: ({ value, x, y }) => (
                         <g className={`${showKeys ? 'inline' : 'hidden'}`} transform={`translate(${x - 35},${y})`}>
                             <title>{value}</title>
                             <text textAnchor="middle" dominantBaseline="middle" style={{ fontSize: 11, fill: '#333' }}>

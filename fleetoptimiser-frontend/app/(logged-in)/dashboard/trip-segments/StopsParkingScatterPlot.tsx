@@ -1,4 +1,4 @@
-import { generateColor, generateFromPalette } from '@/components/ColorGenerator';
+import { generateFromPalette } from '@/components/ColorGenerator';
 import { ResponsiveScatterPlotCanvas, ScatterPlotDatum } from '@nivo/scatterplot';
 import { isInteger } from 'lodash';
 

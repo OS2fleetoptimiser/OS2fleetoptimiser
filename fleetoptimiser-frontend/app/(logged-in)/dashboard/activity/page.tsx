@@ -1,4 +1,5 @@
 'use client';
+import { use } from 'react';
 import { Filters } from '../(filters)/FilterHeader';
 import VehicleActivityDashboard from './(VehicleActivity)/VehicleActivityDashboard';
 import AddFilter from '@/components/AddFilter';
@@ -7,11 +8,12 @@ import useGetSettings from '@/components/hooks/useGetSettings';
 import { CircularProgress } from '@mui/material';
 
 type Props = {
-    searchParams: Filters;
+    searchParams: Promise<Filters>;
 };
 
-export default function DrivingActivity({ searchParams }: Props) {
-    const { data: settings, isLoading, error } = useGetSettings();
+export default function DrivingActivity({ searchParams: searchParamsPromise }: Props) {
+    const searchParams = use(searchParamsPromise);
+    const { data: settings, isPending: isLoading, error } = useGetSettings();
 
     if (isLoading)
         return (

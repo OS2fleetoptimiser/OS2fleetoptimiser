@@ -228,9 +228,9 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
                                 .map((vehicle, index) => {
                                     if (
                                         !(
-                                            !filteredDepartment || // if no departments is selected at all
-                                            (vehicle.department && filteredDepartment === vehicle.department) || // if departments is selected and the vehicle has that department
-                                            (!vehicle.department && filteredDepartment === 'Ingen afdeling') // if departments is not set on the vehicle and departments is selected
+                                            (// if departments is selected and the vehicle has that department
+                                            (!filteredDepartment || // if no departments is selected at all
+                                            (vehicle.department && filteredDepartment === vehicle.department) || (!vehicle.department && filteredDepartment === 'Ingen afdeling'))) // if departments is not set on the vehicle and departments is selected
                                         )
                                     ) {
                                         return;

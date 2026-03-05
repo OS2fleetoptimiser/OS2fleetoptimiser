@@ -1,4 +1,5 @@
-import {generateColor, generateFromPalette} from '@/components/ColorGenerator';
+import React from 'react';
+import {generateFromPalette} from '@/components/ColorGenerator';
 import { ResponsiveBar } from '@nivo/bar';
 import { getYTicks } from "@/app/(logged-in)/fleet/UnallocatedTripsLine";
 
@@ -29,7 +30,7 @@ const TripSegmentGraph = ({ data, setFocus, focus }: { data: ogData; setFocus: (
         const department = entry.department || '';
         const departmentWords = department.split(' ');
 
-        let children: JSX.Element[] = [];
+        const children: React.JSX.Element[] = [];
 
         children.push(
             <tspan

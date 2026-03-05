@@ -1,7 +1,7 @@
 import { Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, TextField } from '@mui/material';
 import { useState } from 'react';
 import { Search } from '@mui/icons-material';
-import useGetVehicles, { Vehicle } from '@/components/hooks/useGetVehicles';
+
 
 type props = {
     selectedForvaltninger: string[];
@@ -55,17 +55,19 @@ export default function ForvaltningFilter({
                             size="small"
                             type="text"
                             placeholder="Søg..."
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <IconButton>
-                                            <Search />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <IconButton>
+                                                <Search />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }
+                            }}
                         />
                         <Button
                             className="w-40"
@@ -84,9 +86,9 @@ export default function ForvaltningFilter({
                     </div>
                     <List>
                         {selectableForvaltninger && selectedForvaltninger.some(selFor => !selectableForvaltninger.includes(selFor)) &&
-                          <p className="text-explanation text-xs">Frigør andre filtre for at se alle valgte forvaltninger</p>
+                          <ListItem className="text-explanation text-xs">Frigør andre filtre for at se alle valgte forvaltninger</ListItem>
                         }
-                        {selectableForvaltninger && selectableForvaltninger.length === 0 && <p>Der er ingen tilgængelige forvaltninger</p>}
+                        {selectableForvaltninger && selectableForvaltninger.length === 0 && <ListItem>Der er ingen tilgængelige forvaltninger</ListItem>}
                         {selectableForvaltninger &&
                             selectableForvaltninger.length > 0 &&
                             selectableForvaltninger.map((dep) => (

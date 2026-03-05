@@ -47,12 +47,6 @@ export const FilterHeaderWrapper = (props: FilterHeaderProps) => {
 };
 
 
-type VehicleInp = {
-  location: { id: number; address: string };
-  forvaltning: string | null;
-  department: string | null;
-};
-
 export type Mappings = {
   locationToForvaltning: Record<number, string[]>;
   locationToDepartment: Record<number, string[]>;

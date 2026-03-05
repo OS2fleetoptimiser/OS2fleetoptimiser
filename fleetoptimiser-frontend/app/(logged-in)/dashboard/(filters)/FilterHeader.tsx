@@ -131,6 +131,7 @@ export default function FilterHeader({
         setSelectableDepartments(newSelectableDepartments);
         setSelectableForvaltninger(newSelectableForvaltninger);
 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dbLocations, dbVehicles, dbDepartments, dbForvaltninger]);
 
     const recalculateFiltersWithMappings = (
@@ -176,7 +177,7 @@ export default function FilterHeader({
       const newSelectedLocationsIds = newSelectedLocations.map(location => location.key);
       setLocations(newSelectedLocationsIds);
 
-      const { newSelectableVehicles, newSelectableLocations, newSelectableDepartments, newSelectableForvaltninger } = recalculateFiltersWithMappings(
+      const { newSelectableVehicles, newSelectableDepartments, newSelectableForvaltninger } = recalculateFiltersWithMappings(
         newSelectedLocationsIds,
         departments,
         forvaltninger,
@@ -197,7 +198,7 @@ export default function FilterHeader({
     const checkedDepartment = (newSelectedDepartments: string[]) => {
         setDepartments(newSelectedDepartments);
 
-          const { newSelectableVehicles, newSelectableLocations, newSelectableDepartments, newSelectableForvaltninger } = recalculateFiltersWithMappings(
+          const { newSelectableVehicles, newSelectableLocations, newSelectableForvaltninger } = recalculateFiltersWithMappings(
             locations,
             newSelectedDepartments,
             forvaltninger,
@@ -213,7 +214,7 @@ export default function FilterHeader({
     const checkedForvaltning = (newSelectedForvaltninger: string[]) => {
         setForvaltninger(newSelectedForvaltninger);
 
-          const { newSelectableVehicles, newSelectableLocations, newSelectableDepartments, newSelectableForvaltninger } = recalculateFiltersWithMappings(
+          const { newSelectableVehicles, newSelectableLocations, newSelectableDepartments } = recalculateFiltersWithMappings(
             locations,
             departments,
             newSelectedForvaltninger,

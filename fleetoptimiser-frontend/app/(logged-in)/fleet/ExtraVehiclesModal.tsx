@@ -6,7 +6,7 @@ import ApiError from '@/components/ApiError';
 import ExtraVehicleTable from './ExtraVehicleTable';
 import { useAppDispatch, useAppSelector } from '@/components/redux/hooks';
 import useGetUniqueVehicles from '@/components/hooks/useGetUniqueVehicles';
-import { addExtraVehicles, addTestVehicles, addTestVehiclesMeta, clearExtraVehicles, clearTestVehicles } from '@/components/redux/SimulationSlice';
+import { clearExtraVehicles, clearTestVehicles } from '@/components/redux/SimulationSlice';
 import { Vehicle } from '@/components/hooks/useGetVehicles';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import AddIcon from '@mui/icons-material/Add';
@@ -56,16 +56,6 @@ const ExtraVehicleModal = ({ buttonAppearance = false }: { buttonAppearance?: bo
         });
     };
 
-    const selectAllVehicles = () => {
-        if (!cars.data) {
-            return;
-        }
-        const filteredPreselected = filterPreselectedVehicles(cars.data, selectedVehicles);
-        dispatch(addExtraVehicles(filteredPreselected));
-        dispatch(addTestVehiclesMeta(filteredPreselected));
-        dispatch(addTestVehicles(filteredPreselected.map((v) => v.id)));
-    };
-
     const clearAllVehicles = () => {
         dispatch(clearExtraVehicles());
         dispatch(clearTestVehicles()); // one component for both manual and automatic sim
@@ -91,7 +81,7 @@ const ExtraVehicleModal = ({ buttonAppearance = false }: { buttonAppearance?: bo
                     </div>
 
                     {cars.isError && <ApiError retryFunction={cars.refetch}>Køretøjerne kunne ikke hentes.</ApiError>}
-                    {cars.isLoading && <CircularProgress />}
+                    {cars.isPending && <CircularProgress />}
                     {cars.data && (
                         <>
                             <div className="max-w-sm mb-2">
@@ -102,8 +92,10 @@ const ExtraVehicleModal = ({ buttonAppearance = false }: { buttonAppearance?: bo
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     variant="outlined"
                                     size="small"
-                                    InputProps={{
-                                        startAdornment: <SearchIcon className="mr-2 text-gray-400" />,
+                                    slotProps={{
+                                        input: {
+                                            startAdornment: <SearchIcon className="mr-2 text-gray-400" />,
+                                        }
                                     }}
                                 />
                             </div>

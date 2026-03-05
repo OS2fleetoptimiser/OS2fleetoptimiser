@@ -53,8 +53,10 @@ export type simulation_settings = {
 };
 
 function useGetSettings<T = settings>(select?: (a: settings) => T) {
-    return useQuery(['settings'], () => AxiosBase.get<settings>('configuration/simulation-configurations').then((res) => res.data), {
-        select: select,
+    return useQuery({
+        queryKey: ['settings'],
+        queryFn: () => AxiosBase.get<settings>('configuration/simulation-configurations').then((res) => res.data),
+        select: select
     });
 }
 

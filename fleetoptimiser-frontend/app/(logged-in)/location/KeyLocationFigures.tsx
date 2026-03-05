@@ -1,7 +1,6 @@
 'use client';
 
 import Typography from "@mui/material/Typography";
-import dayjs from "dayjs";
 import { ExtendedLocationInformation } from "@/components/hooks/useGetLocationPrecision";
 
 type PrecisionCard = {

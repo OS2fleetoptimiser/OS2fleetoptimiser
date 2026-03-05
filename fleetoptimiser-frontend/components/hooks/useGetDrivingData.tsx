@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import AxiosBase from '../AxiosBase';
 import {shift} from './useGetSettings';
-import {useEffect, useRef} from "react";
 
 export type drivingData = {
     vehicle_id: number;
@@ -163,19 +162,22 @@ export function useGetVehicleAvailability<T>({
         }
     }
 
-    const queryObject = useQuery(['vehicle availability', searchParams.toString()], async () => {
-        const result = await AxiosBase.get<{
-            totalVehicles: number;
-            maxAvailability: number;
-            leastAvailability: number;
-            averageAvailability: number;
-            data: { x: string; y: number }[];
-        }>(`/statistics/availability?${searchParams.toString()}`);
-        return result.data;
-    },
-        {
-            refetchOnWindowFocus: false,
-        });
+    const queryObject = useQuery({
+        queryKey: ['vehicle availability', searchParams.toString()],
+
+        queryFn: async () => {
+            const result = await AxiosBase.get<{
+                totalVehicles: number;
+                maxAvailability: number;
+                leastAvailability: number;
+                averageAvailability: number;
+                data: { x: string; y: number }[];
+            }>(`/statistics/availability?${searchParams.toString()}`);
+            return result.data;
+        },
+
+        refetchOnWindowFocus: false
+    });
 
     return queryObject;
 }
@@ -237,17 +239,17 @@ export function useGetGroupedDrivingData<TData = groupedDrivingDataResult>({
 
     const queryString = `/statistics/grouped-driving-data?${searchParams.toString()}`;
 
-    const queryObject = useQuery(
-        ['groupedDrivingData', searchParams.toString()],
-        async () => {
+    const queryObject = useQuery({
+        queryKey: ['groupedDrivingData', searchParams.toString()],
+
+        queryFn: async () => {
             const result = await AxiosBase.get<groupedDrivingDataResult>(queryString);
             return result.data;
         },
-        {
-            select: selector,
-            refetchOnWindowFocus: false,
-        }
-    );
+
+        select: selector,
+        refetchOnWindowFocus: false
+    });
 
     return {queryObject, queryString};
 }
@@ -264,7 +266,6 @@ function useGetDrivingData<TData = drivingDataResult>({
     selector,
     shiftFilter,
     asTripSegments,
-    apply,
     applyShiftFilter,
     timeDelta,
 }: inputParameters<TData>) {
@@ -317,9 +318,10 @@ function useGetDrivingData<TData = drivingDataResult>({
         }
     }
 
-    const queryObject = useQuery(
-        ['drivingData', searchParams.toString()],
-        async () => {
+    const queryObject = useQuery({
+        queryKey: ['drivingData', searchParams.toString()],
+
+        queryFn: async () => {
             const result = await AxiosBase.get<drivingDataResult>('/statistics/driving-data?' + searchParams.toString());
 
             if (applyShiftFilter) {
@@ -334,11 +336,10 @@ function useGetDrivingData<TData = drivingDataResult>({
             }
             return result.data;
         },
-        {
-            select: selector,
-            refetchOnWindowFocus: false,
-        }
-    );
+
+        select: selector,
+        refetchOnWindowFocus: false
+    });
 
     return {queryObject};
 }

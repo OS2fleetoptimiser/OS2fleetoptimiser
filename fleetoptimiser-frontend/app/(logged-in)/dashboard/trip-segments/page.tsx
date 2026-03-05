@@ -1,7 +1,7 @@
 'use client';
+import { use } from 'react';
 import TripSegmentsDashboard from './TripSegmentsDashboard';
-import FilterHeader, { Filters } from '../(filters)/FilterHeader';
-import { getSettings } from '@/components/data/settings';
+import { Filters } from '../(filters)/FilterHeader';
 import AddFilter from "@/components/AddFilter";
 import {FilterHeaderWrapper} from "@/app/(logged-in)/dashboard/(filters)/FilterWrapper";
 import useGetSettings from "@/components/hooks/useGetSettings";
@@ -9,11 +9,12 @@ import {CircularProgress} from "@mui/material";
 
 
 type Props = {
-    searchParams: Filters;
+    searchParams: Promise<Filters>;
 };
 
-export default function TripSegments({ searchParams }: Props) {
-      const { data: settings, isLoading, error } = useGetSettings();
+export default function TripSegments({ searchParams: searchParamsPromise }: Props) {
+    const searchParams = use(searchParamsPromise);
+      const { data: settings, isPending: isLoading, error } = useGetSettings();
 
     if (isLoading) return <div className="p-10 flex justify-center">
                         <CircularProgress />

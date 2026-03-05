@@ -77,31 +77,6 @@ export const InputVehicleCount = ({ reducedVehicleGroup, restrict }: InputVehicl
                 size="small"
                 value={simulationCount}
                 onChange={(e) => handleChange(e.target.value)}
-                inputProps={{
-                    min: 0,
-                    max: restrict ? availableCount : 9999,
-                    style: { textAlign: 'center', fontSize: '0.85rem', padding: '0px', backgroundColor: '#eeeeee', borderRadius: '5px' }, // needed to access inner style
-                }}
-                InputProps={{
-                    startAdornment: (
-                        <InputAdornment className="hidden md:flex" position="start">
-                            <IconButton disabled={adjustmentDisabled} onClick={handleDecrement} edge="start">
-                                <RemoveIcon className="bg-gray-100 rounded-2xl p-1" />
-                            </IconButton>
-                        </InputAdornment>
-                    ),
-                    endAdornment: (
-                        <InputAdornment className="hidden md:flex" position="end">
-                            <Tooltip title={tooltipText} className="text-md">
-                                <div>
-                                    <IconButton disabled={adjustmentDisabled || increaseAboveCurrentDisabled} onClick={handleIncrement} edge="end">
-                                        <AddIcon className="bg-gray-100 rounded-2xl p-1" />
-                                    </IconButton>
-                                </div>
-                            </Tooltip>
-                        </InputAdornment>
-                    ),
-                }}
                 sx={{
                     '.MuiOutlinedInput-root': {
                         paddingRight: '0px',
@@ -113,18 +88,45 @@ export const InputVehicleCount = ({ reducedVehicleGroup, restrict }: InputVehicl
                         },
                     },
                     '& input[type=number]': {
-                        '-moz-appearance': 'textfield',
+                        MozAppearance: 'textfield',
                     },
                     '& input[type=number]::-webkit-outer-spin-button': {
-                        '-webkit-appearance': 'none',
+                        WebkitAppearance: 'none',
                         margin: 0,
                     },
                     '& input[type=number]::-webkit-inner-spin-button': {
-                        '-webkit-appearance': 'none',
+                        WebkitAppearance: 'none',
                         margin: 0,
                     },
                 }}
-            />
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment className="hidden md:flex" position="start">
+                                <IconButton disabled={adjustmentDisabled} onClick={handleDecrement} edge="start">
+                                    <RemoveIcon className="bg-gray-100 rounded-2xl p-1" />
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                        endAdornment: (
+                            <InputAdornment className="hidden md:flex" position="end">
+                                <Tooltip title={tooltipText} className="text-md">
+                                    <div>
+                                        <IconButton disabled={adjustmentDisabled || increaseAboveCurrentDisabled} onClick={handleIncrement} edge="end">
+                                            <AddIcon className="bg-gray-100 rounded-2xl p-1" />
+                                        </IconButton>
+                                    </div>
+                                </Tooltip>
+                            </InputAdornment>
+                        ),
+                    },
+
+                    htmlInput: {
+                        min: 0,
+                        max: restrict ? availableCount : 9999,
+                        style: { textAlign: 'center', fontSize: '0.85rem', padding: '0px', backgroundColor: '#eeeeee', borderRadius: '5px' }, // needed to access inner style
+                    }
+                }} />
         </div>
     );
 };

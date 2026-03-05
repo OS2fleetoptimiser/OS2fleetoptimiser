@@ -34,14 +34,14 @@ export function useGetSummedStatistics({ start, end, locations, forvaltninger }:
         }
     }
 
-    return useQuery(
-        ['summed stats', searchParams.toString()],
-        async () => {
+    return useQuery({
+        queryKey: ['summed stats', searchParams.toString()],
+
+        queryFn: async () => {
             const result = await AxiosBase.get<summedStatistics>(`/statistics/sum?${searchParams.toString()}`);
             return result.data;
         },
-        {
-            refetchOnWindowFocus: false,
-        }
-    );
+
+        refetchOnWindowFocus: false
+    });
 }

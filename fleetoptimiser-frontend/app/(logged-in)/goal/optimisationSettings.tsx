@@ -4,7 +4,6 @@ import ToolTip from '@/components/ToolTip';
 import { setexpenseEmissionPrioritisation } from '@/components/redux/SimulationSlice';
 import { useAppDispatch, useAppSelector } from '@/components/redux/hooks';
 import { Slider } from '@mui/material';
-import Typography from '@mui/material/Typography';
 import RecyclingIcon from '@mui/icons-material/Recycling';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 

@@ -1,9 +1,8 @@
-import { LoadingButton } from '@mui/lab';
-import { Alert, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Alert, Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { Form, Formik } from 'formik';
 import SaveIcon from '@mui/icons-material/Save';
 import { array, InferType, object, string } from 'yup';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import usePatchConfigurations from '@/components/hooks/usePatchConfigurations';
 import usePatchAllShifts from '@/components/hooks/usePatchAllShifts';
 import { useAppDispatch } from './redux/hooks';
@@ -160,7 +159,7 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                 onError: () => helpers.setStatus('ServerError'),
                                 onSuccess: () => {
                                     helpers.setStatus('success');
-                                    closeIt ? closeIt() : null;
+                                    closeIt?.();
                                 },
                             });
                         } else {
@@ -183,14 +182,14 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                     onError: () => helpers.setStatus('ServerError'),
                                     onSuccess: () => {
                                         helpers.setStatus('success');
-                                        closeIt ? closeIt() : null;
+                                        closeIt?.();
                                     },
                                 }
                             );
                         }
                     } else {
                         helpers.setStatus('success');
-                        closeIt ? closeIt() : null;
+                        closeIt?.();
                         dispatch(setLocationSpecificShifts({ location_id: locationId, shifts: values.shifts ?? [] }));
                     }
                     helpers.setSubmitting(false);
@@ -237,9 +236,9 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                     <>
                                         {values.shifts &&
                                             values.shifts.map((shift, index) => (
-                                                <>
+                                                <Fragment key={index}>
                                                     <h3 className="mb-2 text-lg">Vagt {index + 1}</h3>
-                                                    <div className="flex mb-2" key={index}>
+                                                    <div className="flex mb-2">
                                                         <TextField
                                                             name={`shifts.${index}.shift_start`}
                                                             id={`shifts.${index}.shift_start`}
@@ -247,14 +246,16 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                                             onChange={handleChange}
                                                             value={shift.shift_start}
                                                             type="time"
-                                                            //@ts-ignore
+                                                            // @ts-expect-error Formik nested array touched/errors type mismatch
                                                             error={touched.shifts?.[index]?.shift_start && Boolean(errors.shifts?.[index]?.shift_start)}
-                                                            //@ts-ignore
+                                                            // @ts-expect-error Formik nested array touched/errors type mismatch
                                                             helperText={touched.shifts?.[index]?.shift_start && errors.shifts?.[index]?.shift_start}
-                                                            InputLabelProps={{
-                                                                shrink: true,
-                                                            }}
                                                             className="w-30 subtle"
+                                                            slotProps={{
+                                                                inputLabel: {
+                                                                    shrink: true,
+                                                                }
+                                                            }}
                                                         />
                                                         <TextField
                                                             className="mx-2 w-30 subtle"
@@ -264,12 +265,14 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                                             onChange={handleChange}
                                                             value={shift.shift_end}
                                                             type="time"
-                                                            //@ts-ignore
+                                                            // @ts-expect-error Formik nested array touched/errors type mismatch
                                                             error={touched.shifts?.[index]?.shift_end && Boolean(errors.shifts?.[index]?.shift_end)}
-                                                            //@ts-ignore
+                                                            // @ts-expect-error Formik nested array touched/errors type mismatch
                                                             helperText={touched.shifts?.[index]?.shift_end && errors.shifts?.[index]?.shift_end}
-                                                            InputLabelProps={{
-                                                                shrink: true,
+                                                            slotProps={{
+                                                                inputLabel: {
+                                                                    shrink: true,
+                                                                }
                                                             }}
                                                         />
                                                         <TextField
@@ -277,26 +280,28 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                                             id={`shifts.${index}.shift_break`}
                                                             label="Pause"
                                                             onChange={handleChange}
-                                                            value={shift.shift_break}
+                                                            value={shift.shift_break ?? ''}
                                                             type="time"
                                                             required={false}
-                                                            //@ts-ignore
+                                                            // @ts-expect-error Formik nested array touched/errors type mismatch
                                                             error={touched.shifts?.[index]?.shift_break && Boolean(errors.shifts?.[index]?.shift_break)}
-                                                            //@ts-ignore
+                                                            // @ts-expect-error Formik nested array touched/errors type mismatch
                                                             helperText={touched.shifts?.[index]?.shift_break && errors.shifts?.[index]?.shift_break}
-                                                            InputLabelProps={{
-                                                                shrink: true,
-                                                            }}
                                                             className="w-30 subtle mb-8"
+                                                            slotProps={{
+                                                                inputLabel: {
+                                                                    shrink: true,
+                                                                }
+                                                            }}
                                                         />
                                                     </div>
-                                                </>
+                                                </Fragment>
                                             ))}
                                     </>
                                     {touched.shifts && errors.shifts && typeof errors.shifts === 'string' && <p className="text-red-500">{errors.shifts}</p>}
                                 </>
                                 <div className="flex items-end flex-col">
-                                    <LoadingButton
+                                    <Button
                                         onClick={() => {
                                             setSubmitType('global');
                                             setSubmitAll(true);
@@ -311,8 +316,8 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                         name={'all'}
                                     >
                                         <span>Gem for alle lokationer</span>
-                                    </LoadingButton>
-                                    <LoadingButton
+                                    </Button>
+                                    <Button
                                         disabled={!hasWritePrivilege}
                                         onClick={() => {
                                             setSubmitType('global');
@@ -325,7 +330,7 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                         variant="contained"
                                     >
                                         <span>Gem for denne lokation</span>
-                                    </LoadingButton>
+                                    </Button>
                                 </div>
                             </Form>
                         </>

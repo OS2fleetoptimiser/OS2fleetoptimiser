@@ -84,9 +84,10 @@ export async function fetchVehiclesByLocation<T>(options: vehicleLocationFilters
 }
 
 function useGetVehiclesByLocation<T = locations>(options: vehicleLocationFilters<T>) {
-    return useQuery(
-        ['locations', options.startPeriod, options.endPeriod, options.locations],
-        async () => {
+    return useQuery({
+        queryKey: ['locations', options.startPeriod, options.endPeriod, options.locations],
+
+        queryFn: async () => {
             const params = new URLSearchParams({
                 start_date: options.startPeriod.format('YYYY-MM-DD'),
                 end_date: options.endPeriod.format('YYYY-MM-DD')
@@ -101,37 +102,36 @@ function useGetVehiclesByLocation<T = locations>(options: vehicleLocationFilters
             if (options.callback) options.callback(response);
             return response;
         },
-        {
-            select: options.selector,
-            refetchOnWindowFocus: false,
-            staleTime: Infinity,
-            enabled: options.enabled !== undefined ? options.enabled : true,
-        }
-    );
+
+        select: options.selector,
+        refetchOnWindowFocus: false,
+        staleTime: Infinity,
+        enabled: options.enabled !== undefined ? options.enabled : true
+    });
 }
 
 export function useGetLocations() {
-    return useQuery(
-        ['alllocations'],
-        async () => {
+    return useQuery({
+        queryKey: ['alllocations'],
+
+        queryFn: async () => {
             return await AxiosBase.get<onlyLocations>('/simulation-setup/locations').then((res) => res.data);
         },
-        {
-            refetchOnWindowFocus: false,
-        }
-    );
+
+        refetchOnWindowFocus: false
+    });
 }
 
 export function useGetForvaltninger() {
-    return useQuery(
-        ['allforvaltninger'],
-        async () => {
+    return useQuery({
+        queryKey: ['allforvaltninger'],
+
+        queryFn: async () => {
             return await AxiosBase.get<Forvaltninger>('/simulation-setup/forvaltninger').then((res) => res.data);
         },
-        {
-            refetchOnWindowFocus: false,
-        }
-    );
+
+        refetchOnWindowFocus: false
+    });
 }
 
 export default useGetVehiclesByLocation;

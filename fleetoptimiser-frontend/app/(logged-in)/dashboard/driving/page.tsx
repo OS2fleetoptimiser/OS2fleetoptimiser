@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import AverageDrivingDashboard from './(AverageDriving)/AverageDrivingDashboard';
 import DailyDrivingDashboard from './(DailyDriving)/DailyDrivingDashboard';
 import MonthlyDrivingDashboard from './(MonthlyDriving)/MonthlyDrivingDashboard';
@@ -10,11 +11,12 @@ import useGetSettings from '@/components/hooks/useGetSettings';
 import { CircularProgress } from '@mui/material';
 
 type Props = {
-    searchParams: Filters;
+    searchParams: Promise<Filters>;
 };
 
-export default function DrivingDashboard({ searchParams }: Props) {
-    const { data: settings, isLoading, error } = useGetSettings();
+export default function DrivingDashboard({ searchParams: searchParamsPromise }: Props) {
+    const searchParams = use(searchParamsPromise);
+    const { data: settings, isPending: isLoading, error } = useGetSettings();
 
     if (isLoading)
         return (

@@ -8,7 +8,7 @@ export const VehicleTripDistribution = ({ simulationResults }: { simulationResul
     const getTripsByType = (data: drivingBook[], dataType: 'simulation' | 'current') => {
         const bucketSize = 20;
         const numBuckets = 6;
-        let buckets = Array.from({ length: numBuckets }, (_, i) => {
+        const buckets = Array.from({ length: numBuckets }, (_, i) => {
             if (i < numBuckets - 1) {
                 return {
                     label: `${i * bucketSize}-${(i + 1) * bucketSize} km`,
@@ -34,7 +34,7 @@ export const VehicleTripDistribution = ({ simulationResults }: { simulationResul
 
         data.forEach((trip) => {
             const distance = trip.distance;
-            let bucketIndex = distance < (numBuckets - 1) * bucketSize ? Math.floor(distance / bucketSize) : numBuckets - 1;
+            const bucketIndex = distance < (numBuckets - 1) * bucketSize ? Math.floor(distance / bucketSize) : numBuckets - 1;
             const type = dataType === 'simulation' ? trip.simulation_type : trip.current_type;
             switch (type) {
                 case 1:

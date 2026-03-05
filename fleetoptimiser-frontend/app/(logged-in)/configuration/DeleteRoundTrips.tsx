@@ -1,7 +1,6 @@
 import ApiError from '@/components/ApiError';
 import API from '@/components/AxiosBase';
 import ToolTip from '@/components/ToolTip';
-import { LoadingButton } from '@mui/lab';
 import { Button, CircularProgress, Dialog, DialogContent, DialogTitle, TextField } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import { useQuery } from '@tanstack/react-query';
@@ -20,22 +19,30 @@ const DeleteRoundTrips = ({ open, onClose }: DeleteRoundTripsModalProps) => {
     const [loading, setLoading] = useState(false);
     const [startDate] = useState<string>('1970-01-01');
 
-    const getSimSettings = useQuery(['settings'], async () => {
-        const result = await API.get<{
-            simulation_settings: {
-                keep_data: number;
-            };
-        }>('configuration/simulation-configurations');
-        setKeepData(result.data.simulation_settings.keep_data);
-        return result.data;
+    const getSimSettings = useQuery({
+        queryKey: ['settings'],
+
+        queryFn: async () => {
+            const result = await API.get<{
+                simulation_settings: {
+                    keep_data: number;
+                };
+            }>('configuration/simulation-configurations');
+            setKeepData(result.data.simulation_settings.keep_data);
+            return result.data;
+        }
     });
-    const getStatistics = useQuery(['statistics'], async () => {
-        const result = await API.get<{
-            first_date: string;
-            last_date: string;
-            total_roundtrips: number;
-        }>('/statistics/sum');
-        return result.data;
+    const getStatistics = useQuery({
+        queryKey: ['statistics'],
+
+        queryFn: async () => {
+            const result = await API.get<{
+                first_date: string;
+                last_date: string;
+                total_roundtrips: number;
+            }>('/statistics/sum');
+            return result.data;
+        }
     });
 
     const handleDelete = async () => {
@@ -101,7 +108,7 @@ const DeleteRoundTrips = ({ open, onClose }: DeleteRoundTripsModalProps) => {
                     <ApiError retryFunction={getSimSettings.refetch}>Data kunne ikke hentes</ApiError>
                 ) : getStatistics.isError ? (
                     <ApiError retryFunction={getStatistics.refetch}>Meta Data kunne ikke hentes</ApiError>
-                ) : getSimSettings.isLoading || getStatistics.isLoading ? (
+                ) : getSimSettings.isPending || getStatistics.isPending ? (
                     <CircularProgress />
                 ) : (
                     <div>
@@ -130,21 +137,23 @@ const DeleteRoundTrips = ({ open, onClose }: DeleteRoundTripsModalProps) => {
                                         setKeepData(inputValue);
                                     }
                                 }}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                                InputProps={{
-                                    inputProps: {
-                                        max: 24,
-                                        min: 0,
+                                slotProps={{
+                                    input: {
+                                        inputProps: {
+                                            max: 24,
+                                            min: 0,
+                                        },
                                     },
-                                }}
-                            />
+
+                                    inputLabel: {
+                                        shrink: true,
+                                    }
+                                }} />
                         </div>
                         <div className="mt-3 flex justify-end">
-                            <LoadingButton size="small" onClick={handleDelete} loading={loading} loadingPosition="center" variant="contained">
+                            <Button size="small" onClick={handleDelete} loading={loading} loadingPosition="center" variant="contained">
                                 <span>Gem</span>
-                            </LoadingButton>
+                            </Button>
                         </div>
                     </div>
                 )}

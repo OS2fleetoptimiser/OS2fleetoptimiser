@@ -34,8 +34,8 @@ export default function Home() {
     };
 
     // location stuff
-    const { data: onlyLocs, isLoading: locationsLoading } = useGetLocations();
-    const { data: forvaltninger, isLoading: forvaltningerLoading } = useGetForvaltninger();
+    const { data: onlyLocs, isPending: locationsLoading } = useGetLocations();
+    const { data: forvaltninger, isPending: forvaltningerLoading } = useGetForvaltninger();
 
     const handleLocationChange = (selectedLocations: SelectedLocation[]) => {
         dispatch(setLocationForvaltning(selectedLocations));
@@ -74,7 +74,7 @@ export default function Home() {
         );
     };
 
-    const isLoadingVehicles = vehicles.some((q) => q.isLoading);
+    const isLoadingVehicles = vehicles.some((q) => q.isPending);
     return (
         <div className="space-y-6 max-w-[1800px] mx-auto">
             <DateRangePicker range={range} onChange={handleDateChange} />

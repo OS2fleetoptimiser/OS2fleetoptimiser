@@ -5,8 +5,7 @@ import dayjs from 'dayjs';
 import { Vehicle } from '@/components/hooks/useGetVehicles';
 import { useMemo } from 'react';
 import { InputAdornment, TextField } from '@mui/material';
-import { useAppSelector } from '@/components/redux/hooks';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/components/redux/hooks';
 import { setGoalSimulationVehicles } from '@/components/redux/SimulationSlice';
 import Tooltip from "@mui/material/Tooltip";
 
@@ -29,7 +28,7 @@ type amountProps = {
 };
 
 const AmountInput = ({ availableVehicles }: amountProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
     const allGoalSimulationVehicles = useAppSelector((state) => state.simulation.goalSimulationSettings.fixed_vehicles);
 
@@ -46,11 +45,13 @@ const AmountInput = ({ availableVehicles }: amountProps) => {
             variant="standard"
             value={allGoalSimulationVehicles.filter((value) => availableVehicles.includes(value)).length}
             onChange={(e) => handleChange(e.target.value)}
-            InputProps={{
-                endAdornment: <InputAdornment position="start">/{availableVehicles.length}</InputAdornment>,
-                inputProps: {
-                    style: { textAlign: 'right' },
-                },
+            slotProps={{
+                input: {
+                    endAdornment: <InputAdornment position="start">/{availableVehicles.length}</InputAdornment>,
+                    inputProps: {
+                        style: { textAlign: 'right' },
+                    },
+                }
             }}
         ></TextField>
     );
@@ -65,21 +66,23 @@ const AmountEmpty = () => {
                 disabled={true}
                 value={0}
                 className="text-blue-600"
-                InputProps={{
-                    endAdornment: <InputAdornment position="start"><span style={{ color: '#ababab' }}> /0</span></InputAdornment>,
-                    inputProps: {
-                        style: { textAlign: 'right'},
-                    },
-                }}
                 sx={{
                     '& .MuiInputBase-root': {
                         color: '#2563eb',
                     },
                 }}
+                slotProps={{
+                    input: {
+                        endAdornment: <InputAdornment position="start"><span style={{ color: '#ababab' }}> /0</span></InputAdornment>,
+                        inputProps: {
+                            style: { textAlign: 'right'},
+                        },
+                    }
+                }}
             >
             </TextField>
         </Tooltip>
-    )
+    );
 }
 
 const defaultColumns = [

@@ -1,5 +1,6 @@
 'use client';
 
+import { Fragment } from 'react';
 import { useGetFleetSimulationHistory, useGetGoalSimulationHistory } from '@/components/hooks/useGetSimulationHistory';
 import { Divider, Link, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 import dayjs from 'dayjs';
@@ -15,9 +16,9 @@ export default function Page() {
                 <List className="bg-white drop-shadow-md">
                     {fleetSimulationHistory.data &&
                         fleetSimulationHistory.data.map((history, index) => (
-                            <>
+                            <Fragment key={history.id}>
                                 {!!index && <Divider></Divider>}
-                                <Link key={history.id} className="no-underline" href={'/fleet/' + history.id}>
+                                <Link className="no-underline" href={'/fleet/' + history.id}>
                                     <ListItem disablePadding>
                                         <ListItemButton>
                                             <ListItemText
@@ -28,7 +29,7 @@ export default function Page() {
                                         </ListItemButton>
                                     </ListItem>
                                 </Link>
-                            </>
+                            </Fragment>
                         ))}
                 </List>
             </div>
@@ -37,9 +38,9 @@ export default function Page() {
                 <List className="bg-white drop-shadow-md">
                     {goalSimulationHistory.data &&
                         goalSimulationHistory.data.map((history, index) => (
-                            <>
+                            <Fragment key={history.id}>
                                 {!!index && <Divider></Divider>}
-                                <Link key={history.id} className="no-underline" href={'/goal/' + history.id}>
+                                <Link className="no-underline" href={'/goal/' + history.id}>
                                     <ListItem disablePadding>
                                         <ListItemButton>
                                             <ListItemText
@@ -50,7 +51,7 @@ export default function Page() {
                                         </ListItemButton>
                                     </ListItem>
                                 </Link>
-                            </>
+                            </Fragment>
                         ))}
                 </List>
             </div>

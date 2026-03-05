@@ -22,7 +22,7 @@ export const CollectiveStatistics = ({ start, end, forvaltninger, locations }: P
 
     return (
         <>
-            {summedStatistics.isLoading && (
+            {summedStatistics.isPending && (
                 <div className="p-10 flex justify-center">
                     <CircularProgress />
                 </div>

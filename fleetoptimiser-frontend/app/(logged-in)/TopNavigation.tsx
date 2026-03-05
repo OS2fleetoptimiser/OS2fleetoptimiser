@@ -30,7 +30,7 @@ import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import HomeIcon from '@mui/icons-material/Home';
-import { signOut } from 'next-auth/react';
+import { signOut } from '@/lib/auth-client';
 import { prepareGoalSimulation } from "@/components/redux/SimulationSlice";
 
 type Props = {
@@ -242,8 +242,9 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
                 <Divider />
                 <ListItem disablePadding>
                     <ListItemButton
-                        onClick={async (e) => {
-                            await signOut({ redirect: false }).then(() => router.push(logoutRedirect));
+                        onClick={async () => {
+                            await signOut();
+                            router.push(logoutRedirect);
                         }}
                     >
                         <ListItemIcon>

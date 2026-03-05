@@ -6,8 +6,10 @@ export const env = createEnv({
         KEYCLOAK_ID: z.string().optional(),
         KEYCLOAK_SECRET: z.string().optional(),
         KEYCLOAK_ISSUER: z.string().optional(),
-        NEXTAUTH_URL: z.string().optional(),
-        NEXTAUTH_SECRET: z.string().optional(),
+        BETTER_AUTH_SECRET: z.string().optional(),
+        BETTER_AUTH_URL: z.string().optional(),
+        ROLE_CHECK: z.string().optional(),
+        ROLE_CHECK_READ: z.string().optional(),
     },
 
     /**

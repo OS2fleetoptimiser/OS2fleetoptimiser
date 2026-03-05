@@ -1,4 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, ThunkDispatch, UnknownAction } from '@reduxjs/toolkit';
 import simulationSlice from './SimulationSlice';
 
 const store = configureStore({
@@ -9,4 +9,4 @@ const store = configureStore({
 
 export default store;
 export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export type AppDispatch = ThunkDispatch<RootState, undefined, UnknownAction>;

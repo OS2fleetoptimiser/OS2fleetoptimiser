@@ -1,6 +1,5 @@
 'use client';
 import {createTheme} from '@mui/material/styles'
-import {TextFieldProps} from "@mui/material";
 
 declare module '@mui/material/Button' {
     interface ButtonPropsVariantOverrides {
@@ -27,7 +26,7 @@ const theme = createTheme({
             WebkitFontSmoothing: 'antialiased',
             textRendering: 'optimizeLegibility',
         },
-        //@ts-ignore
+        // @ts-expect-error MUI typography fontWeight non-standard keys
         fontWeight: {
             regular: 400,
             bold: 700,

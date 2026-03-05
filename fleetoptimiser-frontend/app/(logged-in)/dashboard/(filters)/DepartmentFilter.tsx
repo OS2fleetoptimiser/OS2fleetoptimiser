@@ -54,17 +54,19 @@ export default function DepartmentFilter({
                             size="small"
                             type="text"
                             placeholder="Søg..."
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <IconButton>
-                                            <Search />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <IconButton>
+                                                <Search />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }
+                            }}
                         />
                         <Button
                             className="w-44"
@@ -84,9 +86,9 @@ export default function DepartmentFilter({
                     </div>
                     <List>
                        {selectableDepartments && selectedDepartments.some(selDep => !selectableDepartments.includes(selDep)) &&
-                          <p className="text-explanation text-xs">Frigør andre filtre for at se alle valgte afdelinger</p>
+                          <ListItem className="text-explanation text-xs">Frigør andre filtre for at se alle valgte afdelinger</ListItem>
                         }
-                        {selectableDepartments && selectableDepartments.length === 0 && <p>Der er ingen tilgængelige afdelinger</p>}
+                        {selectableDepartments && selectableDepartments.length === 0 && <ListItem>Der er ingen tilgængelige afdelinger</ListItem>}
                         {selectableDepartments &&
                             selectableDepartments
                             ?.filter((department) => department.toLowerCase().includes(searchQuery.toLowerCase()))

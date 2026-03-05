@@ -1,6 +1,6 @@
 'use client';
 import FleetSimulationHandler from '@/app/(logged-in)/fleet/FleetSimulationHandler';
-import { useEffect, useState } from 'react';
+import { use, useEffect } from 'react';
 import useGetFleetSimulation from '@/components/hooks/useGetFleetSimulation';
 import useGetVehiclesByLocation from '@/components/hooks/useGetVehiclesByLocation';
 import dayjs from 'dayjs';
@@ -22,8 +22,9 @@ import {
 } from '@/components/redux/SimulationSlice';
 import { CircularProgress } from '@mui/material';
 
-export default function Page({ params }: { params: { simulationId: string } }) {
-    const simulation = useGetFleetSimulation(params.simulationId);
+export default function Page({ params }: { params: Promise<{ simulationId: string }> }) {
+    const { simulationId } = use(params);
+    const simulation = useGetFleetSimulation(simulationId);
 
     const vehiclesByLocation = useGetVehiclesByLocation({
         startPeriod: dayjs(simulation.data?.result.simulation_options.start_date),
@@ -65,11 +66,11 @@ export default function Page({ params }: { params: { simulationId: string } }) {
             const extraVehicles = simulationOptions.simulation_vehicles.filter((vehicleId) => !selectedVehicles.find((vehicle) => vehicle.id === vehicleId.id));
             dispatch(addExtraVehicles(allVehicles.data.vehicles.filter((vehicle) => extraVehicles.find((extra) => extra.id === vehicle.id))));
         }
-    }, [simulation, vehiclesByLocation, allVehicles]);
+    }, [simulation, vehiclesByLocation, allVehicles, dispatch]);
     return (
         <>
-            {!vehiclesByLocation.isLoading && <FleetSimulationHandler simulationId={params.simulationId} />}
-            {vehiclesByLocation.isLoading && (
+            {!vehiclesByLocation.isPending && <FleetSimulationHandler simulationId={simulationId} />}
+            {vehiclesByLocation.isPending && (
                 <div className="w-full h-full z-10 top-0 left-0 fixed bg-[#FFFFFF75]">
                     <div className="top-[40%] left-[50%] absolute transform -translate-x-1/2 -translate-y-1/2">
                         <CircularProgress />

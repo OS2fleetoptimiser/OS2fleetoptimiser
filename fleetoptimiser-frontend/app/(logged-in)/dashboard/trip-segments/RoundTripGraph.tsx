@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 
-import { ResponsiveLine, CustomLayerProps, CustomLayer } from '@nivo/line';
+import { ResponsiveLine, LineSeries, LineCustomSvgLayerProps, LineCustomSvgLayer } from '@nivo/line';
 import { line } from 'd3-shape';
 import { generateParkingSegments, generateDrivingSegments, generateAccumulatedDriving, formatTimeFromISO } from './SegmentUtility';
 
-interface FillDataInput extends CustomLayerProps {
+interface FillDataInput extends LineCustomSvgLayerProps<LineSeries> {
     series: FillDataset[];
-    height?: number;
 }
 
-interface CustomLineInput extends Omit<CustomLayerProps, 'xScale' | 'yScale'> {
+interface CustomLineInput extends Omit<LineCustomSvgLayerProps<LineSeries>, 'xScale' | 'yScale'> {
     series: FillDataset[];
     xScale: (value: number | Date | string) => number;
     yScale: (value: number) => number;
@@ -162,10 +161,9 @@ const CustomLines = (props: CustomLineInput): React.JSX.Element => {
                 const isLastItem = i === series.length - 1;
 
                 return (
-                    <>
+                    <React.Fragment key={i}>
                         {linePath ? (
                             <path
-                                key={i}
                                 d={linePath}
                                 fill="none"
                                 stroke={serie.color}
@@ -213,7 +211,7 @@ const CustomLines = (props: CustomLineInput): React.JSX.Element => {
                                 ) : null}
                             </>
                         ) : null}
-                    </>
+                    </React.Fragment>
                 );
             })}
         </g>
@@ -338,14 +336,14 @@ const RoundTripChart = (props: rtchartinput) => {
                 tooltip={(d) => ToolTipGen(d as unknown as ToolTipWrap)}
                 layers={[
                     'grid',
-                    FillLayer as unknown as CustomLayer,
+                    FillLayer as unknown as LineCustomSvgLayer<LineSeries>,
                     'axes',
                     'areas',
                     'crosshair',
                     'lines',
                     'slices',
                     'mesh',
-                    CustomLines as unknown as CustomLayer,
+                    CustomLines as unknown as LineCustomSvgLayer<LineSeries>,
                     'legends',
                     'points',
                 ]}
@@ -360,7 +358,7 @@ const RoundTripChart = (props: rtchartinput) => {
                 }}
                 yScale={{ type: 'linear' }}
                 useMesh={true}
-                colors={(d) => d.color}
+                colors={(d) => (d as SegmentData).color}
                 axisBottom={{
                     format: '%H:%M:%S',
                     legend: 'Tid',

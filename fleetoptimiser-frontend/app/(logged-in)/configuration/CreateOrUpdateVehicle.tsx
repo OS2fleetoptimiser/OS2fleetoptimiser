@@ -96,7 +96,9 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                 //This is not great
                 const response = await API.patch('configuration/vehicle', values);
                 if (response.status === 200) {
-                    await queryClient.invalidateQueries(['vehicles']);
+                    await queryClient.invalidateQueries({
+                        queryKey: ['vehicles']
+                    });
                     submit(values);
                     onClose();
                 }
@@ -111,7 +113,9 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                 const response = await API.post<{ id: string }>('configuration/vehicle', values);
 
                 if (response.status === 200) {
-                    await queryClient.invalidateQueries(['vehicles']);
+                    await queryClient.invalidateQueries({
+                        queryKey: ['vehicles']
+                    });
                     values.id = parseInt(response.data.id);
                     submit(values);
                     onClose();
@@ -236,12 +240,14 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                         type="number"
                                         value={formik.values.wltp_fossil || ''}
                                         onChange={formik.handleChange}
-                                        InputProps={{
-                                            inputMode: 'decimal',
-                                            inputProps: {
-                                                min: 0,
-                                                step: 0.1,
-                                            },
+                                        slotProps={{
+                                            input: {
+                                                inputMode: 'decimal',
+                                                inputProps: {
+                                                    min: 0,
+                                                    step: 0.1,
+                                                },
+                                            }
                                         }}
                                     />
                                 ) : selectedVehicleType === 3 ? (
@@ -253,12 +259,14 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                         value={formik.values.wltp_el || ''}
                                         required={true}
                                         onChange={formik.handleChange}
-                                        InputProps={{
-                                            inputMode: 'decimal',
-                                            inputProps: {
-                                                min: 0,
-                                                step: 0.1,
-                                            },
+                                        slotProps={{
+                                            input: {
+                                                inputMode: 'decimal',
+                                                inputProps: {
+                                                    min: 0,
+                                                    step: 0.1,
+                                                },
+                                            }
                                         }}
                                     />
                                 ) : null}
@@ -272,12 +280,14 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
                                 value={formik.values.omkostning_aar ?? ''}
-                                InputProps={{
-                                    inputMode: 'decimal',
-                                    inputProps: {
-                                        min: 0,
-                                        step: 0.1,
-                                    },
+                                slotProps={{
+                                    input: {
+                                        inputMode: 'decimal',
+                                        inputProps: {
+                                            min: 0,
+                                            step: 0.1,
+                                        },
+                                    }
                                 }}
                             />
                             {formik.touched.omkostning_aar && formik.errors.omkostning_aar ? <div>{formik.errors.omkostning_aar}</div> : null}
@@ -298,12 +308,14 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                             onChange={formik.handleChange}
                                             onBlur={formik.handleBlur}
                                             value={formik.values.capacity_decrease ?? ''}
-                                            InputProps={{
-                                                inputMode: 'decimal',
-                                                inputProps: {
-                                                    min: 0,
-                                                    step: 0.1,
-                                                },
+                                            slotProps={{
+                                                input: {
+                                                    inputMode: 'decimal',
+                                                    inputProps: {
+                                                        min: 0,
+                                                        step: 0.1,
+                                                    },
+                                                }
                                             }}
                                         />
                                         {formik.touched.capacity_decrease && formik.errors.capacity_decrease ? (
@@ -318,12 +330,14 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                             onChange={formik.handleChange}
                                             onBlur={formik.handleBlur}
                                             value={formik.values.range ?? ''}
-                                            InputProps={{
-                                                inputMode: 'decimal',
-                                                inputProps: {
-                                                    min: 0,
-                                                    step: 0.1,
-                                                },
+                                            slotProps={{
+                                                input: {
+                                                    inputMode: 'decimal',
+                                                    inputProps: {
+                                                        min: 0,
+                                                        step: 0.1,
+                                                    },
+                                                }
                                             }}
                                         />
                                         {formik.touched.range && formik.errors.range ? <div>{formik.errors.range}</div> : null}
@@ -336,12 +350,14 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                             onChange={formik.handleChange}
                                             onBlur={formik.handleBlur}
                                             value={formik.values.sleep ?? ''}
-                                            InputProps={{
-                                                inputMode: 'decimal',
-                                                inputProps: {
-                                                    min: 0,
-                                                    step: 0.1,
-                                                },
+                                            slotProps={{
+                                                input: {
+                                                    inputMode: 'decimal',
+                                                    inputProps: {
+                                                        min: 0,
+                                                        step: 0.1,
+                                                    },
+                                                }
                                             }}
                                         />
                                         {formik.touched.sleep && formik.errors.sleep ? <div>{formik.errors.sleep}</div> : null}
@@ -451,12 +467,14 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                         onChange={formik.handleChange}
                                         onBlur={formik.handleBlur}
                                         value={formik.values.km_aar ?? ''}
-                                        InputProps={{
-                                            inputMode: 'decimal',
-                                            inputProps: {
-                                                min: 0,
-                                                step: 0.1,
-                                            },
+                                        slotProps={{
+                                            input: {
+                                                inputMode: 'decimal',
+                                                inputProps: {
+                                                    min: 0,
+                                                    step: 0.1,
+                                                },
+                                            }
                                         }}
                                     />
                                     {formik.touched.km_aar && formik.errors.km_aar ? <div>{formik.errors.km_aar}</div> : null}
@@ -498,8 +516,7 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                         )}
                         <DialogActions className="m-2 mt-4">
                             <Button
-                                // @ts-ignore
-                                variant="outline"
+                                variant="outlined"
                                 onClick={handleOnClose}
                             >
                                 Annuller

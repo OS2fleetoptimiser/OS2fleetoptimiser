@@ -1,7 +1,7 @@
 import { Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, TextField } from '@mui/material';
 import { useState } from 'react';
 import { Search } from '@mui/icons-material';
-import useGetVehicles, {Vehicle} from '@/components/hooks/useGetVehicles';
+import {Vehicle} from '@/components/hooks/useGetVehicles';
 
 export type props = {
     selectedLocations: number[];
@@ -56,17 +56,19 @@ export default function VehicleFilter({
                             size="small"
                             type="text"
                             placeholder="Søg..."
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <IconButton>
-                                            <Search />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <IconButton>
+                                                <Search />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }
+                            }}
                         />
                         <Button
                             className="w-40"
@@ -89,9 +91,9 @@ export default function VehicleFilter({
                             const selectableVehiclesKeys = selectableVehicles.map(vehicle => vehicle.id);
                             return selectedVehicles.some(selectedVeh => !selectableVehiclesKeys.includes(selectedVeh));
                           })() &&
-                          <p className="text-explanation text-xs">Frigør andre filtre for at se alle valgte køretøjer</p>
+                          <ListItem className="text-explanation text-xs">Frigør andre filtre for at se alle valgte køretøjer</ListItem>
                         }
-                        {selectableVehicles && selectableVehicles.length === 0 && <p>Der er ingen tilgængelige Køretøjer</p>}
+                        {selectableVehicles && selectableVehicles.length === 0 && <ListItem>Der er ingen tilgængelige Køretøjer</ListItem>}
                         {selectableVehicles && selectableVehicles
                             .filter((vehicle) => vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()))
                             .sort((a, b) => a.name.localeCompare(b.name))

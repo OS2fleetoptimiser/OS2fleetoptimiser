@@ -184,7 +184,6 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                     </div>
                 </div>
             </div>
-
             <Dialog open={open} fullWidth maxWidth="md">
                 <DialogTitle>Vælg lokationer</DialogTitle>
                 <DialogContent className="h-[800px] flex flex-col">
@@ -198,33 +197,35 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                         placeholder="Søg i lokationer..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        InputProps={{
-                            disableUnderline: true,
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon fontSize="small" />
-                                </InputAdornment>
-                            ),
-                            endAdornment: searchQuery && (
-                                <InputAdornment position="end">
-                                    <IconButton onClick={() => setSearchQuery('')}>
-                                        <ClearIcon fontSize="small" />
-                                    </IconButton>
-                                </InputAdornment>
-                            ),
-                            sx: {
-                                height: 36,
-                                fontSize: 14,
-                                paddingX: 1,
+                        slotProps={{
+                            input: {
+                                disableUnderline: true,
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon fontSize="small" />
+                                    </InputAdornment>
+                                ),
+                                endAdornment: searchQuery && (
+                                    <InputAdornment position="end">
+                                        <IconButton onClick={() => setSearchQuery('')}>
+                                            <ClearIcon fontSize="small" />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                                sx: {
+                                    height: 36,
+                                    fontSize: 14,
+                                    paddingX: 1,
+                                },
                             },
-                        }}
-                        inputProps={{
-                            style: {
-                                padding: 0,
-                                fontSize: 14,
-                            },
-                        }}
-                    />
+
+                            htmlInput: {
+                                style: {
+                                    padding: 0,
+                                    fontSize: 14,
+                                },
+                            }
+                        }} />
                     <div className="flex mb-2 space-y-1">
                         <span className="self-center text-sm text-gray-500 mr-2">Valgte Lokationer:</span>
                         <Tooltip

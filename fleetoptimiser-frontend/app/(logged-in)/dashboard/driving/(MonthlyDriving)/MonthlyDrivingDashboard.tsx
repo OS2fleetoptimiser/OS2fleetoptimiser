@@ -24,7 +24,7 @@ const MonthlyDrivingDashboard = ({ availableshifts, end, start, departments, for
         selector: (data) => {
             if (!data.driving_data) return { uniqueVehicles: 0, totalDriven: 0, drivingData: [] };
             let totalDistance = 0;
-            let uniqueVehicles: number[] = [];
+            const uniqueVehicles: number[] = [];
             const result: {
                 [monthYear: string]: { [shift: string]: number };
             } = {};
@@ -47,7 +47,7 @@ const MonthlyDrivingDashboard = ({ availableshifts, end, start, departments, for
                     }
                     result[yearMonth][shiftName] += distance;
                     totalDistance += distance;
-                    !uniqueVehicles.find((id) => id === entry.vehicle_id) && uniqueVehicles.push(entry.vehicle_id);
+                    if (!uniqueVehicles.find((id) => id === entry.vehicle_id)) uniqueVehicles.push(entry.vehicle_id);
                 }
             });
 
@@ -84,7 +84,7 @@ const MonthlyDrivingDashboard = ({ availableshifts, end, start, departments, for
             </div>
             <>
                 {dashboardData.isError && <ApiError retryFunction={dashboardData.refetch}>Der opstod en netværksfejl</ApiError>}
-                {dashboardData.isLoading && (
+                {dashboardData.isPending && (
                     <div className="p-10 flex justify-center">
                         <CircularProgress />
                     </div>

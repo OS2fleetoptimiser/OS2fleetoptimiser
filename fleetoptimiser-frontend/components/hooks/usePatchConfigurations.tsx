@@ -12,7 +12,9 @@ function usePatchConfigurations() {
             return AxiosBase.patch('configuration/update-configurations', values);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['settings']);
+            queryClient.invalidateQueries({
+                queryKey: ['settings']
+            });
         },
     });
 }
