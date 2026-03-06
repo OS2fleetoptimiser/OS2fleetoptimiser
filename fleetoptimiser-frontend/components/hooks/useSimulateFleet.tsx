@@ -128,7 +128,7 @@ function useSimulateFleet(initialDataId?: string) {
                 data.status === 'STARTED' ||
                 data.status === 'RETRY' ||
                 data.status === 'PROGRESS' ||
-                data.status === 'RECIEVED'
+                data.status === 'RECEIVED'
                     ? 500
                     : false;
         }
