@@ -14,7 +14,7 @@ RUN apt-get update &&\
     pip install poetry==2.2.1
 
 COPY poetry.lock pyproject.toml ./
-RUN poetry install --without dev
+RUN poetry install --without dev --no-root
 ADD fleetmanager ./fleetmanager
 
 RUN poetry install --only-root
