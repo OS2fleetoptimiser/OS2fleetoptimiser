@@ -6,8 +6,6 @@ import urllib.parse
 import pandas as pd
 import regex as re
 import requests
-from pyppeteer import launch
-from pyppeteer.errors import TimeoutError
 from sqlalchemy.orm import Session, selectinload
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 
@@ -90,52 +88,6 @@ def find_in_settings(settings, find_key):
             for k, v in value.items():
                 if k == find_key:
                     return v
-
-
-async def load_content(plate: str) -> str:
-    url = f"https://www.tjekbil.dk/nummerplade/{plate}/overblik"
-
-    browser = await launch(
-        headless=True,
-        args=[
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-        ],
-    )
-    page = await browser.newPage()
-    logger.info(f"looking for {plate}")
-    try:
-        await page.goto(url, timeout=60000)
-    except TimeoutError:
-        logger.info("timeout")
-        return ""
-    try:
-        await page.waitForFunction(
-            """
-        () => {
-            let spans = document.querySelectorAll('.MuiTypography-root.MuiTypography-caption');
-            for (let span of spans) {
-                if (span.innerText === 'ELEKTRISK FORBRUG' || span.innerText === 'OPGIVET FORBRUG') {
-                    return true;
-                }
-            }
-            return false;
-        }
-        """
-        )
-    except TimeoutError:
-        pass
-
-    content = await page.content()
-    await browser.close()
-
-    return content
-
-
-def get_plate_info(plate: str) -> dict:
-    result = asyncio.get_event_loop().run_until_complete(load_content(plate))
-    return get_values(result)
 
 
 @retry(wait=wait_random_exponential(min=1, max=20), stop=stop_after_attempt(3))
