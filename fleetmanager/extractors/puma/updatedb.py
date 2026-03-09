@@ -32,7 +32,6 @@ from fleetmanager.extractors.skyhost.updatedb import (
 from fleetmanager.extractors.util import (
     extract_plate,
     get_latlon_address,
-    get_plate_info,
     logs_to_trips,
     to_list, get_plate_info_from_api, get_allowed_starts_with_additions,
 )

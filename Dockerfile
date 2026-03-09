@@ -11,25 +11,7 @@ RUN apt-get update &&\
     curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - &&\
     curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list &&\
     apt-get update && ACCEPT_EULA=Y apt-get install -y msodbcsql18 mssql-tools &&\
-    pip install poetry==1.3.1
-
-# requiered libraries for pypeeter scraping of wltp etc. fleetmanager.extractors.util.load_content
-RUN apt-get install -y \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxcursor1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxi6 \
-    libxtst6 \
-    libcups2 \
-    libdbus-1-3 \
-    libxrandr2 \
-    libasound2 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libgtk-3-0 \
-    libgdk-pixbuf2.0-0
+    pip install poetry==2.2.1
 
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --without dev
