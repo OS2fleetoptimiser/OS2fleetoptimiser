@@ -39,7 +39,7 @@ tenacity = "^8.2.3"
 httpx = "^0.25.2"
 
 [tool.poetry.dev-dependencies]
-black = "^24.3.0"
+black = "^26.3.1"
 isort = "^5.12.0"
 rope = "^1.7.0"
 ipdb = "^0.13.13"
