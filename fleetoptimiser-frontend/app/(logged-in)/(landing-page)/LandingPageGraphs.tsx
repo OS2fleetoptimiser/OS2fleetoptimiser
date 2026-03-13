@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button } from '@mui/material';
 import { useMediaQuery } from 'react-responsive';
 import NoData from "@/app/(logged-in)/(landing-page)/NoData";
+import PageTitle from '@/components/PageTitle';
 
 export default function LandingPageGraphs({ usageData, activityData }: { usageData: LocationUsage[]; activityData: LocationActivity[] }) {
     const isWide = useMediaQuery({ minWidth: 1348 });
@@ -33,7 +34,7 @@ export default function LandingPageGraphs({ usageData, activityData }: { usageDa
 
     return (
         <div>
-            <h3 className="text-lg font-semibold mb-4">Udnytelsesgrad og aktivitet</h3>
+            <PageTitle level="section" title="Udnytelsesgrad og aktivitet" />
             <div className="flex flex-col md:flex-row md:space-x-4">
                 <div className="w-full md:w-1/2">
                     {sortedUsageData.length > 0 ? <UsageGraph data={sortedUsageData} showKeys={showKeys}/> : <NoData/>}

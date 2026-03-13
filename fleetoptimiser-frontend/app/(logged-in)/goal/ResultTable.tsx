@@ -3,6 +3,7 @@ import { BiListUl, BiListPlus, BiListMinus } from 'react-icons/bi';
 import { useAppSelector } from '@/components/redux/hooks';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { goalSolution } from '@/components/hooks/useSimulateGoal';
+import PageTitle from '@/components/PageTitle';
 import Typography from '@mui/material/Typography';
 import DownloadIcon from '@mui/icons-material/Download';
 import {settings} from "@/components/hooks/useGetSettings";
@@ -56,9 +57,7 @@ const ResultTable = ({ solutions, settings, goalSimulationId }: { solutions: goa
                     <AccordionDetails>
                         <div className="flex">
                             <div className="w-2/3">
-                                <Typography variant="h3" className="mt-6 mb-3">
-                                    Flådesammensætning
-                                </Typography>
+                                <PageTitle level="section" title="Flådesammensætning" />
                             </div>
                             <div className="flex w-1/3 justify-end items-center">
                                 {
@@ -111,9 +110,7 @@ const ResultTable = ({ solutions, settings, goalSimulationId }: { solutions: goa
                             </tr>
                             </tbody>
                         </table>
-                        <Typography variant="h3" className="mt-8 mb-4">
-                            Simuleringsdetaljer
-                        </Typography>
+                        <PageTitle level="section" title="Simuleringsdetaljer" />
                         <table className="w-full border-collapse">
                             <thead className="border-b">
                                 <tr>

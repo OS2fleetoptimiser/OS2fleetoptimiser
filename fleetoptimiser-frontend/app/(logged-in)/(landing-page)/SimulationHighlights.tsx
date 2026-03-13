@@ -2,6 +2,7 @@ import { SimulationHighlight } from '@/components/hooks/useGetLandingPage';
 import { Tooltip } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { FleetChangeChip, PlusMinusChip, UnallocatedChip, SimTypeChip } from './ChipFormatting';
+import PageTitle from '@/components/PageTitle';
 
 function cutCharacters(str: string, cutAbove: number = 20) {
     return str.length > cutAbove ? str.slice(0, cutAbove) + '...' : str;
@@ -14,7 +15,7 @@ export default function SimulationHighlights({ simulations }: { simulations: Sim
     }
     return (
         <div className="w-full">
-            <h3 className="text-lg font-semibold mb-4">Seneste simuleringer</h3>
+            <PageTitle level="section" title="Seneste simuleringer" />
             <div className="overflow-x-auto my-4 shadow-sm">
                 <div className="table w-full border border-gray-100 rounded-md">
                     <div className="table-header-group text-left text-gray-500 text-sm bg-gray-50">
