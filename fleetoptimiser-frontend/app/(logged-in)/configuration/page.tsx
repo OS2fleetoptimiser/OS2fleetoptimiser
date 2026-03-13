@@ -6,6 +6,7 @@ import ApiError from '@/components/ApiError';
 import useGetDropDownData from '@/components/hooks/useGetDropDownData';
 import useGetVehicles from '@/components/hooks/useGetVehicles';
 import { Button, CircularProgress } from '@mui/material';
+import PageTitle from '@/components/PageTitle';
 import { useState } from 'react';
 import VehicleTable from './ConfigTable';
 import {useWritePrivilegeContext} from "@/app/providers/WritePrivilegeProvider";
@@ -20,8 +21,10 @@ export default function Page() {
 
     return (
         <>
-            <h2 className="text-3xl mb-2">Flådeoverblik</h2>
-
+            <PageTitle
+                title="Køretøjer"
+                subtitle="Ret oplysninger om indregistrerede køretøjer og tilføj nye køretøjer til simuleringsværktøjerne. Kommatal skal skrives i engelsk format (punktum i stedet for komma)."
+            />
             {tableData.isError ? (
                 <ApiError retryFunction={tableData.refetch}>Bil data kunne ikke hentes</ApiError>
             ) : dropDownValues.isError ? (

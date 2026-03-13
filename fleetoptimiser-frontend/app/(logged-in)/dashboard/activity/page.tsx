@@ -6,6 +6,7 @@ import AddFilter from '@/components/AddFilter';
 import { FilterHeaderWrapper } from '@/app/(logged-in)/dashboard/(filters)/FilterWrapper';
 import useGetSettings from '@/components/hooks/useGetSettings';
 import { CircularProgress } from '@mui/material';
+import PageTitle from '@/components/PageTitle';
 
 type Props = {
     searchParams: Promise<Filters>;
@@ -38,6 +39,10 @@ export default function DrivingActivity({ searchParams: searchParamsPromise }: P
 
     return (
         <>
+            <PageTitle
+                title="Køretøjsaktivitet"
+                subtitle="Grafen opdeles på dagsbasis ved perioder under 31 dage, ugebasis under 90 dage og månedsbasis ved længere perioder."
+            />
             <FilterHeaderWrapper availableshifts={availableShifts}></FilterHeaderWrapper>
             <div className="bg-white drop-shadow-md p-4 mb-4">
                 {!enabled && <AddFilter />}

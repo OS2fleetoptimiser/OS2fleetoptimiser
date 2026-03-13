@@ -5,6 +5,7 @@ import CollectiveStatistics from './CollectiveStatistics';
 import { Filters } from './(filters)/FilterHeader';
 import OverViewGraphs from './OverViewGraphs';
 import {FilterHeaderWrapper} from "@/app/(logged-in)/dashboard/(filters)/FilterWrapper";
+import PageTitle from '@/components/PageTitle';
 
 type Props = {
     searchParams: Promise<Filters>;
@@ -14,6 +15,7 @@ export default function DashboardOverview({ searchParams: searchParamsPromise }:
     const searchParams = use(searchParamsPromise);
     return (
         <>
+            <PageTitle title="Overblik" />
             <FilterHeaderWrapper vehicleFilter={false} departmentFilter={false} shiftFilter={false}></FilterHeaderWrapper>
             <CollectiveStatistics
                 start={searchParams.startdate}

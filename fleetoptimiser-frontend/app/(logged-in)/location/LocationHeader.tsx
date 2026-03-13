@@ -42,7 +42,6 @@ export const LocationHeader = ({locationData, testPrecision, title, setGivenTitl
             {
                 locationData &&
                 <div>
-                    <h3>Lokation</h3>
                     <div className="flex items-center mb-4 h-12 w-96">
                         {
                             !editTitle && <>
@@ -69,9 +68,6 @@ export const LocationHeader = ({locationData, testPrecision, title, setGivenTitl
                         }
 
                     </div>
-                    <p className="text-explanation w-256 text-sm">Tilføj eller fjern eksisterende parkeringspunkter på lokationen. Test præcisionen med de ændrede parkeringspunkter på den seneste måneds data.
-                    Gem ændringerne hvis du ser forbedringer i præcisionen. Herefter burde du se rundturspræcisionen stige for lokationen over den næste måned.
-                    </p>
                     <div className="flex my-8 items-center">
                         <div className="bg-white custom-nav p-4 w-68">
                             <Typography variant="h4" className="mb-4">Præcision</Typography>

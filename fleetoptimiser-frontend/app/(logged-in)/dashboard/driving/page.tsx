@@ -9,6 +9,7 @@ import { Filters } from '../(filters)/FilterHeader';
 import { FilterHeaderWrapper } from '@/app/(logged-in)/dashboard/(filters)/FilterWrapper';
 import useGetSettings from '@/components/hooks/useGetSettings';
 import { CircularProgress } from '@mui/material';
+import PageTitle from '@/components/PageTitle';
 
 type Props = {
     searchParams: Promise<Filters>;
@@ -40,6 +41,7 @@ export default function DrivingDashboard({ searchParams: searchParamsPromise }: 
 
     return (
         <>
+            <PageTitle title="Kørsel" />
             <FilterHeaderWrapper shiftFilter={false}></FilterHeaderWrapper>
 
             {!enabled && <AddFilter />}

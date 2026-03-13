@@ -14,6 +14,7 @@ import { use, useState } from "react";
 import { ParkingSpotList } from "@/app/(logged-in)/location/ParkingSpotList";
 import { AllowedStart } from "@/components/hooks/useGetLocationPrecision";
 import LoadingOverlay from "@/components/LoadingOverlay";
+import PageTitle from '@/components/PageTitle';
 import Tooltip from '@mui/material/Tooltip';
 import {ConfirmSave} from "@/app/(logged-in)/location/ConfirmSave";
 import {useWritePrivilegeContext} from "@/app/providers/WritePrivilegeProvider";
@@ -98,6 +99,10 @@ export default function Page({ params }: { params: Promise<{ locationId?: string
     const testPrecision = useTestLocationPrecision(undefined, startDate, parseInt(locationId || '0'), parkingSpots);
     return (
         <>
+            <PageTitle
+                title="Lokation"
+                subtitle="Tilføj eller fjern parkeringspunkter og test præcisionen på den seneste måneds data. Gem ændringer ved forbedringer. Rundturspræcisionen bør stige over den næste måned."
+            />
             <div>
                 {(!isLoading || !isEditMode) &&
                     <div className="flex flex-col overflow-hidden">
