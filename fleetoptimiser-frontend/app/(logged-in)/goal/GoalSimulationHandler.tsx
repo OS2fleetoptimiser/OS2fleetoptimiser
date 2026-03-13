@@ -13,7 +13,7 @@ export default function GoalSimulationHandler({ simulationId }: { simulationId?:
     const simulation = useSimulateGoal(simulationId);
 
     return (
-        <div className="w-auto max-w-[1800px] rounded-md m-auto p-1">
+        <div>
             <Tabs
                 value={value}
                 onChange={(e, v) => setValue(v)}

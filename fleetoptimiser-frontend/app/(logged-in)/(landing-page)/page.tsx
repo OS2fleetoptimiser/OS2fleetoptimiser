@@ -2,7 +2,7 @@
 
 import { usePatchGetLoginTime } from '@/components/hooks/userLoginTime';
 import { useSession } from '@/lib/auth-client';
-import LoginHeader from '@/app/(logged-in)/(landing-page)/LoginHeader';
+import PageTitle from '@/components/PageTitle';
 import LandingPageKPIs from '@/app/(logged-in)/(landing-page)/KPIs';
 import SimulationHighlights from '@/app/(logged-in)/(landing-page)/SimulationHighlights';
 import { useGetSimulationHighlights, useGetUsageGraphData, useGetActivityGraphData, useGetLandingPageKPIs } from '@/components/hooks/useGetLandingPage';
@@ -23,20 +23,21 @@ export default function Home() {
     const { data: activityGraphData } = useGetActivityGraphData();
 
     return (
-        <div className="pt-4 space-y-12 flex flex-col max-w-[1105px] mx-auto">
-            <LoginHeader lastLogin={lastLogin} isLoading={loginIsLoading} />
-            {!isKPIsLoading && kpiData && Object.keys(kpiData).length > 0 && <LandingPageKPIs data={kpiData} />}
-            {!isKPIsLoading && (!kpiData || Object.keys(kpiData).length === 0) && <NoConnectionError />}
-            {isKPIsLoading && <CircularProgress />}
-            <div className="w-full">
+        <>
+            <PageTitle
+                title="Velkommen til FleetOptimiser"
+                subtitle={!loginIsLoading && lastLogin ? `Dit seneste besøg var ${new Date(lastLogin).toLocaleString()}` : undefined}
+            />
+            <div className="flex flex-col space-y-4">
+                {!isKPIsLoading && kpiData && Object.keys(kpiData).length > 0 && <LandingPageKPIs data={kpiData} />}
+                {!isKPIsLoading && (!kpiData || Object.keys(kpiData).length === 0) && <NoConnectionError />}
+                {isKPIsLoading && <CircularProgress />}
                 {!simulationsIsLoading && latestSimulations && latestSimulations.length > 0 && (
-                    <div>
-                        <SimulationHighlights simulations={latestSimulations} />
-                    </div>
+                    <SimulationHighlights simulations={latestSimulations} />
                 )}
                 {!simulationsIsLoading && (!latestSimulations || latestSimulations.length === 0) && <NoSimulations />}
                 {!simulationsIsLoading && (
-                    <div key="buttongroup" className="flex flex-row items-center space-x-4">
+                    <div className="flex flex-row items-center space-x-4">
                         <Link href={'/setup'}>
                             <Button size="small" color="primary" variant="contained">
                                 Start ny simulering
@@ -49,11 +50,9 @@ export default function Home() {
                         </Link>
                     </div>
                 )}
-            </div>
-            <div className="graphs">
                 {usageGraphData && activityGraphData && usageGraphData.length > 0 && <LandingPageGraphs activityData={activityGraphData} usageData={usageGraphData} />}
                 {/*  if we don't get this data, we won't get KPI data either, so we stick to one error message at the top  */}
             </div>
-        </div>
+        </>
     );
 }

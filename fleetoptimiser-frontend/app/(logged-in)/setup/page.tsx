@@ -77,7 +77,7 @@ export default function Home() {
 
     const isLoadingVehicles = vehicles.some((q) => q.isPending);
     return (
-        <div className="space-y-6 max-w-[1800px] mx-auto">
+        <div className="space-y-6">
             <PageTitle
                 title="Simuleringssetup"
                 subtitle="Udvælg lokationer, tidsperiode og køretøjer som grundlag for simuleringerne. Når opsætningen er fuldført, kan manuel og automatisk simulering tilgås."

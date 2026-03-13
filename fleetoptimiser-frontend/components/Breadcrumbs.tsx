@@ -2,6 +2,7 @@
 
 import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
+import Box from '@mui/material/Box';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
@@ -28,7 +29,8 @@ export default function AppBreadcrumbs() {
   const pathname = usePathname();
   const segments = pathname.split('/').filter(Boolean);
 
-  if (segments.length === 0) return null;
+  // Placeholder matches rendered Breadcrumbs height (body2 line-height ~24px) + mb
+  if (segments.length === 0) return <Box sx={{ height: 24, mb: 3 }} />;
 
   const crumbs = segments.map((seg, i) => ({
     label: segmentLabels[seg] ?? decodeURIComponent(seg),
@@ -36,7 +38,7 @@ export default function AppBreadcrumbs() {
   }));
 
   return (
-    <Breadcrumbs aria-label="breadcrumb" separator="/">
+    <Breadcrumbs aria-label="breadcrumb" separator="/" sx={{ mb: 3 }}>
       <Link
         component={NextLink}
         href="/"

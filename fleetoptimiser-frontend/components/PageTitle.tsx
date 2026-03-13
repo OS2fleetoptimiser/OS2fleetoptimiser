@@ -1,28 +1,39 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-interface PageTitleProps {
-  title: string;
-  subtitle?: string;
-}
+type PageTitleProps =
+  | { title: string; subtitle?: string; level?: 'page' }
+  | { title: string; level: 'section' };
 
-export default function PageTitle({ title, subtitle }: PageTitleProps) {
+export default function PageTitle(props: PageTitleProps) {
+  if (props.level === 'section') {
+    return (
+      <Typography
+        component="h3"
+        variant="h6"
+        sx={{ fontWeight: 600, color: 'text.primary', mt: 2, mb: 1 }}
+      >
+        {props.title}
+      </Typography>
+    );
+  }
+
   return (
     <Box sx={{ mb: 2 }}>
       <Typography
         component="h2"
         variant="h3"
-        sx={{ fontWeight: 600, color: 'text.primary', mt: 3 }}
+        sx={{ fontWeight: 600, color: 'text.primary' }}
       >
-        {title}
+        {props.title}
       </Typography>
-      {subtitle && (
+      {props.subtitle && (
         <Typography
           variant="body2"
           color="text.secondary"
           sx={{ mt: 1, maxWidth: 720 }}
         >
-          {subtitle}
+          {props.subtitle}
         </Typography>
       )}
     </Box>
