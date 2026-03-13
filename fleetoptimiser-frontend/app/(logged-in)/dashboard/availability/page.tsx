@@ -5,6 +5,7 @@ import { Filters } from '../(filters)/FilterHeader';
 import AvailabilityChart from './AvailabilityChart';
 import AddFilter from "@/components/AddFilter";
 import {FilterHeaderWrapper} from "@/app/(logged-in)/dashboard/(filters)/FilterWrapper";
+import PageTitle from '@/components/PageTitle';
 
 
 type Props = {
@@ -21,6 +22,7 @@ export default function Availability({ searchParams: searchParamsPromise }: Prop
 
     return (
         <>
+            <PageTitle title="Ledighed" />
             <FilterHeaderWrapper shiftFilter={false}></FilterHeaderWrapper>
             {timeFrame && timeFrame >= 8 && (
                 <div className="p-8">

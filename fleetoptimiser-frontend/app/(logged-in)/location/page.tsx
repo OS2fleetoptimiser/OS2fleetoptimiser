@@ -5,6 +5,7 @@ import { KeyLocationFigures } from "@/app/(logged-in)/location/KeyLocationFigure
 import { LocationPrecisionList } from "@/app/(logged-in)/location/LocationPrecisionList";
 import { useGetLocationPrecision } from "@/components/hooks/useGetLocationPrecision";
 import { CircularProgress } from '@mui/material';
+import PageTitle from '@/components/PageTitle';
 import TipsModal from "@/app/(logged-in)/location/TipsModal";
 import AddIcon from "@mui/icons-material/Add";
 import Link from "next/link";
@@ -14,13 +15,11 @@ export default function Page() {
     const { data, isPending: isLoading } = useGetLocationPrecision(startDate);
     return (
         <>
-            <h2>Lokationer</h2>
-            <p className="text-explanation w-256 text-sm">Oversigt over hvor præcis aggregering af rundture er på dine lokationer. Præcisionen viser procentdelen af færdiggjorte rundture.
-                Præcision er en indikation på hvor god aggregeringen er til at sammensætte komplette rundture, ikke hvor meget der bliver gemt fra flådestyringssystemet.
-                Klik ind på en lokation, for at se tilknyttede parkeringspunkter og for at forøge præcision og kvaliteten med nye parkeringspunkter. GPS fejl og andre logging problemer gør
-                det svært at nå 100% rundturspræcision, der sigtes efter en rundturspræcision på over 80%.
-            </p>
-             <TipsModal/>
+            <PageTitle
+                title="Lokationer"
+                subtitle="Oversigt over præcisionen på rundturs-aggregering. Justér parkeringspunkter for at forbedre kvaliteten af data fra flådestyringssystemet. Præcisionen indikerer, hvor godt algoritmen sammensætter GPS-punkter til rundture, ikke antallet af gemte kilometer."
+            />
+            <TipsModal/>
             {!isLoading &&
                 <div className="mb-20">
                     <KeyLocationFigures data={data}/>

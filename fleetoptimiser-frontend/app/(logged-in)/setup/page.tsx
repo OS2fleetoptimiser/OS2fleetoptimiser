@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import { fetchVehiclesByLocation, useGetForvaltninger, useGetLocations } from '@/components/hooks/useGetVehiclesByLocation';
 import LocationPicker, { SelectedLocation } from './LocationPicker';
 import { CircularProgress } from '@mui/material';
+import PageTitle from '@/components/PageTitle';
 import { fetchSimulationSettings, setCars, setEndDate, setLocationForvaltning, setStartDate } from '@/components/redux/SimulationSlice';
 import { useQueries } from '@tanstack/react-query';
 import VehiclePicker from './VehiclePicker';
@@ -77,6 +78,10 @@ export default function Home() {
     const isLoadingVehicles = vehicles.some((q) => q.isPending);
     return (
         <div className="space-y-6 max-w-[1800px] mx-auto">
+            <PageTitle
+                title="Simuleringssetup"
+                subtitle="Udvælg lokationer, tidsperiode og køretøjer som grundlag for simuleringerne. Når opsætningen er fuldført, kan manuel og automatisk simulering tilgås."
+            />
             <DateRangePicker range={range} onChange={handleDateChange} />
             {(forvaltningerLoading || locationsLoading) && <CircularProgress />}
             {onlyLocs && !forvaltningerLoading && (

@@ -6,6 +6,7 @@ import AddFilter from "@/components/AddFilter";
 import {FilterHeaderWrapper} from "@/app/(logged-in)/dashboard/(filters)/FilterWrapper";
 import useGetSettings from "@/components/hooks/useGetSettings";
 import {CircularProgress} from "@mui/material";
+import PageTitle from '@/components/PageTitle';
 
 
 type Props = {
@@ -35,6 +36,10 @@ export default function TripSegments({ searchParams: searchParamsPromise }: Prop
 
     return (
         <>
+            <PageTitle
+                title="Turoverblik"
+                subtitle="Viser afsluttede rundture startet og sluttet på samme lokation. Kun kvalificerede rundture ud fra de indtastede parametre vises, hvilket kan betyde, at ikke alle kilometer fra Køretøjsaktivitet fremgår."
+            />
             <FilterHeaderWrapper availableshifts={availableShifts}></FilterHeaderWrapper>
 
             <div className="bg-white drop-shadow-md p-4 mb-4">

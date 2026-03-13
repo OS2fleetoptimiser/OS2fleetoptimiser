@@ -7,6 +7,7 @@ import { Filters } from '../(filters)/FilterHeader';
 import {FilterHeaderWrapper} from "@/app/(logged-in)/dashboard/(filters)/FilterWrapper";
 import useGetSettings from "@/components/hooks/useGetSettings";
 import {CircularProgress} from "@mui/material";
+import PageTitle from '@/components/PageTitle';
 
 
 type Props = {
@@ -34,6 +35,10 @@ export default function DrivingActivity({ searchParams: searchParamsPromise }: P
 
     return (
         <>
+            <PageTitle
+                title="Tidsaktivitet"
+                subtitle="Grænseværdien kan justeres for at fremhæve en lavere grad af aktivitet."
+            />
             <FilterHeaderWrapper availableshifts={availableShifts}></FilterHeaderWrapper>
             <div className="bg-white drop-shadow-md p-4 mb-4">
                 {!enabled && <AddFilter />}
