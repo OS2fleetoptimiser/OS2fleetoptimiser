@@ -17,7 +17,15 @@ const theme = createTheme({
         },
         info: {
             main: '#e0e0e0'
-        }
+        },
+        background: {
+            default: 'hsl(0, 0%, 99%)',
+            paper: 'hsl(220, 35%, 97%)',
+        },
+        divider: 'rgba(194, 199, 208, 0.4)',
+    },
+    shape: {
+        borderRadius: 8,
     },
     typography: {
         fontFamily: ["Inter Tight", "Montserrat", "Helvetica", "Arial", "sans-serif"].join(", "),
@@ -64,6 +72,41 @@ const theme = createTheme({
         }
     },
     components: {
+        MuiPaper: {
+            defaultProps: {
+                elevation: 0,
+            },
+        },
+        MuiCard: {
+            defaultProps: {
+                variant: 'outlined' as const,
+            },
+            styleOverrides: {
+                root: {
+                    backgroundImage: 'none',
+                    backgroundColor: '#ffffff',
+                },
+            },
+        },
+        MuiCardContent: {
+            styleOverrides: {
+                root: {
+                    '&:last-child': {
+                        paddingBottom: 16,
+                    },
+                },
+            },
+        },
+        MuiAccordion: {
+            defaultProps: {
+                variant: 'outlined' as const,
+            },
+            styleOverrides: {
+                root: {
+                    '&:before': { display: 'none' },
+                },
+            },
+        },
         MuiTextField: {
             styleOverrides: {
                 root: {
