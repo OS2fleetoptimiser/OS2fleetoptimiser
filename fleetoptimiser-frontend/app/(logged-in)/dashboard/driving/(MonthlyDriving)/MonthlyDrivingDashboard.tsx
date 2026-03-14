@@ -2,7 +2,7 @@
 
 import ApiError from '@/components/ApiError';
 import useGetDrivingData from '@/components/hooks/useGetDrivingData';
-import { CircularProgress } from '@mui/material';
+import { Card, CardContent, CircularProgress } from '@mui/material';
 import MonthlyDrivingGraph from './MonthlyDrivingGraph';
 import { getInterval } from '../../ShiftNameTranslater';
 import dayjs from 'dayjs';
@@ -71,14 +71,18 @@ const MonthlyDrivingDashboard = ({ availableshifts, end, start, departments, for
             <div className="flex">
                 {dashboardData.data && (
                     <>
-                        <div className="text-center shadow-md p-4">
-                            <h4>Kørte kilometer</h4>
-                            <p>{Math.round(dashboardData.data.totalDriven).toLocaleString()} km</p>
-                        </div>
-                        <div className="text-center shadow-md p-4">
-                            <h4>Køretøjer der indgår i grafen</h4>
-                            <p>{dashboardData.data.uniqueVehicles}</p>
-                        </div>
+                        <Card sx={{ textAlign: 'center' }}>
+                            <CardContent>
+                                <h4>Kørte kilometer</h4>
+                                <p>{Math.round(dashboardData.data.totalDriven).toLocaleString()} km</p>
+                            </CardContent>
+                        </Card>
+                        <Card sx={{ textAlign: 'center' }}>
+                            <CardContent>
+                                <h4>Køretøjer der indgår i grafen</h4>
+                                <p>{dashboardData.data.uniqueVehicles}</p>
+                            </CardContent>
+                        </Card>
                     </>
                 )}
             </div>

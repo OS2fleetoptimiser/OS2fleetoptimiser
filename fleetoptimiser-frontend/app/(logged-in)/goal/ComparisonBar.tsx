@@ -59,7 +59,7 @@ export function CostComparisonBar({ currentValue, solutions, yAxis }: Props) {
                 labels: { text: { fontWeight: 'bold', fontSize: '0.75rem' } },
             }}
             tooltip={({ value, indexValue }) => (
-                <div className="bg-[#222] text-white p-2 rounded-md text-xs">
+                <div className="bg-[#222] text-white p-2 rounded-lg text-xs">
                     <span className="font-bold">{indexValue}</span>
                     <br />
                     <span className="font-bold">

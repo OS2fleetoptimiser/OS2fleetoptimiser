@@ -1,7 +1,7 @@
 'use client';
 
 import useGetDrivingData from '@/components/hooks/useGetDrivingData';
-import { CircularProgress } from '@mui/material';
+import { Card, CardContent, CircularProgress } from '@mui/material';
 import { drivingData } from '@/components/hooks/useGetDrivingData';
 import { getInterval } from '../../../dashboard/ShiftNameTranslater';
 import AverageDrivingGraph from './AverageDrivingGraph';
@@ -94,10 +94,12 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
         <div>
             <h1 className="mb-4 text-xl">Gennemsnitlig kørte kilometer for kørte dage i valgte periode</h1>
             {drivingData.data && (
-                <div className="text-center shadow-md p-4 w-fit">
-                    <h4>Køretøjer der indgår i grafen</h4>
-                    <p>{drivingData.data.dataPoints.length}</p>
-                </div>
+                <Card className="w-fit" sx={{ textAlign: 'center' }}>
+                    <CardContent>
+                        <h4>Køretøjer der indgår i grafen</h4>
+                        <p>{drivingData.data.dataPoints.length}</p>
+                    </CardContent>
+                </Card>
             )}
             {drivingData.isError && <ApiError retryFunction={drivingData.refetch}>Der opstod en netværksfejl</ApiError>}
             {drivingData.isPending && (

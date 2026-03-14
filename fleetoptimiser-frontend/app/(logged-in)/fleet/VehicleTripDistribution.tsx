@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import ToolTip from '@/components/ToolTip';
 import { drivingBook } from '@/components/hooks/useSimulateFleet';
 import {VehicleTripDistributionBar} from "@/app/(logged-in)/fleet/DistributionGraph";
+import { Card, CardContent } from '@mui/material';
 
 export const VehicleTripDistribution = ({ simulationResults }: { simulationResults: SimulationResults }) => {
     const getTripsByType = (data: drivingBook[], dataType: 'simulation' | 'current') => {
@@ -63,7 +64,7 @@ export const VehicleTripDistribution = ({ simulationResults }: { simulationResul
 
     return (
         <div className="grid w-full grid-cols-1 xl:grid-cols-2 gap-6 h-96">
-            <div className="p-4 pt-2 bg-white border border-gray-100 rounded-md shadow-sm w-full h-96">
+            <Card className="w-full h-96"><CardContent>
                 <div className="flex items-center">
                     <span className="text-sm font-semibold">Nuværende turfordeling på køretøjstype</span>
                     <ToolTip>
@@ -72,8 +73,8 @@ export const VehicleTripDistribution = ({ simulationResults }: { simulationResul
                     </ToolTip>
                 </div>
                 <VehicleTripDistributionBar data={currentTrips} />
-            </div>
-            <div className="p-4 pt-2 bg-white border border-gray-100 rounded-md shadow-sm w-full h-96">
+            </CardContent></Card>
+            <Card className="w-full h-96"><CardContent>
                 <div className="flex items-center">
                     <span className="text-sm font-semibold">Simuleret turfordeling på køretøjstype</span>
                     <ToolTip>
@@ -82,7 +83,7 @@ export const VehicleTripDistribution = ({ simulationResults }: { simulationResul
                     </ToolTip>
                 </div>
                 <VehicleTripDistributionBar data={simulationTrips} />
-            </div>
+            </CardContent></Card>
         </div>
     );
 };

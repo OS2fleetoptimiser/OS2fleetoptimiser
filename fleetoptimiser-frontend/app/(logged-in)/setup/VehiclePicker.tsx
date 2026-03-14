@@ -182,7 +182,8 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
                 </div>
                 <TableContainer
                         component={Paper}
-                        className={`relative my-4 shadow-sm border border-gray-100 rounded-md max-h-[calc(100vh-450px)] ${isLoading ? 'overflow-hidden' : 'overflow-auto'}`}
+                        className={`relative my-4 max-h-[calc(100vh-450px)] ${isLoading ? 'overflow-hidden' : 'overflow-auto'}`}
+                        sx={{ border: '1px solid', borderColor: 'divider' }}
                     >
                         {isLoading && (
                             <div className="absolute inset-0 flex justify-center items-center bg-white bg-opacity-70 z-10" style={{ pointerEvents: 'auto' }}>

@@ -2,6 +2,7 @@ import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
 import ToolTip from '@/components/ToolTip';
 import { useMemo } from 'react';
 import { VehicleUsageTable } from './VehicleResultsTable';
+import { Card, CardContent } from '@mui/material';
 
 export interface VehicleUsageRow {
     Koeretoej: string;
@@ -27,7 +28,7 @@ export const VehicleResults = ({ simulationResults }: { simulationResults: Simul
     }, [simulationResults.vehicleUsage.current]);
 
     return (
-        <div className="mt-4 p-4 border border-gray-100 rounded-md shadow-sm">
+        <Card className="mt-4"><CardContent>
             <span className="font-bold text-sm">Detaljer om køretøjsforbrug i simulerede og nuværende flåde</span>
             <ToolTip>
                 Se hvilke effekter det har på din køreplan og flåde ved at simulere med en ny flådesammensætning. Du kan se de aktivt allokerede km på hvert
@@ -42,7 +43,7 @@ export const VehicleResults = ({ simulationResults }: { simulationResults: Simul
                 <span className="font-semibold text-sm">Nuværende forbrug</span>
                 <VehicleUsageTable rows={currentVehicleUsage} />
             </div>
-        </div>
+        </CardContent></Card>
     );
 };
 

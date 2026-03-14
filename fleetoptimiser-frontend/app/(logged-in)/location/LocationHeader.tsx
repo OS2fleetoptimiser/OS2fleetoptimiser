@@ -4,7 +4,7 @@ import { ExtendedLocationInformation, ChangeLocationAddress } from "@/components
 import Typography from "@mui/material/Typography";
 import EditIcon from '@mui/icons-material/Edit';
 import {useState} from "react";
-import {Alert, Snackbar, TextField} from "@mui/material";
+import {Alert, Card, CardContent, Snackbar, TextField} from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from '@mui/icons-material/Close';
 import {useWritePrivilegeContext} from "@/app/providers/WritePrivilegeProvider";
@@ -69,22 +69,30 @@ export const LocationHeader = ({locationData, testPrecision, title, setGivenTitl
 
                     </div>
                     <div className="flex my-8 items-center">
-                        <div className="bg-white custom-nav p-4 w-68">
-                            <Typography variant="h4" className="mb-4">Præcision</Typography>
-                            <Typography variant="h2" className={locationData.precision >= successThreshold ? "text-green-500 font-bold" : "text-red-500 font-bold"}>{Math.round(locationData.precision)}%</Typography>
-                        </div>
-                        <div className="bg-white custom-nav mx-12 p-4 w-68">
-                            <Typography variant="h4" className="mb-4">Testpræcision</Typography>
-                            <Typography variant="h2" className={testPrecision ? testPrecision * 100 >= successThreshold ? "text-green-500 font-bold" : "text-red-500 font-bold" : "font-bold" }>{testPrecision ? (Math.round(testPrecision * 100)) + '%' : 'Ingen data'}</Typography>
-                        </div>
-                        <div className="bg-white custom-nav p-4 w-68">
-                            <Typography variant="h4" className="mb-4">Total kilometer</Typography>
-                            <Typography variant="h2" className="font-bold">{Math.round(locationData.km).toLocaleString()}</Typography>
-                        </div>
-                        <div className="bg-white custom-nav p-4 ml-12 w-68">
-                            <Typography variant="h4" className="mb-4">Antal køretøjer</Typography>
-                            <Typography variant="h2" className="font-bold">{locationData.car_count}</Typography>
-                        </div>
+                        <Card className="w-68">
+                            <CardContent>
+                                <Typography variant="h4" className="mb-4">Præcision</Typography>
+                                <Typography variant="h2" className={locationData.precision >= successThreshold ? "text-green-500 font-bold" : "text-red-500 font-bold"}>{Math.round(locationData.precision)}%</Typography>
+                            </CardContent>
+                        </Card>
+                        <Card className="mx-12 w-68">
+                            <CardContent>
+                                <Typography variant="h4" className="mb-4">Testpræcision</Typography>
+                                <Typography variant="h2" className={testPrecision ? testPrecision * 100 >= successThreshold ? "text-green-500 font-bold" : "text-red-500 font-bold" : "font-bold" }>{testPrecision ? (Math.round(testPrecision * 100)) + '%' : 'Ingen data'}</Typography>
+                            </CardContent>
+                        </Card>
+                        <Card className="w-68">
+                            <CardContent>
+                                <Typography variant="h4" className="mb-4">Total kilometer</Typography>
+                                <Typography variant="h2" className="font-bold">{Math.round(locationData.km).toLocaleString()}</Typography>
+                            </CardContent>
+                        </Card>
+                        <Card className="ml-12 w-68">
+                            <CardContent>
+                                <Typography variant="h4" className="mb-4">Antal køretøjer</Typography>
+                                <Typography variant="h2" className="font-bold">{locationData.car_count}</Typography>
+                            </CardContent>
+                        </Card>
                     </div>
                 {
                     openSnackBar && (

@@ -1,3 +1,4 @@
+import { Card, CardContent } from '@mui/material';
 import CommuteIcon from '@mui/icons-material/Commute';
 import ExtraVehicleModal from '@/app/(logged-in)/fleet/ExtraVehiclesModal';
 import { useMemo } from 'react';
@@ -34,7 +35,7 @@ export const VehiclesWidget = ({ manualSimulation }: { manualSimulation: boolean
     }, [currentGroups, extraGroups]);
 
     return (
-        <div className="mt-6 w-auto border border-gray-200 rounded-md shadow-sm p-2 px-4">
+        <Card className="mt-6 w-auto"><CardContent>
             <div className="flex justify-between">
                 <div className="flex flex-row items-center space-x-2">
                     <CommuteIcon className="text-blue-500" fontSize="small" />
@@ -43,6 +44,6 @@ export const VehiclesWidget = ({ manualSimulation }: { manualSimulation: boolean
                 <ExtraVehicleModal buttonAppearance={true} />
             </div>
             <VehiclesSelectionTable manualSimulation={manualSimulation} vehicles={fleet} />
-        </div>
+        </CardContent></Card>
     );
 };

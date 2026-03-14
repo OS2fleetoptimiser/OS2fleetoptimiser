@@ -22,7 +22,7 @@ export const ComparisonFleetModal = () => {
             </Button>
             {isOpen && (
                 <Modal open={isOpen} onClose={() => setIsOpen(false)} className="mt-10 max-w-[1000px] m-auto">
-                    <div className="bg-white p-4 w-full rounded-md max-h-[calc(100vh-200px)] overflow-auto">
+                    <div className="bg-white p-4 w-full rounded-lg max-h-[calc(100vh-200px)] overflow-auto">
                         <div className="flex items-center">
                             <label className="text-lg font-semibold text-black">Sammenligningsflåde</label>
                             <ToolTip>

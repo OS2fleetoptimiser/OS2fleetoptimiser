@@ -41,7 +41,7 @@ const ComparisonFleet = ({ vehicles }: { vehicles: Vehicle[] }) => {
     const table = useReactTable({ data: vehicles, columns: defaultColumns, getCoreRowModel: getCoreRowModel() });
 
     return (
-        <table className="relative my-4 shadow-none rounded-md w-full border-collapse">
+        <table className="relative my-4 rounded-lg w-full border-collapse">
             <thead className="border-b">
                 {table.getHeaderGroups().map((headerGroup) => (
                     <tr className="border-b" key={headerGroup.id}>

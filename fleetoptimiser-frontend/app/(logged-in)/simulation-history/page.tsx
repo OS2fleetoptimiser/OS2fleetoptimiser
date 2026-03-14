@@ -17,7 +17,7 @@ export default function Page() {
                 subtitle="Oversigt over tidligere simuleringer kørt på systemet."
             />
             <PageTitle level="section" title="Manuel simulering" />
-            <List className="bg-white drop-shadow-md">
+            <List sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 {fleetSimulationHistory.data &&
                     fleetSimulationHistory.data.map((history, index) => (
                         <Fragment key={history.id}>
@@ -37,7 +37,7 @@ export default function Page() {
                     ))}
             </List>
             <PageTitle level="section" title="Automatisk simulering" />
-            <List className="bg-white drop-shadow-md">
+            <List sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 {goalSimulationHistory.data &&
                     goalSimulationHistory.data.map((history, index) => (
                         <Fragment key={history.id}>

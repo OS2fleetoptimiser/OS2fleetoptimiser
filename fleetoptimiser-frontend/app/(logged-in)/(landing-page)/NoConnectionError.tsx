@@ -2,7 +2,7 @@ import WifiOffIcon from '@mui/icons-material/WifiOff';
 
 const NoConnectionError = () => {
     return (
-        <div className="flex items-start space-x-4 w-full max-w-md p-5 mb-10 rounded-2xl shadow-lg bg-white border border-red-100">
+        <div className="flex items-start space-x-4 w-full max-w-md p-5 mb-10 rounded-2xl bg-white border border-red-200">
             <div className="pt-1">
                 <WifiOffIcon className="text-red-500" fontSize="large" />
             </div>

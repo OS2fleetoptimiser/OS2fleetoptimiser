@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
+    Box,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -134,9 +135,9 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
         <>
             <div className="w-64 bg-white">
                 <label className="text-lg font-semibold text-black">Vælg lokationer</label>
-                <div className="mt-2 border rounded-md py-2 px-4 cursor-pointer" onClick={() => setOpen(true)}>
+                <Box className="mt-2 rounded-lg py-2 px-4 cursor-pointer" sx={{ border: '1px solid', borderColor: 'divider' }} onClick={() => setOpen(true)}>
                     <label className="block text-sm font-medium text-gray-700 cursor-pointer">Vælg lokationer...</label>
-                </div>
+                </Box>
                 <div className="mt-4 mb-20 relative overflow-visible">
                     <div className="absolute left-0 whitespace-nowrap space-x-1 w-[64px] sm:w-full">
                         {selectedLocations.length === 0 || selectedLocations.length > 3 ? (
@@ -192,7 +193,7 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                     </div>
                     <TextField
                         fullWidth
-                        className="my-1 bg-[#F5F5F5] rounded-md px-1"
+                        className="my-1 bg-[#F5F5F5] rounded-lg px-1"
                         variant="standard"
                         placeholder="Søg i lokationer..."
                         value={searchQuery}
@@ -272,7 +273,7 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                             ))}
                     </div>
 
-                    <div className="overflow-auto border-[#eee] border rounded-md p-2">
+                    <div className="overflow-auto border-[#eee] border rounded-lg p-2">
                         {filteredForvaltninger
                             .sort((a, b) => {
                                 if (a[0] === 'Ingen Forvaltning') return 1;
@@ -291,7 +292,7 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                                     <div className="mb-2" key={forvaltning}>
                                         <div
                                             onClick={() => toggleExpand(forvaltning)}
-                                            className="flex items-center justify-between bg-gray-100 cursor-pointer rounded-md pr-2 pl-6"
+                                            className="flex items-center justify-between bg-gray-100 cursor-pointer rounded-lg pr-2 pl-6"
                                         >
                                             <FormControlLabel
                                                 className="cursor-pointer"

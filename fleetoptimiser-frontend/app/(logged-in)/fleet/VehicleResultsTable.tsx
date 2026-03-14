@@ -64,7 +64,7 @@ export const VehicleUsageTable = ({ rows }: VehicleUsageTableProps) => {
     const headerStyle = 'text-xs font-semibold text-gray- bg-gray-50 ';
     const defaultStyle = 'py-2 border-b text-xs';
     return (
-        <TableContainer className="shadow-none border-none rounded-md" component={Paper}>
+        <TableContainer component={Paper}>
             <Table stickyHeader>
                 <TableHead>
                     <TableRow>

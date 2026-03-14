@@ -13,7 +13,7 @@ export function SolutionsAccordion({ solutions, simulationId }: { solutions: Sim
                 const emissionDifference = sol.currentEmission - sol.simulationEmission;
 
                 return (
-                    <Accordion key={i} className="shadow-sm border border-gray-100 rounded-md mb-2">
+                    <Accordion key={i} className="mb-2">
                         <AccordionSummary expandIcon={<ExpandMoreIcon />} className="px-4">
                             <div className="table w-full text-sm text-gray-600">
                                 <div className="table-row">

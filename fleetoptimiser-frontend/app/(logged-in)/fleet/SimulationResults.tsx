@@ -38,7 +38,7 @@ export const SimulationResultsPage = ({
                     </div>
                 </div>
             )}
-            <div className="w-auto rounded-md m-auto">
+            <div className="w-auto rounded-lg m-auto">
                 <div className="flex items-center gap-2">
                     <Tabs
                         value={tabValue}
@@ -104,7 +104,7 @@ export const SimulationResultsPage = ({
                         />
                     </Tabs>
                     {simulationId && (
-                        <IconButton href={downloadLink} disabled={!simulationId} className="border-none text-gray-700 hover:text-black" download>
+                        <IconButton href={downloadLink} disabled={!simulationId} className="text-gray-700 hover:text-black" download>
                             <DownloadIcon fontSize="small" />
                         </IconButton>
                     )}

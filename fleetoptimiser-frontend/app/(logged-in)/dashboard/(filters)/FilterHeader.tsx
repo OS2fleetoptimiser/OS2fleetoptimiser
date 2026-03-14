@@ -9,7 +9,7 @@ import VehicleFilter from './VehicleFilter';
 import ForvaltningFilter from './ForvaltningFilter';
 import DepartmentFilter from './DepartmentFilter';
 import ShiftFilter from './ShiftFilter';
-import { Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { shift } from '@/components/hooks/useGetSettings';
 import { Vehicle } from "@/components/hooks/useGetVehicles";
@@ -276,7 +276,7 @@ export default function FilterHeader({
     };
 
     return (
-        <div className="sticky bg-white top-1 z-10 mb-2 p-2 flex drop-shadow-md flex-wrap">
+        <Box className="sticky bg-white top-1 z-10 mb-2 p-2 flex flex-wrap" sx={{ borderBottom: '1px solid', borderColor: 'divider' }}>
             <DateFilter start={startDate} end={endDate} setEnd={setEndDate} setStart={setStartDate}></DateFilter>
             {locationFilter && (
                 <LocationFilter
@@ -309,6 +309,6 @@ export default function FilterHeader({
                 Anvend filtre
             </Button>
             <Button onClick={clearFilters}>Ryd filtrer</Button>
-        </div>
+        </Box>
     );
 }

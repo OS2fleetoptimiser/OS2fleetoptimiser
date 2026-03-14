@@ -86,7 +86,7 @@ export const VehicleTripDistributionBar = ({ data }: props) => {
                 },
             ]}
             tooltip={({ id, value, data }) => (
-                <div className="bg-[#222] text-white p-2 rounded-md text-xs">
+                <div className="bg-[#222] text-white p-2 rounded-lg text-xs">
                     Turlængde: <span className="font-bold">{data.label}</span>
                     <br />
                     {id}: <span className="font-bold">{value} ture</span>

@@ -73,7 +73,7 @@ const ExtraVehicleModal = ({ buttonAppearance = false }: { buttonAppearance?: bo
                     <span>Testkøretøjer</span>
                 </div>
             )}
-            <Modal open={open} onClose={handleClose} className="m-10 overflow-scroll lg:mx-96 rounded-md">
+            <Modal open={open} onClose={handleClose} className="m-10 overflow-scroll lg:mx-96 rounded-lg">
                 <div className="bg-white p-4 w-full ">
                     <div className="flex justify-between pb-2 mb-2">
                         <span className="text-xl font-semibold">Tilføj køretøjer til simulering</span>

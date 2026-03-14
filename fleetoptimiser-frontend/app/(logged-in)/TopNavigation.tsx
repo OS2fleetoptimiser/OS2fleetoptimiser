@@ -106,7 +106,7 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
                 </div>
             }
         </div>
-        <nav className={`fixed top-0 left-0 w-76 h-screen z-[49] custom-nav overflow-auto pt-8 md:pt-0 md:flex flex-col transition-all duration-300 ease-in-out 
+        <nav style={{ borderRight: '1px solid rgba(194, 199, 208, 0.4)' }} className={`fixed top-0 left-0 w-76 h-screen z-[49] custom-nav overflow-auto pt-8 md:pt-0 md:flex flex-col transition-all duration-300 ease-in-out
         ${showNavBar ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full pointer-events-none md:opacity-100 md:translate-x-0 md:pointer-events-auto'}`}
         >
             <div className="p-4 flex items-center mb-4 mt-2">

@@ -22,7 +22,7 @@ export const VehiclesSelectionTable = ({ manualSimulation, vehicles }: { manualS
     const automaticToolText =
         'Hvis du fjerner køretøjer, kan algoritmen erstatte dem med andre testkøretøjer for at finde det bedste mix. Hvis du beholder dem, vil algoritmen forsøge at reducere antallet ved overkapacitet. Dvs. den vil ikke forsøge at udskifte dem med andre testkøretøjer.';
     return (
-        <TableContainer component={Paper} className="relative my-4 shadow-none rounded-md max-h-[calc(100vh-450px)] overflow-auto">
+        <TableContainer component={Paper} className="relative my-4 max-h-[calc(100vh-450px)] overflow-auto" sx={{ border: '1px solid', borderColor: 'divider' }}>
             <Table stickyHeader>
                 <TableHead>
                     <TableRow>

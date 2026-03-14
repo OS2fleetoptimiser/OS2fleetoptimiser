@@ -5,7 +5,7 @@ import { DateRange } from 'react-date-range';
 import type { RangeKeyDict } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
-import { Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
 import {useMediaQuery} from "react-responsive";
 
@@ -44,14 +44,14 @@ export const DateRangePicker = ({ range, onChange }: DateRangePickerProps) => {
     };
 
     return (
-        <div className="w-64 z-10 rounded-md bg-white">
+        <div className="w-64 z-10 rounded-lg bg-white">
             <label className="block mb-2 text-lg font-semibold text-black">Vælg simuleringsperiode</label>
-            <div className="border rounded-md px-4 py-2 cursor-pointer shadow-sm text-sm bg-white" onClick={() => setOpen(!open)}>
+            <Box className="rounded-lg px-4 py-2 cursor-pointer text-sm bg-white" sx={{ border: '1px solid', borderColor: 'divider' }} onClick={() => setOpen(!open)}>
                 {range[0].startDate?.toDate().toLocaleDateString('da-DK')} - {range[0].endDate?.toDate().toLocaleDateString('da-DK')}
-            </div>
+            </Box>
 
             {open && (
-                <div className="absolute border shadow-md z-10 mt-2 rounded-md bg-white overflow-auto max-h-[80vh]">
+                <div className="absolute border shadow-md z-10 mt-2 rounded-lg bg-white overflow-auto max-h-[80vh]">
                     <div className="flex justify-end mr-2 mt-2 cursor-pointer">
                         <CloseIcon onClick={() => setOpen(false)} fontSize="small" className="text-gray-500 hover:text-black" />
                     </div>

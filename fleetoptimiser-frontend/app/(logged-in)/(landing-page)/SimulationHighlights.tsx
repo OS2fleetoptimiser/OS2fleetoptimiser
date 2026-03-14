@@ -1,5 +1,5 @@
 import { SimulationHighlight } from '@/components/hooks/useGetLandingPage';
-import { Tooltip } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { FleetChangeChip, PlusMinusChip, UnallocatedChip, SimTypeChip } from './ChipFormatting';
 import PageTitle from '@/components/PageTitle';
@@ -16,8 +16,8 @@ export default function SimulationHighlights({ simulations }: { simulations: Sim
     return (
         <div className="w-full">
             <PageTitle level="section" title="Seneste simuleringer" />
-            <div className="overflow-x-auto my-4 shadow-sm">
-                <div className="table w-full border border-gray-100 rounded-md">
+            <div className="overflow-x-auto my-4">
+                <Box className="table w-full rounded-lg" sx={{ border: '1px solid', borderColor: 'divider' }}>
                     <div className="table-header-group text-left text-gray-500 text-sm bg-gray-50">
                         <div className="table-row py-3 font-bold">
                             <div className="table-cell p-3">Dato</div>
@@ -53,7 +53,7 @@ export default function SimulationHighlights({ simulations }: { simulations: Sim
                                 </div>
                             ))}
                     </div>
-                </div>
+                </Box>
             </div>
         </div>
     );

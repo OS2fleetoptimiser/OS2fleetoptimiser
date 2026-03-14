@@ -3,17 +3,19 @@
 import React from 'react';
 import { useGetVehicleAvailability } from '@/components/hooks/useGetDrivingData';
 import dayjs from 'dayjs';
-import { CircularProgress } from '@mui/material';
+import { Card, CardContent, CircularProgress } from '@mui/material';
 import { filterProps } from '../(filters)/FilterHeader';
 import { AvailabilityGraph } from '@/app/(logged-in)/dashboard/availability/AvailabilityGraph';
 import { DownloadableGraph } from "@/components/DownloadableGraph";
 
 const AvailabilityHighlightCard = ({ title, value }: { title: string; value: string | number }) => {
     return (
-        <div className="bg-white border border-gray-100 rounded-md shadow-sm p-4 w-48 space-y-2">
-            <div className="text-xl font-bold">{value}</div>
-            <div className="text-sm text-gray-700">{title}</div>
-        </div>
+        <Card className="w-48">
+            <CardContent className="space-y-2">
+                <div className="text-xl font-bold">{value}</div>
+                <div className="text-sm text-gray-700">{title}</div>
+            </CardContent>
+        </Card>
     );
 };
 
@@ -50,11 +52,13 @@ export default function AvailabilityChart({ start, end, locations, departments, 
                             </p>
                         </div>
                     </div>
-                    <div className="h-[500px] bg-white custom-nav p-8">
-                        <DownloadableGraph filename={`ledighedsgraf-${fileNameAppendix}.png`}>
-                            <AvailabilityGraph totalVehicles={vehicle_availability.data.totalVehicles} data={vehicle_availability.data.data} />
-                        </DownloadableGraph>
-                    </div>
+                    <Card className="h-[500px]" sx={{ p: 1 }}>
+                        <CardContent>
+                            <DownloadableGraph filename={`ledighedsgraf-${fileNameAppendix}.png`}>
+                                <AvailabilityGraph totalVehicles={vehicle_availability.data.totalVehicles} data={vehicle_availability.data.data} />
+                            </DownloadableGraph>
+                        </CardContent>
+                    </Card>
                 </>
             )}
         </div>

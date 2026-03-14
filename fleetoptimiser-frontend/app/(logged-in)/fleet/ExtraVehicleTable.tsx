@@ -96,7 +96,7 @@ const ExtraVehicleTable = ({ cars }: { cars: Vehicle[] }) => {
     });
 
     return (
-        <TableContainer component={Paper} className="relative my-4 shadow-sm border border-gray-200 rounded-md max-h-[calc(100vh-300px)] overflow-auto">
+        <TableContainer component={Paper} className="relative my-4 max-h-[calc(100vh-300px)] overflow-auto" sx={{ border: '1px solid', borderColor: 'divider' }}>
             <Table stickyHeader>
                 <TableHead>
                     {table.getHeaderGroups().map((headerGroup, index) => (

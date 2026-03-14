@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
 import {
+    Card,
+    CardContent,
     Paper,
     Table,
     TableBody,
@@ -57,7 +59,7 @@ export const DrivingBookTable = ({ data }: DrivingBookTableProps) => {
     const defaultStyle = 'py-2 border-b text-sm';
 
     return (
-        <div className="mt-4 p-4 border border-gray-100 rounded-md shadow-sm">
+        <Card className="mt-4"><CardContent>
             <span className="font-bold text-sm">Køreplan for simulering</span>
             <ToolTip>
                 Se hvordan køreplanen ser ud, med den simulerede flåde overfor hvordan turene er kørt i virkligheden (nuværende). Filtrér eller sorter direkte
@@ -69,7 +71,7 @@ export const DrivingBookTable = ({ data }: DrivingBookTableProps) => {
                     placeholder="Filtrér i køreplanen"
                     variant="standard"
                     size="small"
-                    className="my-1 bg-[#F5F5F5] rounded-md px-1"
+                    className="my-1 bg-[#F5F5F5] rounded-lg px-1"
                     value={filterText}
                     onChange={(e) => setFilterText(e.target.value)}
                     slotProps={{
@@ -102,7 +104,7 @@ export const DrivingBookTable = ({ data }: DrivingBookTableProps) => {
                         }
                     }} />
             </div>
-            <TableContainer className="shadow-none rounded-md border-none overflow-auto max-h-[calc(100vh-370px)]" component={Paper}>
+            <TableContainer className="overflow-auto max-h-[calc(100vh-370px)]" component={Paper}>
                 <Table stickyHeader>
                     <TableHead>
                         <TableRow>
@@ -132,6 +134,6 @@ export const DrivingBookTable = ({ data }: DrivingBookTableProps) => {
                     </TableBody>
                 </Table>
             </TableContainer>
-        </div>
+        </CardContent></Card>
     );
 };

@@ -3,6 +3,7 @@ import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
 import dayjs from 'dayjs';
 import ToolTip from '@/components/ToolTip';
 import { drivingBook } from '@/components/hooks/useSimulateFleet';
+import { Card, CardContent } from '@mui/material';
 
 export const getYTicks = (sums: number[], maxTicks: number = 5) => {
     const maxAntal = Math.max(...sums);
@@ -48,7 +49,7 @@ export const UnallocatedTripsLineChart = ({ simulationResults }: { simulationRes
     const yTicks = getYTicks(ySums); // need this to control count and float values
 
     return (
-        <div className="p-4 pt-2 bg-white rounded-md shadow-sm border border-gray-100 w-full h-full overflow-y-auto">
+        <Card className="w-full h-full overflow-y-auto"><CardContent>
             <div className="flex items-center">
                 <span className="text-sm font-semibold">Ikke kørte rundture pr. dag</span>
                 <ToolTip>
@@ -110,6 +111,6 @@ export const UnallocatedTripsLineChart = ({ simulationResults }: { simulationRes
                     }}
                 />
             </div>
-        </div>
+        </CardContent></Card>
     );
 };

@@ -1,5 +1,5 @@
 import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
-import { Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow } from '@mui/material';
+import { Card, CardContent, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow } from '@mui/material';
 import ToolTip from '@/components/ToolTip';
 
 export const FleetChangesTable = ({ simulationResults }: { simulationResults: SimulationResults }) => {
@@ -20,7 +20,7 @@ export const FleetChangesTable = ({ simulationResults }: { simulationResults: Si
     const headerStyle = 'text-sm font-semibold text-gray-600';
 
     return (
-        <div className="bg-white p-4 pt-2 rounded-md shadow-sm border border-gray-100 w-full h-full overflow-y-auto">
+        <Card className="w-full h-full overflow-y-auto"><CardContent>
             <div className="flex items-center">
                 <span className="text-sm font-semibold">Ændringer i flådesammensætning</span>
                 <ToolTip>
@@ -28,7 +28,7 @@ export const FleetChangesTable = ({ simulationResults }: { simulationResults: Si
                     samme attributter.
                 </ToolTip>
             </div>
-            <TableContainer component={Paper} className="relative shadow-none h-auto max-h-[320px] overflow-auto">
+            <TableContainer component={Paper} className="relative h-auto max-h-[320px] overflow-auto">
                 <Table stickyHeader>
                     <TableHead>
                         <TableRow>
@@ -87,6 +87,6 @@ export const FleetChangesTable = ({ simulationResults }: { simulationResults: Si
                     </TableFooter>
                 </Table>
             </TableContainer>
-        </div>
+        </CardContent></Card>
     );
 };

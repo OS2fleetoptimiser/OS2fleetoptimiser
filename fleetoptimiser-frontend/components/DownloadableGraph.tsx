@@ -82,7 +82,7 @@ export const DownloadableGraph = ({ filename = 'graph.png', children, downloadPl
         <div className="w-full h-full relative" ref={containerRef}>
             {children}
             <Tooltip title="Download som billede">
-                <IconButton onClick={handleDownload} className={`${downloadPlacement ?? 'absolute top-0 right-2'} border-none text-gray-700 hover:text-black`}>
+                <IconButton onClick={handleDownload} className={`${downloadPlacement ?? 'absolute top-0 right-2'} text-gray-700 hover:text-black`}>
                     <DownloadIcon fontSize="small" />
                 </IconButton>
             </Tooltip>
