@@ -8,6 +8,7 @@ import {
   surfacesCustomizations,
   inputsCustomizations,
   dataDisplayCustomizations,
+  dataGridCustomizations,
   feedbackCustomizations,
   navigationCustomizations,
 } from './customizations';
@@ -24,6 +25,7 @@ const baseTheme = createTheme({
     ...surfacesCustomizations,
     ...inputsCustomizations,
     ...dataDisplayCustomizations,
+    ...dataGridCustomizations,
     ...feedbackCustomizations,
     ...navigationCustomizations,
   },
