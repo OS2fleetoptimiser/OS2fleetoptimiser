@@ -58,7 +58,7 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
       - name: Build and push backend
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: true
@@ -66,7 +66,7 @@ jobs:
           labels: ${{ steps.meta-backend.outputs.labels }}
 
       - name: Build and push frontend
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           file: fleetoptimiser-frontend/Dockerfile
           context: fleetoptimiser-frontend

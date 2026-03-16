@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Build image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           file: fleetoptimiser-frontend/Dockerfile
           push: false
