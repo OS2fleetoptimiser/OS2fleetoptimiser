@@ -3,10 +3,20 @@
 import { ExtendedLocationInformation, ChangeLocationAddress } from "@/components/hooks/useGetLocationPrecision";
 import EditIcon from '@mui/icons-material/Edit';
 import {useState} from "react";
-import {Alert, Card, CardContent, Snackbar, TextField, Typography} from "@mui/material";
+import {Alert, Card, CardContent, LinearProgress, Snackbar, TextField, Typography} from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from '@mui/icons-material/Close';
 import {useWritePrivilegeContext} from "@/app/providers/WritePrivilegeProvider";
+
+const precisionBarSx = (pct: number) => ({
+    my: 1,
+    borderRadius: 1,
+    backgroundColor: 'grey.200',
+    '& .MuiLinearProgress-bar': {
+        backgroundColor: 'primary.main',
+        opacity: Math.max(0.25, pct / 100),
+    },
+});
 
 type LocationHeaderProps = {
     locationData: ExtendedLocationInformation;
@@ -34,8 +44,6 @@ export const LocationHeader = ({locationData, testPrecision, title, setGivenTitl
             setOpenSnackBar(true);
         }
     }
-    // todo provide tips to improve precision
-    const successThreshold = 80
     return (
         <>
             {
@@ -71,17 +79,27 @@ export const LocationHeader = ({locationData, testPrecision, title, setGivenTitl
                         <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
                             <CardContent>
                                 <Typography component="h2" variant="subtitle2" gutterBottom>Præcision</Typography>
-                                <Typography variant="h4" component="p" sx={{ color: locationData.precision >= successThreshold ? 'success.main' : 'error.main' }}>
+                                <Typography variant="h4" component="p">
                                     {Math.round(locationData.precision)}%
                                 </Typography>
+                                <LinearProgress variant="determinate" value={Math.min(Math.round(locationData.precision), 100)} sx={precisionBarSx(locationData.precision)} />
                             </CardContent>
                         </Card>
                         <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
                             <CardContent>
                                 <Typography component="h2" variant="subtitle2" gutterBottom>Testpræcision</Typography>
-                                <Typography variant="h4" component="p" sx={{ color: testPrecision ? (testPrecision * 100 >= successThreshold ? 'success.main' : 'error.main') : 'text.primary' }}>
-                                    {testPrecision ? Math.round(testPrecision * 100) + '%' : 'Ingen data'}
-                                </Typography>
+                                {testPrecision ? (
+                                    <>
+                                        <Typography variant="h4" component="p">
+                                            {Math.round(testPrecision * 100)}%
+                                        </Typography>
+                                        <LinearProgress variant="determinate" value={Math.min(Math.round(testPrecision * 100), 100)} sx={precisionBarSx(testPrecision * 100)} />
+                                    </>
+                                ) : (
+                                    <Typography variant="h4" component="p" sx={{ color: 'text.primary' }}>
+                                        Ingen data
+                                    </Typography>
+                                )}
                             </CardContent>
                         </Card>
                         <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>

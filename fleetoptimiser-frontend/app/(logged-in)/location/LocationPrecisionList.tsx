@@ -8,12 +8,11 @@ import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
 import { Tooltip } from '@mui/material';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { PRECISION_THRESHOLD } from '@/app/(logged-in)/location/KeyLocationFigures';
 
 type Props = {
   data?: ExtendedLocationInformation[];
 };
-
-const successThreshold = 80;
 
 function isLocationRecentlyUpdated(location: AllowedStart, compareDate: Date) {
   if (location.addition_date && new Date(location.addition_date) > compareDate) {
@@ -94,14 +93,15 @@ export const LocationPrecisionList = ({ data }: Props) => {
         minWidth: 100,
         renderCell: (params: GridRenderCellParams) => {
           const value = params.value as number;
-          const color =
-            value >= successThreshold
-              ? theme.palette.success.main
-              : value === 0
-                ? undefined
-                : theme.palette.error.main;
+          const aboveThreshold = value >= PRECISION_THRESHOLD;
           return (
-            <span style={{ fontWeight: 700, color }}>
+            <span
+              style={{
+                fontWeight: 700,
+                color: aboveThreshold ? theme.palette.success.main : theme.palette.primary.main,
+                opacity: aboveThreshold ? 0.85 : Math.max(0.25, value / 100),
+              }}
+            >
               {Math.round(value)}%
             </span>
           );
@@ -111,10 +111,7 @@ export const LocationPrecisionList = ({ data }: Props) => {
     [compareDate, theme]
   );
 
-  const rows = useMemo(
-    () => (data ? [...data].sort((a, b) => a.address.localeCompare(b.address)) : []),
-    [data]
-  );
+  const rows = data ?? [];
 
   return (
     <DataGrid

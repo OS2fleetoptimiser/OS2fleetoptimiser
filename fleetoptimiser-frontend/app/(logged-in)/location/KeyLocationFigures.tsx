@@ -1,5 +1,6 @@
 'use client';
 
+import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
@@ -26,37 +27,84 @@ type Props = {
   data?: ExtendedLocationInformation[];
 };
 
-const successThreshold = 80;
+export const PRECISION_THRESHOLD = 80;
 
-const PrecisionKPICard = ({
-  title,
+const BAR_WIDTH = 280;
+
+const MetricRow = ({
+  label,
   value,
   subtitle,
+  showThresholdLabel = false,
 }: {
-  title: string;
-  value: string;
+  label: string;
+  value: number;
   subtitle: string;
+  showThresholdLabel?: boolean;
 }) => {
-  const numValue = parseFloat(value);
-  const isGood = !isNaN(numValue) && numValue >= successThreshold;
+  const aboveThreshold = value >= PRECISION_THRESHOLD;
   return (
-    <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
-      <CardContent>
-        <Typography component="h2" variant="subtitle2" gutterBottom>
-          {title}
-        </Typography>
-        <Typography
-          variant="h4"
-          component="p"
-          sx={{ color: isGood ? 'success.main' : 'error.main' }}
-        >
-          {value}
-        </Typography>
-        <Typography variant="caption" sx={{ color: 'text.secondary' }} title={subtitle}>
-          {subtitle.length > 37 ? subtitle.substring(0, 30) + '...' : subtitle}
-        </Typography>
-      </CardContent>
-    </Card>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1 }}>
+      <Typography variant="caption" sx={{ color: 'text.secondary', width: 80, flexShrink: 0 }}>
+        {label}
+      </Typography>
+      <Typography variant="h6" component="span" sx={{ fontWeight: 700, width: 48, flexShrink: 0 }}>
+        {value}%
+      </Typography>
+      <Box sx={{ width: BAR_WIDTH, flexShrink: 0, position: 'relative', height: 6, overflow: 'visible' }}>
+        {/* Track */}
+        <Box sx={{ position: 'absolute', inset: 0, borderRadius: 3, backgroundColor: 'grey.200' }} />
+        {/* Fill */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            width: `${Math.min(value, 100)}%`,
+            borderRadius: 3,
+            backgroundColor: aboveThreshold ? 'success.main' : 'primary.main',
+            opacity: aboveThreshold ? 0.7 : Math.max(0.25, value / 100),
+          }}
+        />
+        {/* Threshold line -- extends beyond bar to connect across rows */}
+        <Box
+          sx={{
+            position: 'absolute',
+            left: `${PRECISION_THRESHOLD}%`,
+            top: -13,
+            bottom: -13,
+            width: 0,
+            borderLeft: '1.5px dashed',
+            borderColor: 'text.disabled',
+            zIndex: 1,
+          }}
+        />
+        {showThresholdLabel && (
+          <Typography
+            variant="caption"
+            sx={{
+              position: 'absolute',
+              left: `${PRECISION_THRESHOLD}%`,
+              top: -22,
+              transform: 'translate(-50%, -100%)',
+              color: 'text.disabled',
+              lineHeight: 1,
+              pointerEvents: 'none',
+            }}
+          >
+            {PRECISION_THRESHOLD}%
+          </Typography>
+        )}
+      </Box>
+      <Typography
+        variant="caption"
+        sx={{ color: 'text.secondary', flexShrink: 0, textAlign: 'right', whiteSpace: 'nowrap' }}
+        title={subtitle}
+      >
+        {subtitle}
+      </Typography>
+    </Box>
   );
 };
 
@@ -103,30 +151,26 @@ export const KeyLocationFigures = ({ data }: Props) => {
     {} as KeyFigures
   );
 
+  if (!data) {
+    return <div className="flex my-4 items-center">Ingen data</div>;
+  }
+
+  if (!keyFigures?.lowest || !keyFigures?.highest || !keyFigures?.average) {
+    return null;
+  }
+
+  const { lowest, highest, average } = keyFigures;
+
   return (
-    <>
-      {data && keyFigures && (
-        <div className="flex my-4 gap-2">
-          <PrecisionKPICard
-            title="Højeste rundturspræcision"
-            value={`${keyFigures.highest?.precision}%`}
-            subtitle={keyFigures.highest?.address ?? ''}
-          />
-          <PrecisionKPICard
-            title="Laveste rundturspræcision"
-            value={`${keyFigures.lowest?.precision}%`}
-            subtitle={keyFigures.lowest?.address ?? ''}
-          />
-          <PrecisionKPICard
-            title="Gennemsnitlig rundturspræcision"
-            value={`${keyFigures.average?.precision}%`}
-            subtitle="Alle lokationer"
-          />
-        </div>
-      )}
-      {!data && (
-        <div className="flex my-4 items-center">Ingen data</div>
-      )}
-    </>
+    <Card variant="outlined" sx={{ my: 2, width: 'fit-content' }}>
+      <CardContent>
+        <Typography variant="subtitle2" sx={{ mb: 1 }}>
+          Rundturspræcision
+        </Typography>
+        <MetricRow label="Højeste" value={highest.precision} subtitle={highest.address} showThresholdLabel />
+        <MetricRow label="Gennemsnit" value={average.precision} subtitle="Alle lokationer" />
+        <MetricRow label="Laveste" value={lowest.precision} subtitle={lowest.address} />
+      </CardContent>
+    </Card>
   );
 };
