@@ -2,13 +2,14 @@ import './globals.css';
 import ProviderWrapper from './providers/providerWrapper';
 import React from 'react';
 import { Metadata } from 'next';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import theme from '@/theme';
+import { Inter } from 'next/font/google';
+import AppTheme from '@/theme';
 import { WritePrivilegeProvider } from '@/app/providers/WritePrivilegeProvider';
 import SetWritePrivilege from '@/app/providers/setWritePrivilege';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+
+const inter = Inter({ subsets: ['latin', 'latin-ext'] });
 
 export const metadata: Metadata = {
     title: 'FleetOptimiser',
@@ -22,14 +23,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     const doesUserHaveWritePrivilege = session?.user?.writePrivilege ?? false;
     return (
         <html lang="da-dk">
-            <body id="__next">
+            <body id="__next" className={inter.className}>
                 <ProviderWrapper>
                     <WritePrivilegeProvider>
                         <SetWritePrivilege hasPrivilege={doesUserHaveWritePrivilege} />
-                        <ThemeProvider theme={theme}>
-                            <CssBaseline />
+                        <AppTheme>
                             <main>{children}</main>
-                        </ThemeProvider>
+                        </AppTheme>
                     </WritePrivilegeProvider>
                 </ProviderWrapper>
             </body>
