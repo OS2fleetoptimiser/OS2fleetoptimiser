@@ -1,10 +1,9 @@
 'use client';
 
 import { ExtendedLocationInformation, ChangeLocationAddress } from "@/components/hooks/useGetLocationPrecision";
-import Typography from "@mui/material/Typography";
 import EditIcon from '@mui/icons-material/Edit';
 import {useState} from "react";
-import {Alert, Card, CardContent, Snackbar, TextField} from "@mui/material";
+import {Alert, Card, CardContent, Snackbar, TextField, Typography} from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from '@mui/icons-material/Close';
 import {useWritePrivilegeContext} from "@/app/providers/WritePrivilegeProvider";
@@ -68,29 +67,37 @@ export const LocationHeader = ({locationData, testPrecision, title, setGivenTitl
                         }
 
                     </div>
-                    <div className="flex my-8 items-center">
-                        <Card className="w-68">
+                    <div className="flex my-4 gap-2">
+                        <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
                             <CardContent>
-                                <Typography variant="subtitle2" className="mb-4">Præcision</Typography>
-                                <Typography variant="h4" sx={{ fontWeight: 700, color: locationData.precision >= successThreshold ? 'success.main' : 'error.main' }}>{Math.round(locationData.precision)}%</Typography>
+                                <Typography component="h2" variant="subtitle2" gutterBottom>Præcision</Typography>
+                                <Typography variant="h4" component="p" sx={{ color: locationData.precision >= successThreshold ? 'success.main' : 'error.main' }}>
+                                    {Math.round(locationData.precision)}%
+                                </Typography>
                             </CardContent>
                         </Card>
-                        <Card className="mx-12 w-68">
+                        <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
                             <CardContent>
-                                <Typography variant="subtitle2" className="mb-4">Testpræcision</Typography>
-                                <Typography variant="h4" sx={{ fontWeight: 700, color: testPrecision ? testPrecision * 100 >= successThreshold ? 'success.main' : 'error.main' : 'text.primary' }}>{testPrecision ? (Math.round(testPrecision * 100)) + '%' : 'Ingen data'}</Typography>
+                                <Typography component="h2" variant="subtitle2" gutterBottom>Testpræcision</Typography>
+                                <Typography variant="h4" component="p" sx={{ color: testPrecision ? (testPrecision * 100 >= successThreshold ? 'success.main' : 'error.main') : 'text.primary' }}>
+                                    {testPrecision ? Math.round(testPrecision * 100) + '%' : 'Ingen data'}
+                                </Typography>
                             </CardContent>
                         </Card>
-                        <Card className="w-68">
+                        <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
                             <CardContent>
-                                <Typography variant="subtitle2" className="mb-4">Total kilometer</Typography>
-                                <Typography variant="h4" sx={{ fontWeight: 700 }}>{Math.round(locationData.km).toLocaleString()}</Typography>
+                                <Typography component="h2" variant="subtitle2" gutterBottom>Total kilometer</Typography>
+                                <Typography variant="h4" component="p">
+                                    {Math.round(locationData.km).toLocaleString()}
+                                </Typography>
                             </CardContent>
                         </Card>
-                        <Card className="ml-12 w-68">
+                        <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
                             <CardContent>
-                                <Typography variant="h4" className="mb-4">Antal køretøjer</Typography>
-                                <Typography variant="h2" className="font-bold">{locationData.car_count}</Typography>
+                                <Typography component="h2" variant="subtitle2" gutterBottom>Antal køretøjer</Typography>
+                                <Typography variant="h4" component="p">
+                                    {locationData.car_count}
+                                </Typography>
                             </CardContent>
                         </Card>
                     </div>
