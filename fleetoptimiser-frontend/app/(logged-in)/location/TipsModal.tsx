@@ -1,94 +1,91 @@
-import {useState} from "react";
-import Box from '@mui/material/Box';
+'use client';
+
+import { useState } from 'react';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import Modal from '@mui/material/Modal';
-import {DialogActions, List, ListItem} from "@mui/material";
-
-const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: '40rem',
-  bgcolor: 'background.paper',
-  boxShadow: 24,
-  paddingRight: 8,
-  paddingLeft: 8,
-  paddingTop: 6,
-  paddingBottom: 2,
-  border: 0,
-  outline: 'none'
-};
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 
 export default function TipsModal() {
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
 
   return (
-    <div className="w-42">
-      <p className="text-sm no-underline hover:underline mt-2 cursor-pointer" onClick={handleOpen}>Tips til forbedring af rundturspræcision.</p>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
+    <>
+      <Button
+        variant="text"
+        size="small"
+        startIcon={<LightbulbOutlinedIcon />}
+        onClick={() => setOpen(true)}
+        sx={{ mt: 1, textTransform: 'none' }}
       >
-        <Box sx={style}>
-          <Typography className="mb-4 text-black" id="modal-modal-title" variant="h6" component="h2">
-            Tips til forbedring af rundturspræcision
+        Tips til forbedring af rundturspræcision
+      </Button>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Tips til forbedring af rundturspræcision</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" fontWeight={600}>
+            Hvis lokationen er blå, er lokationen ændret inden for den seneste
+            måned, derfor kan præcisionen stadig ændres.
           </Typography>
-            <List
-             sx={{
-                  listStyleType: 'disc',
-                }}
-              >
-              <ListItem className="mb-4" sx={{ display: 'list-item' }}>
-                <span className="font-semibold">Hvis lokationen er blå, er lokationen ændret inden for den seneste måned, derfor kan præcisionen stadig ændres.</span>
-              </ListItem>
-              <ListItem className="mb-4" sx={{ display: 'list-item' }}>
-                <span className="font-semibold">Hold køretøjerne opdateret på den korrekte lokation.</span>
-                <List sx={{ listStyleType: 'circle', pl: 2 }}>
-                  <ListItem sx={{ display: 'list-item' }}>
-                    Justér køretøjernes tilknyttet lokation enten i dit flådestyringssystem eller direkte i FleetOptimiser køretøjskonfiguration.
-                  </ListItem>
-                  <ListItem sx={{ display: 'list-item' }}>
-                    Det kan have indvirkning på rundturspræcisionen, hvis køretøjet kører fra andre lokationer.
-                  </ListItem>
-                </List>
-              </ListItem>
-              <ListItem className="mb-4" sx={{ display: 'list-item' }}>
-                <span className="font-semibold">Tjek at parkeringspunkt(erne) er præcise og repræsentative for lokationen.</span>
-                <List sx={{ listStyleType: 'circle', pl: 2 }}>
-                  <ListItem sx={{ display: 'list-item' }}>
-                    Juster de enkelte parkingspunkter ved at klikke ind på en lokation.
-                  </ListItem>
-                  <ListItem sx={{ display: 'list-item' }}>
-                    Sørg for at køretøjerne typisk parkeres tæt på parkeringspunkterne.
-                  </ListItem>
-                  <ListItem sx={{ display: 'list-item' }}>
-                    Hav ikke for stor geografisk spredning på parkeringspunkterne (+300 meter).
-                  </ListItem>
-                </List>
-              </ListItem>
-              <ListItem className="" sx={{ display: 'list-item' }}>
-                <span className="font-semibold">Sikre spredning mellem lokationer der geografisk ligger tæt på hinanden.</span>
-                <List sx={{ listStyleType: 'circle', pl: 2 }}>
-                  <ListItem sx={{ display: 'list-item' }}>
-                    Parkeringspunkter mellem lokationer der ligger tæt på hinanden kan forstyrre aggregeringen.
-                  </ListItem>
-                  <ListItem sx={{ display: 'list-item' }}>
-                    Overvej om geografiske tætte lokationer kan sammenlægges og benyt afdeling og forvaltning til adskillelse af køretøjer.
-                  </ListItem>
-                </List>
-              </ListItem>
-          </List>
-          <DialogActions>
-            <Button variant="contained" color="secondary" onClick={() => setOpen(false)}>Luk</Button>
-          </DialogActions>
-        </Box>
-      </Modal>
-    </div>
+
+          <Typography variant="body2" fontWeight={600} sx={{ mt: 2 }}>
+            Hold køretøjerne opdateret på den korrekte lokation.
+          </Typography>
+          <Typography variant="body2" component="ul" sx={{ pl: 2, mt: 0.5 }}>
+            <li>
+              Justér køretøjernes tilknyttede lokation enten i dit
+              flådestyringssystem eller direkte i FleetOptimiser
+              køretøjskonfiguration.
+            </li>
+            <li>
+              Det kan have indvirkning på rundturspræcisionen, hvis køretøjet
+              kører fra andre lokationer.
+            </li>
+          </Typography>
+
+          <Typography variant="body2" fontWeight={600} sx={{ mt: 2 }}>
+            Tjek at parkeringspunkt(erne) er præcise og repræsentative for
+            lokationen.
+          </Typography>
+          <Typography variant="body2" component="ul" sx={{ pl: 2, mt: 0.5 }}>
+            <li>
+              Justér de enkelte parkeringspunkter ved at klikke ind på en
+              lokation.
+            </li>
+            <li>
+              Sørg for at køretøjerne typisk parkeres tæt på
+              parkeringspunkterne.
+            </li>
+            <li>
+              Hav ikke for stor geografisk spredning på parkeringspunkterne
+              (+300 meter).
+            </li>
+          </Typography>
+
+          <Typography variant="body2" fontWeight={600} sx={{ mt: 2 }}>
+            Sikr spredning mellem lokationer, der geografisk ligger tæt på
+            hinanden.
+          </Typography>
+          <Typography variant="body2" component="ul" sx={{ pl: 2, mt: 0.5, mb: 0 }}>
+            <li>
+              Parkeringspunkter mellem lokationer der ligger tæt på hinanden kan
+              forstyrre aggregeringen.
+            </li>
+            <li>
+              Overvej om geografisk tætte lokationer kan sammenlægges, og benyt
+              afdeling og forvaltning til adskillelse af køretøjer.
+            </li>
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={() => setOpen(false)}>
+            Luk
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
