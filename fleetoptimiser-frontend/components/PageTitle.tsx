@@ -22,7 +22,7 @@ export default function PageTitle(props: PageTitleProps) {
     <Box sx={{ mb: 2 }}>
       <Typography
         component="h2"
-        variant="h3"
+        variant="h4"
         sx={{ fontWeight: 600, color: 'text.primary' }}
       >
         {props.title}
@@ -31,7 +31,7 @@ export default function PageTitle(props: PageTitleProps) {
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ mt: 1, maxWidth: 720 }}
+          sx={{ mt: 0.5, maxWidth: 720 }}
         >
           {props.subtitle}
         </Typography>

@@ -56,25 +56,25 @@ export const KeyLocationFigures = ({ data }: Props) => {
     return (
         <>
             {data && keyFigures &&
-                <div className="flex my-8 items-center">
-                    <Card className="w-68">
+                <div className="flex my-8 gap-4">
+                    <Card className="flex-1">
                         <CardContent>
-                            <Typography variant="h4" className="mb-4">Højeste rundturspræcision</Typography>
-                            <Typography variant="h2" className={keyFigures.highest && keyFigures.highest.precision >= successThreshold ? "text-green-500 font-bold" : "text-red-500 font-bold"}>{keyFigures.highest?.precision}%</Typography>
+                            <Typography variant="subtitle2" className="mb-4">Højeste rundturspræcision</Typography>
+                            <Typography variant="h4" sx={{ fontWeight: 700, color: keyFigures.highest && keyFigures.highest.precision >= successThreshold ? 'success.main' : 'error.main' }}>{keyFigures.highest?.precision}%</Typography>
                             <p className="pb-2 mt-2 text-sm text-gray-500" title={keyFigures.highest?.address}>{keyFigures.highest?.address && keyFigures.highest?.address.length > 37 ? keyFigures.highest?.address.substring(0,30) + '...' : keyFigures.highest?.address}</p>
                         </CardContent>
                     </Card>
-                    <Card className="mx-12 w-68">
+                    <Card className="flex-1">
                         <CardContent>
-                            <Typography variant="h4" className="mb-4">Laveste rundturspræcision</Typography>
-                            <Typography variant="h2" className={keyFigures.lowest && keyFigures.lowest.precision >= successThreshold ? "text-green-500 font-bold" : "text-red-500 font-bold"}>{keyFigures.lowest?.precision}%</Typography>
+                            <Typography variant="subtitle2" className="mb-4">Laveste rundturspræcision</Typography>
+                            <Typography variant="h4" sx={{ fontWeight: 700, color: keyFigures.lowest && keyFigures.lowest.precision >= successThreshold ? 'success.main' : 'error.main' }}>{keyFigures.lowest?.precision}%</Typography>
                             <p className="pb-2 mt-2 text-sm text-gray-500" title={keyFigures.lowest?.address}>{keyFigures.lowest?.address && keyFigures.lowest?.address.length > 37 ? keyFigures.lowest?.address.substring(0,30) + '...' : keyFigures.lowest?.address}</p>
                         </CardContent>
                     </Card>
-                    <Card className="w-76">
+                    <Card className="flex-1">
                         <CardContent>
-                            <Typography variant="h4" className="mb-4">Gennemsnitlig rundturspræcision</Typography>
-                            <Typography variant="h2" className={keyFigures.average && keyFigures.average.precision >= successThreshold ? "text-green-500 font-bold" : "text-red-500 font-bold"}>{keyFigures.average?.precision}%</Typography>
+                            <Typography variant="subtitle2" className="mb-4">Gennemsnitlig rundturspræcision</Typography>
+                            <Typography variant="h4" sx={{ fontWeight: 700, color: keyFigures.average && keyFigures.average.precision >= successThreshold ? 'success.main' : 'error.main' }}>{keyFigures.average?.precision}%</Typography>
                             <p className="pb-2 mt-2 text-sm text-gray-500">Alle lokationer</p>
                         </CardContent>
                     </Card>

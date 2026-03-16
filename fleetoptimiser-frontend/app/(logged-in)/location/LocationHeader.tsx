@@ -71,20 +71,20 @@ export const LocationHeader = ({locationData, testPrecision, title, setGivenTitl
                     <div className="flex my-8 items-center">
                         <Card className="w-68">
                             <CardContent>
-                                <Typography variant="h4" className="mb-4">Præcision</Typography>
-                                <Typography variant="h2" className={locationData.precision >= successThreshold ? "text-green-500 font-bold" : "text-red-500 font-bold"}>{Math.round(locationData.precision)}%</Typography>
+                                <Typography variant="subtitle2" className="mb-4">Præcision</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 700, color: locationData.precision >= successThreshold ? 'success.main' : 'error.main' }}>{Math.round(locationData.precision)}%</Typography>
                             </CardContent>
                         </Card>
                         <Card className="mx-12 w-68">
                             <CardContent>
-                                <Typography variant="h4" className="mb-4">Testpræcision</Typography>
-                                <Typography variant="h2" className={testPrecision ? testPrecision * 100 >= successThreshold ? "text-green-500 font-bold" : "text-red-500 font-bold" : "font-bold" }>{testPrecision ? (Math.round(testPrecision * 100)) + '%' : 'Ingen data'}</Typography>
+                                <Typography variant="subtitle2" className="mb-4">Testpræcision</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 700, color: testPrecision ? testPrecision * 100 >= successThreshold ? 'success.main' : 'error.main' : 'text.primary' }}>{testPrecision ? (Math.round(testPrecision * 100)) + '%' : 'Ingen data'}</Typography>
                             </CardContent>
                         </Card>
                         <Card className="w-68">
                             <CardContent>
-                                <Typography variant="h4" className="mb-4">Total kilometer</Typography>
-                                <Typography variant="h2" className="font-bold">{Math.round(locationData.km).toLocaleString()}</Typography>
+                                <Typography variant="subtitle2" className="mb-4">Total kilometer</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 700 }}>{Math.round(locationData.km).toLocaleString()}</Typography>
                             </CardContent>
                         </Card>
                         <Card className="ml-12 w-68">

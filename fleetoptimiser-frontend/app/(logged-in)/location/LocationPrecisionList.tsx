@@ -40,7 +40,8 @@ export const LocationPrecisionList = ({ data }: Props) => {
                         <div className="w-48 text-right">{Math.round(location.roundtrip_km).toLocaleString()} km</div>
                         <div className="w-48 text-right">{Math.round(location.km).toLocaleString()} km</div>
                         <div
-                            className={location.precision >= 80 ? "w-48 text-green-500 text-right font-bold" : location.precision === 0 ? "w-48 text-right font-bold" : "w-48 text-red-500 text-right font-bold"}>{Math.round(location.precision)}%
+                            className="w-48 text-right font-bold"
+                            style={{ color: location.precision >= 80 ? 'var(--template-palette-success-main)' : location.precision === 0 ? undefined : 'var(--template-palette-error-main)' }}>{Math.round(location.precision)}%
                         </div>
                     </div>
                     </Link>
