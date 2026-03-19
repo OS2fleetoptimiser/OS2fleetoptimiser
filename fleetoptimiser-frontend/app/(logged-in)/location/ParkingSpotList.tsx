@@ -1,9 +1,20 @@
-import {AllowedStart} from "@/components/hooks/useGetLocationPrecision";
+import { AllowedStart } from "@/components/hooks/useGetLocationPrecision";
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import {useState} from "react";
-import {ConfirmDeletion} from "@/app/(logged-in)/location/ConfirmDeletion";
-import {useWritePrivilegeContext} from "@/app/providers/WritePrivilegeProvider";
+import { useState } from "react";
+import { ConfirmDeletion } from "@/app/(logged-in)/location/ConfirmDeletion";
+import { useWritePrivilegeContext } from "@/app/providers/WritePrivilegeProvider";
+import {
+    Button,
+    IconButton,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Card,
+} from "@mui/material";
 
 type ParkingListProps = {
     setNoChanges: (unchanged: boolean) => void;
@@ -14,18 +25,17 @@ type ParkingListProps = {
 };
 
 export const ParkingSpotList = ({ setNoChanges, parkingSpots, changeParkingSpots, setClickEnabled }: ParkingListProps) => {
-    const {hasWritePrivilege} = useWritePrivilegeContext();
-    const [confirmDeletionInfo, setConfirmDeletionInfo] = useState<{open: boolean, parkingType: string, parkingId?: number}>({open: false, parkingType: '', parkingId: undefined});
+    const { hasWritePrivilege } = useWritePrivilegeContext();
+    const [confirmDeletionInfo, setConfirmDeletionInfo] = useState<{ open: boolean; parkingType: string; parkingId?: number }>({ open: false, parkingType: '', parkingId: undefined });
 
     const handleDelete = (parkingType: string, id?: number) => {
-        const copyPs = {...parkingSpots}
+        const copyPs = { ...parkingSpots }
         if (id && parkingType === 'addition' && parkingSpots?.additional_starts) {
             copyPs.additional_starts = parkingSpots?.additional_starts.filter(start => start.id != id)
-        } else if (parkingType === 'parent'){
+        } else if (parkingType === 'parent') {
             copyPs.latitude = null
             copyPs.longitude = null
         }
-        // if additional exists move the first up as parent
         if (copyPs.latitude === null && parkingSpots?.additional_starts && parkingSpots.additional_starts.length >= 1) {
             const newParent = parkingSpots.additional_starts.shift();
             copyPs.latitude = newParent?.latitude
@@ -40,62 +50,88 @@ export const ParkingSpotList = ({ setNoChanges, parkingSpots, changeParkingSpots
         setClickEnabled(true);
     }
 
+    const rows: { id: string; label: string; coords: string; date: string; parkingType: string; parkingId?: number }[] = [];
+
+    if (parkingSpots?.latitude && parkingSpots?.longitude) {
+        rows.push({
+            id: 'parent',
+            label: '#1',
+            coords: `(${parkingSpots.latitude.toFixed(4)}, ${parkingSpots.longitude.toFixed(4)})`,
+            date: parkingSpots.addition_date?.split('T')[0] ?? '',
+            parkingType: 'parent',
+        });
+    }
+
+    if (parkingSpots?.additional_starts) {
+        parkingSpots.additional_starts.forEach((spot, index) => {
+            rows.push({
+                id: `addition-${index}`,
+                label: `#${parkingSpots.latitude ? 2 + index : 1 + index}`,
+                coords: `(${spot.latitude.toFixed(4)}, ${spot.longitude.toFixed(4)})`,
+                date: spot.addition_date?.split('T')[0] ?? '',
+                parkingType: 'addition',
+                parkingId: spot.id ?? undefined,
+            });
+        });
+    }
+
     return (
         <>
-            <div className="inline-flex flex-row items-center font-bold mt-10">
-                <div className="w-32">Parkeringspunkt</div>
-                <div className="w-40 text-right">Koordinator</div>
-                <div className="w-40 text-right">Tilføjet</div>
-                <div className="w-32 text-right"></div>
-            </div>
-            {
-                parkingSpots &&
-                parkingSpots.latitude &&
-                parkingSpots.longitude &&
-                <div className="inline-flex flex-row items-center h-14">
-                    <div className="w-32">#1</div>
-                    <div className="w-40 text-right">({parkingSpots.latitude.toFixed(4)}, {parkingSpots.longitude.toFixed(4)})</div>
-                    <div className="w-40 text-right">{parkingSpots.addition_date?.split('T')[0]}</div>
-                    <div className="w-32 text-right">
-                        {hasWritePrivilege && <DeleteIcon onClick={() => setConfirmDeletionInfo({open: true, parkingType: 'parent'})} className="text-red-500 cursor-pointer hover:scale-105 ease-in-out duration-100"/>}
-                    </div>
+            {hasWritePrivilege && (
+                <div className="flex justify-end mb-4">
+                    <Button
+                        variant="contained"
+                        size="small"
+                        startIcon={<AddIcon />}
+                        onClick={handleAdd}
+                    >
+                        Tilføj ekstra punkt
+                    </Button>
                 </div>
-            }
-            {
-                parkingSpots &&
-                parkingSpots.additional_starts &&
-                parkingSpots.additional_starts.map((spot, index) => (
-                <div key={'parkingspot' + index} className="inline-flex flex-row items-center h-14">
-                    <div className="w-32">#{parkingSpots.latitude ? 2+index : 1+index}</div>
-                    <div className="w-40 text-right">({spot.latitude.toFixed(4)}, {spot.longitude.toFixed(4)})</div>
-                    <div className="w-40 text-right">{spot.addition_date?.split('T')[0]}</div>
-                    {/*// todo add check on the date */}
-                    <div className="w-32 text-right">
-                        {hasWritePrivilege && <DeleteIcon onClick={() => setConfirmDeletionInfo({open: true, parkingType: 'addition', parkingId: spot.id ?? undefined})} className="text-red-500 cursor-pointer  hover:scale-105 ease-in-out duration-100"/>}
-                    </div>
-                </div>
-                ))
-            }
-            {hasWritePrivilege &&
-                <div className="inline-flex flex-row items-center mt-10 cursor-pointer hover:scale-101 ease-in-out duration-100" onClick={() => handleAdd()}>
-                    <div className="w-32">Tilføj ekstra punkt</div>
-                    <div className="w-40 text-right"></div>
-                    <div className="w-40 text-right"></div>
-                    <div className="w-32 text-right">
-                        <AddIcon/>
-                    </div>
-                </div>
-            }
-            {confirmDeletionInfo.open &&
+            )}
+            <Card variant="outlined">
+                <TableContainer>
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Parkeringspunkt</TableCell>
+                                <TableCell align="right">Koordinator</TableCell>
+                                <TableCell align="right">Tilføjet</TableCell>
+                                <TableCell align="right" sx={{ width: 60 }} />
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {rows.map((row) => (
+                                <TableRow key={row.id}>
+                                    <TableCell>{row.label}</TableCell>
+                                    <TableCell align="right">{row.coords}</TableCell>
+                                    <TableCell align="right">{row.date}</TableCell>
+                                    <TableCell align="right">
+                                        {hasWritePrivilege && (
+                                            <IconButton
+                                                size="small"
+                                                color="error"
+                                                onClick={() => setConfirmDeletionInfo({ open: true, parkingType: row.parkingType, parkingId: row.parkingId })}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Card>
+            {confirmDeletionInfo.open && (
                 <ConfirmDeletion
                     open={confirmDeletionInfo.open}
                     parkingType={confirmDeletionInfo.parkingType}
                     parkingId={confirmDeletionInfo.parkingId}
-                    setOpen={(open) => setConfirmDeletionInfo({...confirmDeletionInfo, open})}
+                    setOpen={(open) => setConfirmDeletionInfo({ ...confirmDeletionInfo, open })}
                     handleDelete={handleDelete}
                 />
-            }
+            )}
         </>
     )
-
 }

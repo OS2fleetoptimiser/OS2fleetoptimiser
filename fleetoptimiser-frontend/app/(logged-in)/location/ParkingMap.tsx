@@ -76,10 +76,10 @@ const ParkingMap = ({
     return (
         <>
             <div className="flex items-center mb-4">
-                <TextField className="mr-4" id="filled-basic" label="Adresse" size="small" variant="filled" onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                <TextField className="mr-4" label="Adresse" size="small" variant="outlined" onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                     setAddress(event.target.value);
                   }} />
-                <Button variant="contained" color="secondary" onClick={
+                <Button variant="contained" onClick={
                     () => setSearchAddress(address)
                 }>Søg</Button>
                 {

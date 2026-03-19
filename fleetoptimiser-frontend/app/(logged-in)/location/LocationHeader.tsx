@@ -3,20 +3,9 @@
 import { ExtendedLocationInformation, ChangeLocationAddress } from "@/components/hooks/useGetLocationPrecision";
 import EditIcon from '@mui/icons-material/Edit';
 import {useState} from "react";
-import {Alert, Card, CardContent, LinearProgress, Snackbar, TextField, Typography} from "@mui/material";
-import SaveIcon from "@mui/icons-material/Save";
+import {Alert, Button, Card, CardContent, IconButton, Snackbar, TextField, Typography} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import {useWritePrivilegeContext} from "@/app/providers/WritePrivilegeProvider";
-
-const precisionBarSx = (pct: number) => ({
-    my: 1,
-    borderRadius: 1,
-    backgroundColor: 'grey.200',
-    '& .MuiLinearProgress-bar': {
-        backgroundColor: 'primary.main',
-        opacity: Math.max(0.25, pct / 100),
-    },
-});
 
 type LocationHeaderProps = {
     locationData: ExtendedLocationInformation;
@@ -49,31 +38,42 @@ export const LocationHeader = ({locationData, testPrecision, title, setGivenTitl
             {
                 locationData &&
                 <div>
-                    <div className="flex items-center mb-4 h-12 w-96">
-                        {
-                            !editTitle && <>
-                                <div className={title == 'Indtast adresse' ? "text-red-500" : ""}>{localTitle}</div>
-                                { hasWritePrivilege &&
-                                    <EditIcon onClick={() => setEditTitle(true)} className="ml-4 text-gray-500 cursor-pointer" fontSize="small"/>
-                                }
+                    <div className="flex items-center mb-4 gap-2 p-1">
+                        {!editTitle ? (
+                            <>
+                                <Typography
+                                    variant="body1"
+                                    sx={{ color: title === 'Indtast adresse' ? 'error.main' : 'text.primary', fontWeight: 500 }}
+                                >
+                                    {localTitle}
+                                </Typography>
+                                {hasWritePrivilege && (
+                                    <IconButton size="small" onClick={() => setEditTitle(true)}>
+                                        <EditIcon fontSize="small" />
+                                    </IconButton>
+                                )}
                             </>
-                        }
-                        {
-                            editTitle && <>
-                                <TextField defaultValue={title} variant="filled" size="small" label="Adresse"
-                                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                    setLocalTitle(event.target.value);
-                                    setGivenTitle(event.target.value);
-                                  }}
+                        ) : (
+                            <>
+                                <TextField
+                                    defaultValue={title}
+                                    size="small"
+                                    placeholder="Indtast adresse"
+                                    sx={{ minWidth: 350 }}
+                                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                        setLocalTitle(event.target.value);
+                                        setGivenTitle(event.target.value);
+                                    }}
+                                    autoFocus
                                 />
-
-                                <SaveIcon onClick={() => handleSaveName()} className="ml-4 text-gray-500 cursor-pointer" fontSize="small"/>
-                                <CloseIcon onClick={() => {
-                                    setEditTitle(false)
-                                }} className="ml-4 text-gray-500 cursor-pointer" fontSize="small"/>
+                                <Button variant="contained" size="small" onClick={handleSaveName}>
+                                    Gem
+                                </Button>
+                                <IconButton size="small" onClick={() => setEditTitle(false)}>
+                                    <CloseIcon fontSize="small" />
+                                </IconButton>
                             </>
-                        }
-
+                        )}
                     </div>
                     <div className="flex my-4 gap-2">
                         <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
@@ -82,24 +82,14 @@ export const LocationHeader = ({locationData, testPrecision, title, setGivenTitl
                                 <Typography variant="h4" component="p">
                                     {Math.round(locationData.precision)}%
                                 </Typography>
-                                <LinearProgress variant="determinate" value={Math.min(Math.round(locationData.precision), 100)} sx={precisionBarSx(locationData.precision)} />
                             </CardContent>
                         </Card>
                         <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
                             <CardContent>
                                 <Typography component="h2" variant="subtitle2" gutterBottom>Testpræcision</Typography>
-                                {testPrecision ? (
-                                    <>
-                                        <Typography variant="h4" component="p">
-                                            {Math.round(testPrecision * 100)}%
-                                        </Typography>
-                                        <LinearProgress variant="determinate" value={Math.min(Math.round(testPrecision * 100), 100)} sx={precisionBarSx(testPrecision * 100)} />
-                                    </>
-                                ) : (
-                                    <Typography variant="h4" component="p" sx={{ color: 'text.primary' }}>
-                                        Ingen data
-                                    </Typography>
-                                )}
+                                <Typography variant="h4" component="p">
+                                    {testPrecision ? Math.round(testPrecision * 100) + '%' : 'Ingen data'}
+                                </Typography>
                             </CardContent>
                         </Card>
                         <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>

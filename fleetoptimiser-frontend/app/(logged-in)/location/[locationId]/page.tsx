@@ -8,7 +8,7 @@ import {
     patchLocation, ExtendedLocationInformation, createLocation
 } from "@/components/hooks/useGetLocationPrecision";
 import { LocationHeader } from "@/app/(logged-in)/location/LocationHeader";
-import {Alert, Button, CircularProgress, Snackbar} from "@mui/material";
+import {Alert, Button, CircularProgress, Snackbar, Typography} from "@mui/material";
 import dynamic from "next/dynamic";
 import { use, useState } from "react";
 import { ParkingSpotList } from "@/app/(logged-in)/location/ParkingSpotList";
@@ -111,11 +111,11 @@ export default function Page({ params }: { params: Promise<{ locationId?: string
                             testPrecision={testPrecision.query.data?.result?.precision}
                             title={isEditMode ? data?.address : givenTitle}
                             setGivenTitle={setGivenTitle}/>
-                        <div className="flex flex-1 mt-16">
-                            <div className="w-168 overflow-auto">
-                                <h3>Parkeringspunkter på lokationen</h3>
+                        <div className="flex flex-1 mt-4 gap-4">
+                            <div className="flex-1 min-w-0 overflow-auto">
+                                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Parkeringspunkter på lokationen</Typography>
                                 <ParkingSpotList setNoChanges={setNoChanges} parkingSpots={parkingSpots} changeParkingSpots={changeParkingSpots} clickEnabled={clickEnabled} setClickEnabled={setClickEnabled}/>
-                                <div className="my-20 flex space-x-10 justify-center">
+                                <div className="mt-4 flex gap-2 justify-start">
                                     {
                                         !testingEnabled &&
                                         <Tooltip title="Præcisionstest er deaktiveret. Dit flådestyringssystem tillader ikke at hente kørselsdata flere gange.">
@@ -141,7 +141,8 @@ export default function Page({ params }: { params: Promise<{ locationId?: string
                                     />
                                 </div>
                             </div>
-                            <div className="w-168 h-168 overflow-hidden">
+                            <div className="flex-1 min-w-0 h-168 overflow-hidden">
+                                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Kort</Typography>
                                 <ParkingMap
                                     setNoChanges={setNoChanges}
                                     parkingSpots={parkingSpots}
