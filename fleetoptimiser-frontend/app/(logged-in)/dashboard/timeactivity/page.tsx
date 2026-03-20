@@ -6,7 +6,7 @@ import AddFilter from '@/components/AddFilter';
 import { Filters } from '../(filters)/FilterHeader';
 import {FilterHeaderWrapper} from "@/app/(logged-in)/dashboard/(filters)/FilterWrapper";
 import useGetSettings from "@/components/hooks/useGetSettings";
-import {Card, CardContent, CircularProgress} from "@mui/material";
+import {CircularProgress} from "@mui/material";
 import PageTitle from '@/components/PageTitle';
 
 
@@ -35,27 +35,20 @@ export default function DrivingActivity({ searchParams: searchParamsPromise }: P
 
     return (
         <>
-            <PageTitle
-                title="Tidsaktivitet"
-                subtitle="Grænseværdien kan justeres for at fremhæve en lavere grad af aktivitet."
-            />
+            <PageTitle title="Tidsaktivitet" />
             <FilterHeaderWrapper availableshifts={availableShifts}></FilterHeaderWrapper>
-            <Card className="mb-4">
-                <CardContent>
-                    {!enabled && <AddFilter />}
-                    {enabled && (
-                        <TimeActivityDashboard
-                            start={searchParams.startdate}
-                            end={searchParams.enddate}
-                            locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
-                            forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
-                            departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
-                            vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
-                            shifts={typeof searchParams.shifts === 'string' ? [+searchParams.shifts] : searchParams.shifts?.map((shift) => +shift)}
-                        />
-                    )}
-                </CardContent>
-            </Card>
+            {!enabled && <AddFilter />}
+            {enabled && (
+                <TimeActivityDashboard
+                    start={searchParams.startdate}
+                    end={searchParams.enddate}
+                    locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
+                    forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
+                    departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
+                    vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
+                    shifts={typeof searchParams.shifts === 'string' ? [+searchParams.shifts] : searchParams.shifts?.map((shift) => +shift)}
+                />
+            )}
         </>
     );
 }
