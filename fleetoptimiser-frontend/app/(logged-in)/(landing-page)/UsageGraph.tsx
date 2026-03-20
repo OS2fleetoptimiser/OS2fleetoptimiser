@@ -1,4 +1,5 @@
 import { ResponsiveBar } from '@nivo/bar';
+import { Typography } from '@mui/material';
 import { LocationUsage } from '@/components/hooks/useGetLandingPage';
 
 interface BarData extends LocationUsage {
@@ -12,7 +13,9 @@ const UsageBarChart = ({ data, showKeys = true }: { data: BarData[]; showKeys?: 
 
     return (
         <div style={{ height: 400 }}>
-            <h4 className="font-semibold mb-4 text-center text-gray-500">Laveste udnyttelsesgrad seneste måned</h4>
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 2 }}>
+                Laveste udnyttelsesgrad seneste måned
+            </Typography>
             <ResponsiveBar
                 data={data}
                 keys={['usage_ratio']}

@@ -1,4 +1,5 @@
 import { ResponsiveHeatMap } from '@nivo/heatmap';
+import { Typography } from '@mui/material';
 
 interface ActivityHeatmapProps {
     data: {
@@ -72,7 +73,9 @@ const ActivityHeatmap = ({ data, showKeys = true }: ActivityHeatmapProps & { sho
     const addressToIdMap = Object.fromEntries(data.map((loc) => [loc.address, loc.id]));
     return (
         <div style={{ height: 400 }}>
-            <h4 className="font-semibold mb-4 text-center text-gray-500">Lokationer med laveste gennemsnitlig kørsel</h4>
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 2 }}>
+                Lokationer med laveste gennemsnitlig kørsel
+            </Typography>
             <ResponsiveHeatMap
                 data={normalizedData}
                 yInnerPadding={0.4}
