@@ -27,9 +27,11 @@ import { useCallback, useMemo, useState } from 'react';
 import DisableVehicleDialog from './DisableVehicleDialog';
 import { useWritePrivilegeContext } from '@/app/providers/WritePrivilegeProvider';
 import ToolTip from '@/components/ToolTip';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import DoneIcon from '@mui/icons-material/Done';
 
-const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicle[]; dropDownData: DropDownData }) => {
+const VehicleConfigTable = ({ vehicleData, dropDownData, onDeleteRoundTrips }: { vehicleData: Vehicle[]; dropDownData: DropDownData; onDeleteRoundTrips: () => void }) => {
     const { hasWritePrivilege } = useWritePrivilegeContext();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState<MRT_Row<Vehicle> | null>(null);
@@ -247,21 +249,23 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
     const table = useMaterialReactTable({
         columns,
         data: vehicleData,
-        muiTableHeadCellProps: {
-            className: 'bg-white',
-        },
         muiTableBodyRowProps: {
-            className: 'bg-white hover:bg-gray-100 ',
+            sx: { backgroundColor: 'background.paper' },
         },
-        muiDetailPanelProps: {
-            className: 'bg-white',
+        muiTablePaperProps: {
+            variant: 'outlined',
+            elevation: 0,
         },
-        muiBottomToolbarProps: {
-            className: 'bg-white',
+        muiPaginationProps: {
+            SelectProps: {
+                sx: {
+                    '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                },
+            },
         },
-        muiTopToolbarProps: {
-            className: 'bg-white',
-        },
+        enableTopToolbar: true,
         enableDensityToggle: false,
         localization: MRT_Localization_DA,
         initialState: {
@@ -342,8 +346,27 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                 </Table>
             </Box>
         ),
-        renderTopToolbarCustomActions: ({ table }) => (
-            <div className="flex gap-4">
+    });
+
+    return (
+        <>
+            <div className="flex justify-end mb-2">
+                <Tooltip title={hasWritePrivilege ? '' : 'Du har læserettigheder'}>
+                    <span>
+                        <Button
+                            disabled={!hasWritePrivilege}
+                            color="primary"
+                            onClick={() => setIsCreateVehicleModalOpen(true)}
+                            startIcon={<AddIcon />}
+                            variant="contained"
+                        >
+                            Tilføj nyt køretøj
+                        </Button>
+                    </span>
+                </Tooltip>
+            </div>
+            <MaterialReactTable table={table} />
+            <div className="flex gap-4 items-center mt-2">
                 <Button
                     color="primary"
                     onClick={() => {
@@ -353,39 +376,36 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                     startIcon={<FileDownloadIcon />}
                     variant="contained"
                 >
-                    Eksporter Til .xlsx
+                    Eksporter til .xlsx
                 </Button>
                 <Tooltip title={hasWritePrivilege ? '' : 'Du har læserettigheder'}>
-                    <Button
-                        disabled={!hasWritePrivilege}
-                        color="primary"
-                        onClick={() => setIsImportModalOpen(true)}
-                        startIcon={<FileUploadIcon />}
-                        variant="contained"
-                    >
-                        Importer flådedata
-                    </Button>
+                    <span>
+                        <Button
+                            disabled={!hasWritePrivilege}
+                            color="primary"
+                            onClick={() => setIsImportModalOpen(true)}
+                            startIcon={<FileUploadIcon />}
+                            variant="contained"
+                        >
+                            Importer flådedata
+                        </Button>
+                    </span>
                 </Tooltip>
                 <ToolTip>
                     Importering af data, er kun for køretøjer, der er forbundet via. dit flådestyringssystem. Dvs. IDet skal stemme overens med et kendt
                     køretøj i dit flådesystem. Brug Tilføj nyt køretøj for at tilføje nye testkøretøjer.
                 </ToolTip>
+                <div className="flex-grow" />
+                <Button
+                    variant="outlined"
+                    startIcon={<DeleteIcon />}
+                    disabled={!hasWritePrivilege}
+                    color="error"
+                    onClick={onDeleteRoundTrips}
+                >
+                    Automatisk tursletning
+                </Button>
             </div>
-        ),
-        renderBottomToolbarCustomActions: () => (
-            <div>
-                <Tooltip title={hasWritePrivilege ? '' : 'Du har læserettigheder'}>
-                    <Button disabled={!hasWritePrivilege} color="primary" onClick={() => setIsCreateVehicleModalOpen(true)} variant="contained">
-                        Tilføj nyt køretøj
-                    </Button>
-                </Tooltip>
-            </div>
-        ),
-    });
-
-    return (
-        <>
-            <MaterialReactTable table={table} />
             {isMoveRoundTripsOpen && (
                 <MoveRoundTripsDialog
                     isOpen={isMoveRoundTripsOpen}

@@ -5,17 +5,14 @@ import DeleteRoundTrips from '@/app/(logged-in)/configuration/DeleteRoundTrips';
 import ApiError from '@/components/ApiError';
 import useGetDropDownData from '@/components/hooks/useGetDropDownData';
 import useGetVehicles from '@/components/hooks/useGetVehicles';
-import { Button, CircularProgress } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 import PageTitle from '@/components/PageTitle';
 import { useState } from 'react';
 import VehicleTable from './ConfigTable';
-import {useWritePrivilegeContext} from "@/app/providers/WritePrivilegeProvider";
-import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function Page() {
     const [showDeleteRoundtripsModal, setShowDeleteRoundtripsModal] = useState(false);
     const [showCreateHierarchyModal, setShowCreateHierarchyModal] = useState(false);
-    const { hasWritePrivilege } = useWritePrivilegeContext();
     const tableData = useGetVehicles();
     const dropDownValues = useGetDropDownData();
 
@@ -33,12 +30,7 @@ export default function Page() {
                 <CircularProgress />
             ) : (
                 <div>
-                    <VehicleTable dropDownData={dropDownValues.data} vehicleData={tableData.data?.vehicles} />
-                    <div className="mt-6 space-x-4 flex justify-end">
-                        <Button variant="outlined" startIcon={<DeleteIcon/>} disabled={!hasWritePrivilege} color="error" onClick={() => setShowDeleteRoundtripsModal(true)}>
-                            Automatisk tursletning
-                        </Button>
-                    </div>
+                    <VehicleTable dropDownData={dropDownValues.data} vehicleData={tableData.data?.vehicles} onDeleteRoundTrips={() => setShowDeleteRoundtripsModal(true)} />
                     <DeleteRoundTrips open={showDeleteRoundtripsModal} onClose={() => setShowDeleteRoundtripsModal(false)} />
                     <CreateVehicleHierarchy open={showCreateHierarchyModal} onClose={() => setShowCreateHierarchyModal(false)} />
                 </div>
