@@ -1,6 +1,7 @@
 import { Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, TextField } from '@mui/material';
 import { useState } from 'react';
 import { Search } from '@mui/icons-material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import {locationInput} from "@/app/(logged-in)/dashboard/(filters)/FilterHeader";
 
 export type props = {
@@ -36,8 +37,16 @@ export default function LocationFilter({
     const [searchQuery, setSearchQuery] = useState('');
 
     return (
-        <div>
-            <Button onClick={handleClick}>Lokationer ({selectedLocations.length})</Button>
+        <>
+            <Button
+                variant="outlined"
+                size="small"
+                color={selectedLocations.length > 0 ? 'secondary' : 'primary'}
+                onClick={handleClick}
+                endIcon={<KeyboardArrowDownIcon />}
+            >
+                Lokationer ({selectedLocations.length})
+            </Button>
             <Menu
                 id="basic-menu"
                 anchorEl={anchorEl}
@@ -124,6 +133,6 @@ export default function LocationFilter({
                     </List>
                 </div>
             </Menu>
-        </div>
+        </>
     );
 }

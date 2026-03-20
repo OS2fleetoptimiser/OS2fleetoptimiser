@@ -44,7 +44,13 @@ export default function DrivingDashboard({ searchParams: searchParamsPromise }: 
             <PageTitle title="Kørsel" />
             <FilterHeaderWrapper shiftFilter={false}></FilterHeaderWrapper>
 
-            {!enabled && <AddFilter />}
+            {!enabled && (
+                <Card className="mb-4">
+                    <CardContent>
+                        <AddFilter />
+                    </CardContent>
+                </Card>
+            )}
             {enabled && (
                 <div className="space-y-6">
                     <Card>
