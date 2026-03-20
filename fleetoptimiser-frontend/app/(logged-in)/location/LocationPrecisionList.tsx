@@ -8,6 +8,7 @@ import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
 import { Tooltip } from '@mui/material';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { daDK } from '@mui/x-data-grid/locales';
 import { PRECISION_THRESHOLD } from '@/app/(logged-in)/location/KeyLocationFigures';
 
 type Props = {
@@ -127,6 +128,11 @@ export const LocationPrecisionList = ({ data }: Props) => {
         sorting: { sortModel: [{ field: 'address', sort: 'asc' }] },
       }}
       pageSizeOptions={[10, 20, 50]}
+      localeText={{
+        ...daDK.components.MuiDataGrid.defaultProps.localeText,
+        paginationRowsPerPage: 'Rækker per side:',
+        paginationDisplayedRows: ({ from, to, count }) => `${from}–${to} af ${count}`,
+      }}
       sx={{ mt: 2, cursor: 'pointer' }}
     />
   );
