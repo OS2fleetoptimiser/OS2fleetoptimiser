@@ -1,36 +1,65 @@
-import { Button, LinearProgress } from '@mui/material';
+import { Box, Button, LinearProgress, Paper, Typography } from '@mui/material'
 
 type props = {
-    progress: number;
-    status: string;
-    setCancel: () => void;
-    buttonText?: string;
-    pendingText?: string;
-};
+    progress: number
+    status: string
+    setCancel: () => void
+    buttonText?: string
+    pendingText?: string
+}
 
 const LoadingOverlay = ({ progress, status, setCancel, buttonText, pendingText }: props) => {
-    console.log("status", status, pendingText, progress)
-    return (
-        <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.75)', width: '100%', height: '100%', zIndex: '10', top: '0', left: '0', position: 'fixed' }}>
-            <div className="fixed z-10 left-0 top-0 bg-opacity-30 overflow-hidden w-full h-full">
-                <div className="relative w-1/3 top-1/2 mx-auto">
-                    <div className="flex flex-col items-center">
-                        <LinearProgress className="mb-2 w-full" variant="determinate" value={progress} />
-                        <p>{
-                                status === 'PENDING' ?
-                                    pendingText ?? 'Starter simulering' :
-                                        (pendingText && status !== 'PENDING' ?
-                                            pendingText + ' ' + Math.round(progress) + ' %' :
-                                                Math.round(progress) + ' %')
-                        } </p>
-                        <Button className="w-fit" variant="contained" color="error" onClick={() => setCancel()}>
-                            {buttonText ?? 'Afbryd simulering'}
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
+    const isPending = status === 'PENDING'
+    const label = isPending
+        ? (pendingText ?? 'Starter simulering')
+        : (pendingText
+            ? `${pendingText} ${Math.round(progress)}%`
+            : `${Math.round(progress)}%`)
 
-export default LoadingOverlay;
+    return (
+        <Box
+            sx={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 1300,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(4px)',
+            }}
+        >
+            <Paper
+                variant="outlined"
+                sx={{
+                    width: '100%',
+                    maxWidth: 420,
+                    p: 4,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 2.5,
+                }}
+            >
+                <Typography variant="subtitle2">
+                    {label}
+                </Typography>
+                <LinearProgress
+                    variant={isPending ? 'indeterminate' : 'determinate'}
+                    value={progress}
+                    sx={{ width: '100%' }}
+                />
+                <Button
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    onClick={() => setCancel()}
+                >
+                    {buttonText ?? 'Afbryd simulering'}
+                </Button>
+            </Paper>
+        </Box>
+    )
+}
+
+export default LoadingOverlay
