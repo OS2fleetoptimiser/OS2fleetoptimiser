@@ -5,7 +5,6 @@ import { Filters } from '../(filters)/FilterHeader';
 import AvailabilityChart from './AvailabilityChart';
 import AddFilter from "@/components/AddFilter";
 import {FilterHeaderWrapper} from "@/app/(logged-in)/dashboard/(filters)/FilterWrapper";
-import { Card, CardContent } from '@mui/material';
 import PageTitle from '@/components/PageTitle';
 
 
@@ -30,21 +29,17 @@ export default function Availability({ searchParams: searchParamsPromise }: Prop
                     <p>Af performance årsager kan der maksimalt udregnes kapacitet for 1 uges data.</p>
                 </div>
             )}
-            <Card className="mb-4">
-                <CardContent>
-                    {!enabled && <AddFilter />}
-                    {enabled && (timeFrame === undefined || timeFrame <= 8) && (
-                        <AvailabilityChart
-                            start={searchParams.startdate}
-                            end={searchParams.enddate}
-                            locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
-                            forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
-                            departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
-                            vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
-                        />
-                    )}
-                </CardContent>
-            </Card>
+            {!enabled && <AddFilter />}
+            {enabled && (timeFrame === undefined || timeFrame <= 8) && (
+                <AvailabilityChart
+                    start={searchParams.startdate}
+                    end={searchParams.enddate}
+                    locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
+                    forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
+                    departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
+                    vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
+                />
+            )}
         </>
     );
 }
