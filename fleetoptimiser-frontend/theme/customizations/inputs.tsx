@@ -6,7 +6,7 @@ import { toggleButtonGroupClasses } from '@mui/material/ToggleButtonGroup';
 import CheckBoxOutlineBlankRoundedIcon from '@mui/icons-material/CheckBoxOutlineBlankRounded';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import RemoveRoundedIcon from '@mui/icons-material/RemoveRounded';
-import { gray, brand } from '../themePrimitives';
+import { gray, brand, red } from '../themePrimitives';
 
 /* eslint-disable import/prefer-default-export */
 export const inputsCustomizations: Components<Theme> = {
@@ -120,6 +120,44 @@ export const inputsCustomizations: Components<Theme> = {
           },
           {
             props: {
+              color: 'error',
+              variant: 'outlined',
+            },
+            style: {
+              color: red[400],
+              border: '1px solid',
+              borderColor: red[200],
+              backgroundColor: alpha(red[50], 0.3),
+              '&:hover': {
+                backgroundColor: red[100],
+                borderColor: red[300],
+              },
+              '&:active': {
+                backgroundColor: alpha(red[200], 0.7),
+              },
+            },
+          },
+          {
+            props: {
+              color: 'error',
+              variant: 'contained',
+            },
+            style: {
+              color: 'white',
+              backgroundColor: red[400],
+              backgroundImage: 'none',
+              boxShadow: 'none',
+              border: `1px solid ${red[400]}`,
+              '&:hover': {
+                backgroundColor: red[500],
+              },
+              '&:active': {
+                backgroundColor: red[500],
+              },
+            },
+          },
+          {
+            props: {
               color: 'secondary',
               variant: 'outlined',
             },
@@ -213,6 +251,18 @@ export const inputsCustomizations: Components<Theme> = {
             style: {
               width: '2.5rem',
               height: '2.5rem',
+            },
+          },
+          {
+            props: {
+              color: 'error',
+            },
+            style: {
+              color: red[400],
+              '&:hover': {
+                backgroundColor: alpha(red[100], 0.5),
+                color: red[500],
+              },
             },
           },
         ],

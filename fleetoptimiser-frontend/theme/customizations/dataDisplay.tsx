@@ -4,6 +4,7 @@ import { typographyClasses } from '@mui/material/Typography';
 import { buttonBaseClasses } from '@mui/material/ButtonBase';
 import { chipClasses } from '@mui/material/Chip';
 import { iconButtonClasses } from '@mui/material/IconButton';
+import { outlinedInputClasses } from '@mui/material/OutlinedInput';
 import { gray, red, green } from '../themePrimitives';
 
 /* eslint-disable import/prefer-default-export */
@@ -213,6 +214,26 @@ export const dataDisplayCustomizations: Components<Theme> = {
   },
   MuiTablePagination: {
     styleOverrides: {
+      root: {
+        [`& .${outlinedInputClasses.root}`]: {
+          border: 'none',
+          backgroundColor: 'transparent',
+          outline: 'none',
+          '&:hover': {
+            borderColor: 'transparent',
+          },
+          [`&.${outlinedInputClasses.focused}`]: {
+            outline: 'none',
+          },
+        },
+        '& .MuiSelect-select': {
+          border: 'none',
+        },
+        '& .MuiInputBase-root': {
+          border: 'none',
+          backgroundColor: 'transparent',
+        },
+      },
       actions: {
         display: 'flex',
         gap: 8,
