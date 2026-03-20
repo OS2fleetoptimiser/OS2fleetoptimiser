@@ -9,7 +9,7 @@ import VehicleFilter from './VehicleFilter';
 import ForvaltningFilter from './ForvaltningFilter';
 import DepartmentFilter from './DepartmentFilter';
 import ShiftFilter from './ShiftFilter';
-import { Box, Button, Paper } from '@mui/material';
+import { Box, Button, Paper, Typography } from '@mui/material';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { shift } from '@/components/hooks/useGetSettings';
 import { Vehicle } from "@/components/hooks/useGetVehicles";
@@ -285,12 +285,14 @@ export default function FilterHeader({
                 mb: 2,
                 p: 1.5,
                 display: 'flex',
-                alignItems: 'center',
-                gap: 1.5,
-                flexWrap: 'wrap',
+                flexDirection: 'column',
+                gap: 1,
             }}
         >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', flex: 1 }}>
+            <Typography variant="subtitle2" color="text.primary">
+                Filtre
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                 <DateFilter start={startDate} end={endDate} setEnd={setEndDate} setStart={setStartDate} />
                 {locationFilter && (
                     <LocationFilter
@@ -323,14 +325,14 @@ export default function FilterHeader({
                 {shiftFilter && (
                     <ShiftFilter selectedShifts={shifts} setSelectedShifts={setShifts} availableShifts={availableshifts} />
                 )}
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Button variant="contained" size="small" onClick={setFilters}>
-                    Anvend filtre
-                </Button>
-                <Button variant="outlined" size="small" onClick={clearFilters}>
-                    Ryd filtre
-                </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
+                    <Button variant="contained" size="small" onClick={setFilters}>
+                        Anvend filtre
+                    </Button>
+                    <Button variant="outlined" size="small" onClick={clearFilters}>
+                        Ryd filtre
+                    </Button>
+                </Box>
             </Box>
         </Paper>
     );
