@@ -5,7 +5,7 @@ import { Filters } from '../(filters)/FilterHeader';
 import AddFilter from "@/components/AddFilter";
 import {FilterHeaderWrapper} from "@/app/(logged-in)/dashboard/(filters)/FilterWrapper";
 import useGetSettings from "@/components/hooks/useGetSettings";
-import {Card, CardContent, CircularProgress} from "@mui/material";
+import {CircularProgress} from "@mui/material";
 import PageTitle from '@/components/PageTitle';
 
 
@@ -42,22 +42,18 @@ export default function TripSegments({ searchParams: searchParamsPromise }: Prop
             />
             <FilterHeaderWrapper availableshifts={availableShifts}></FilterHeaderWrapper>
 
-            <Card className="mb-4">
-                <CardContent>
-                    {!enabled && <AddFilter />}
+            {!enabled && <AddFilter />}
 
-                    {enabled && <TripSegmentsDashboard
-                        start={searchParams.startdate}
-                        end={searchParams.enddate}
-                        locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
-                        forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
-                        departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
-                        vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
-                        availableshifts={availableShifts}
-                        shifts={typeof searchParams.shifts === 'string' ? [+searchParams.shifts] : searchParams.shifts?.map((shift) => +shift)}
-                    ></TripSegmentsDashboard>}
-                </CardContent>
-            </Card>
+            {enabled && <TripSegmentsDashboard
+                start={searchParams.startdate}
+                end={searchParams.enddate}
+                locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
+                forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
+                departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
+                vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
+                availableshifts={availableShifts}
+                shifts={typeof searchParams.shifts === 'string' ? [+searchParams.shifts] : searchParams.shifts?.map((shift) => +shift)}
+            ></TripSegmentsDashboard>}
         </>
     );
 }
