@@ -1,17 +1,21 @@
 import TaxiAlertIcon from '@mui/icons-material/TaxiAlert';
-import Box from '@mui/material/Box';
+import { Card, Typography } from '@mui/material';
 
 const NoSelectableVehicles = () => {
     return (
-        <Box className="flex items-start space-x-4 w-full max-w-md p-5 mb-10 rounded-2xl bg-white" sx={{ border: '1px solid', borderColor: 'divider' }}>
-            <div className="pt-1">
-                <TaxiAlertIcon className="text-gray-500" fontSize="large" />
+        <Card sx={{ p: 3, maxWidth: 480 }} className="flex items-start space-x-4">
+            <div className="pt-0.5">
+                <TaxiAlertIcon color="disabled" fontSize="large" />
             </div>
-            <div className="text-gray-700 font-medium leading-relaxed">
-                Der er ingen køretøjer på de valgte lokationer i den valgte periode. <br />
-                <span className="text-red-500 font-semibold">Justér lokation eller dato</span> for at komme i gang.
+            <div>
+                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                    Der er ingen køretøjer på de valgte lokationer i den valgte periode.
+                </Typography>
+                <Typography variant="body2" color="error" sx={{ fontWeight: 600, mt: 0.5 }}>
+                    Juster lokation eller dato for at komme i gang.
+                </Typography>
             </div>
-        </Box>
+        </Card>
     );
 };
 

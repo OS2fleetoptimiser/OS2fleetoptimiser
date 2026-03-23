@@ -5,7 +5,9 @@ import { DateRange } from 'react-date-range';
 import type { RangeKeyDict } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import dayjs, { Dayjs } from 'dayjs';
 import {useMediaQuery} from "react-responsive";
 
@@ -44,10 +46,14 @@ export const DateRangePicker = ({ range, onChange }: DateRangePickerProps) => {
     };
 
     return (
-        <div className="w-64 z-10 rounded-lg bg-white">
-            <label className="block mb-2 text-lg font-semibold text-black">Vælg simuleringsperiode</label>
-            <Box className="rounded-lg px-4 py-2 cursor-pointer text-sm bg-white" sx={{ border: '1px solid', borderColor: 'divider' }} onClick={() => setOpen(!open)}>
-                {range[0].startDate?.toDate().toLocaleDateString('da-DK')} - {range[0].endDate?.toDate().toLocaleDateString('da-DK')}
+        <div className="z-10">
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <CalendarMonthIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                Periode
+            </Typography>
+            <Box className="rounded-lg px-4 py-2 cursor-pointer text-sm flex items-center justify-between" sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }} onClick={() => setOpen(!open)}>
+                <span>{range[0].startDate?.toDate().toLocaleDateString('da-DK')} - {range[0].endDate?.toDate().toLocaleDateString('da-DK')}</span>
+                <KeyboardArrowDownIcon fontSize="small" sx={{ color: 'text.secondary', ml: 0.5, flexShrink: 0 }} />
             </Box>
 
             {open && (

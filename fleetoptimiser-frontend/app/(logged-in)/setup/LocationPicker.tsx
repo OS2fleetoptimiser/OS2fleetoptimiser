@@ -1,362 +1,456 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react'
 import {
     Box,
     Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     Button,
-    Checkbox,
     TextField,
-    Chip,
-    FormGroup,
-    FormControlLabel,
-    Collapse,
     IconButton,
     InputAdornment,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ClearIcon from '@mui/icons-material/Clear';
-import SearchIcon from '@mui/icons-material/Search';
-import Tooltip from '@mui/material/Tooltip';
-import CloseIcon from '@mui/icons-material/Close';
-import { BpIcon, BpCheckedIcon } from './CheckBoxIcons';
-import { setLocationAddresses } from '@/components/redux/SimulationSlice';
-import { useAppDispatch } from '@/components/redux/hooks';
+    Typography,
+} from '@mui/material'
+import ClearIcon from '@mui/icons-material/Clear'
+import SearchIcon from '@mui/icons-material/Search'
+import CloseIcon from '@mui/icons-material/Close'
+import CheckIcon from '@mui/icons-material/Check'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import PlaceIcon from '@mui/icons-material/Place'
+
+import { setLocationAddresses } from '@/components/redux/SimulationSlice'
+import { useAppDispatch } from '@/components/redux/hooks'
 
 interface Location {
-    id: number;
-    address: string;
+    id: number
+    address: string
 }
 
 interface Forvaltninger {
-    [forvaltningId: string]: number[];
+    [forvaltningId: string]: number[]
 }
 
 export interface SelectedLocation {
-    id: number;
-    forvaltning: string;
+    id: number
+    forvaltning: string
 }
 
 interface Props {
-    locations: Location[];
-    forvaltninger?: Forvaltninger;
-    onSelectionChange: (items: SelectedLocation[]) => void;
-    preSelectedLocations: SelectedLocation[];
+    locations: Location[]
+    forvaltninger?: Forvaltninger
+    onSelectionChange: (items: SelectedLocation[]) => void
+    preSelectedLocations: SelectedLocation[]
+}
+
+function isLocationSelected(selections: SelectedLocation[], id: number, forvaltning: string) {
+    return selections.some((sel) => sel.id === id && sel.forvaltning === forvaltning)
+}
+
+function ForvaltningItem({
+    name,
+    isActive,
+    locationCount,
+    selectedCount,
+    onClick,
+}: {
+    name: string
+    isActive: boolean
+    locationCount: number
+    selectedCount: number
+    onClick: () => void
+}) {
+    return (
+        <Box onClick={onClick} sx={{ cursor: 'pointer', display: 'flex', gap: 0.75 }}>
+            <Box
+                sx={{
+                    width: 3,
+                    flexShrink: 0,
+                    borderRadius: 1,
+                    bgcolor: isActive ? 'primary.main' : 'transparent',
+                    transition: 'background-color 0.15s ease',
+                }}
+            />
+            <Box
+                sx={{
+                    flex: 1,
+                    px: 1.5,
+                    py: 1,
+                    borderRadius: 1.5,
+                    bgcolor: isActive ? 'action.selected' : 'transparent',
+                    '&:hover': { bgcolor: isActive ? 'action.selected' : 'action.hover' },
+                    transition: 'background-color 0.15s ease',
+                }}
+            >
+                <div className="flex items-center justify-between">
+                    <div className="min-w-0">
+                        <Typography
+                            variant="body2"
+                            sx={{ fontWeight: isActive ? 600 : 400, lineHeight: 1.4 }}
+                            color="text.primary"
+                            noWrap
+                        >
+                            {name}
+                        </Typography>
+                        <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.7rem' }}>
+                            {locationCount} adresser
+                        </Typography>
+                    </div>
+                    {selectedCount > 0 && (
+                        <Box
+                            sx={{
+                                bgcolor: 'action.selected',
+                                borderRadius: '10px',
+                                minWidth: 20,
+                                height: 20,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                px: 0.75,
+                                ml: 1,
+                                flexShrink: 0,
+                            }}
+                        >
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', fontWeight: 600, lineHeight: 1 }}>
+                                {selectedCount}
+                            </Typography>
+                        </Box>
+                    )}
+                </div>
+            </Box>
+        </Box>
+    )
+}
+
+function LocationRow({
+    address,
+    selected,
+    onClick,
+}: {
+    address: string
+    selected: boolean
+    onClick: () => void
+}) {
+    return (
+        <Box
+            onClick={onClick}
+            sx={{
+                px: 2,
+                py: 1,
+                cursor: 'pointer',
+                bgcolor: selected ? 'action.selected' : 'transparent',
+                '&:hover': { bgcolor: selected ? 'action.selected' : 'action.hover' },
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                transition: 'background-color 0.1s ease',
+            }}
+        >
+            <Box
+                sx={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: '4px',
+                    border: '2px solid',
+                    borderColor: selected ? 'primary.main' : 'divider',
+                    bgcolor: selected ? 'primary.main' : 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    transition: 'all 0.15s ease',
+                }}
+            >
+                {selected && <CheckIcon sx={{ fontSize: 14, color: 'white' }} />}
+            </Box>
+            <Typography variant="body2" color={selected ? 'text.primary' : 'text.secondary'}>
+                {address}
+            </Typography>
+        </Box>
+    )
+}
+
+function EmptyState() {
+    return (
+        <div className="flex flex-col items-center justify-center h-full text-gray-400">
+            <PlaceIcon sx={{ fontSize: 40, mb: 1, opacity: 0.4 }} />
+            <Typography variant="body2" color="text.secondary">
+                Ingen lokationer fundet
+            </Typography>
+        </div>
+    )
 }
 
 export default function LocationPicker({ preSelectedLocations, locations, forvaltninger, onSelectionChange }: Props) {
-    const [open, setOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [expandedForvaltninger, setExpandedForvaltninger] = useState<string[]>([]);
-    const [selectedForvaltninger, setSelectedForvaltninger] = useState<string[]>([]);
-    const [selectedLocations, setSelectedLocations] = useState<SelectedLocation[]>(preSelectedLocations); // local state that updates global when "Bekræft" is clicked
-    const dispatch = useAppDispatch();
+    const [open, setOpen] = useState(false)
+    const [searchQuery, setSearchQuery] = useState('')
+    // Local draft -- only committed to parent on "Bekræft"
+    const [selectedLocations, setSelectedLocations] = useState<SelectedLocation[]>(preSelectedLocations)
+    const [activeForvaltning, setActiveForvaltning] = useState<string | null>(null)
+    const dispatch = useAppDispatch()
+
+    // Sync location addresses to Redux for use outside this component
     useEffect(() => {
-        // to avoid pre-rendering global update state
-        dispatch(setLocationAddresses(locations || []));
-    }, [dispatch, locations]);
+        dispatch(setLocationAddresses(locations || []))
+    }, [dispatch, locations])
 
     const locationsByForvaltning = useMemo(() => {
-        const grouped: { [key: string]: Location[] } = {};
+        const grouped: { [key: string]: Location[] } = {}
         if (forvaltninger && Object.keys(forvaltninger).length > 0) {
             Object.entries(forvaltninger).forEach(([name, ids]) => {
-                grouped[name] = locations.filter((loc) => ids.includes(loc.id));
-            });
+                grouped[name] = locations.filter((loc) => ids.includes(loc.id))
+            })
         } else {
-            grouped['Ingen Forvaltning'] = locations;
+            grouped['Alle lokationer'] = locations
         }
-        return grouped;
-    }, [locations, forvaltninger]);
+        return grouped
+    }, [locations, forvaltninger])
 
-    const filteredForvaltninger = useMemo(() => {
-        const query = searchQuery.toLowerCase();
-        return Object.entries(locationsByForvaltning).filter(([name, locs]) => {
-            return name.toLowerCase().includes(query) || locs.some((loc) => loc.address.toLowerCase().includes(query));
-        });
-    }, [locationsByForvaltning, searchQuery]);
+    const sortedForvaltningNames = useMemo(() => {
+        return Object.keys(locationsByForvaltning).sort((a, b) => {
+            if (a === 'Alle lokationer' || a === 'Ingen Forvaltning') return 1
+            if (b === 'Alle lokationer' || b === 'Ingen Forvaltning') return -1
+            return a.localeCompare(b)
+        })
+    }, [locationsByForvaltning])
 
-    const getFilteredLocations = (forvaltning: string) => {
-        const query = searchQuery.toLowerCase();
-        return locationsByForvaltning[forvaltning]
+    const hasMultipleForvaltninger = sortedForvaltningNames.length > 1
+
+    const visibleForvaltninger = useMemo(() => {
+        const query = searchQuery.toLowerCase()
+        return sortedForvaltningNames.filter((name) => {
+            if (name.toLowerCase().includes(query)) return true
+            return (locationsByForvaltning[name] ?? []).some((loc) =>
+                loc.address.toLowerCase().includes(query)
+            )
+        })
+    }, [sortedForvaltningNames, locationsByForvaltning, searchQuery])
+
+    const currentLocs = useMemo(() => {
+        if (!activeForvaltning) return []
+        const query = searchQuery.toLowerCase()
+        return (locationsByForvaltning[activeForvaltning] ?? [])
             .filter((loc) => loc.address.toLowerCase().includes(query))
-            .sort((a, b) => a.address.localeCompare(b.address));
-    };
+            .sort((a, b) => a.address.localeCompare(b.address))
+    }, [activeForvaltning, searchQuery, locationsByForvaltning])
 
-    const toggleLocationSelection = (id: number, forvaltning: string) => {
-        const exists = selectedLocations.some((sel) => sel.id === id && sel.forvaltning === forvaltning);
-        if (exists) {
-            setSelectedLocations(selectedLocations.filter((sel) => !(sel.id === id && sel.forvaltning === forvaltning)));
-        } else {
-            setSelectedLocations([...selectedLocations, { id, forvaltning }]);
+    const currentAllSelected = activeForvaltning
+        ? (locationsByForvaltning[activeForvaltning] ?? []).every((l) =>
+            isLocationSelected(selectedLocations, l.id, activeForvaltning)
+        )
+        : false
+
+    const triggerLabel = preSelectedLocations.length === 0
+        ? 'Vælg lokationer...'
+        : `${preSelectedLocations.length} lokation${preSelectedLocations.length === 1 ? '' : 'er'} valgt`
+
+
+    useEffect(() => {
+        if (open && sortedForvaltningNames.length > 0 && !activeForvaltning) {
+            setActiveForvaltning(sortedForvaltningNames[0])
         }
-    };
+    }, [open, sortedForvaltningNames, activeForvaltning])
 
-    const toggleAllLocationsOfForvaltning = (forvaltning: string) => {
-        const locs = locationsByForvaltning[forvaltning];
-        const allSelected = locs.every((l) => selectedLocations.some((sel) => sel.id === l.id && sel.forvaltning === forvaltning));
+    const toggleLocation = (id: number, forvaltning: string) => {
+        if (isLocationSelected(selectedLocations, id, forvaltning)) {
+            setSelectedLocations(selectedLocations.filter((sel) => !(sel.id === id && sel.forvaltning === forvaltning)))
+        } else {
+            setSelectedLocations([...selectedLocations, { id, forvaltning }])
+        }
+    }
 
+    const toggleAllInForvaltning = (forvaltning: string) => {
+        const locs = locationsByForvaltning[forvaltning]
+        const allSelected = locs.every((l) => isLocationSelected(selectedLocations, l.id, forvaltning))
         if (allSelected) {
-            setSelectedLocations(selectedLocations.filter((sel) => sel.forvaltning !== forvaltning));
+            setSelectedLocations(selectedLocations.filter((sel) => sel.forvaltning !== forvaltning))
         } else {
             const toAdd = locs
-                .filter((l) => !selectedLocations.some((sel) => sel.id === l.id && sel.forvaltning === forvaltning))
-                .map((l) => ({ id: l.id, forvaltning }));
-            setSelectedLocations([...selectedLocations, ...toAdd]);
+                .filter((l) => !isLocationSelected(selectedLocations, l.id, forvaltning))
+                .map((l) => ({ id: l.id, forvaltning }))
+            setSelectedLocations([...selectedLocations, ...toAdd])
         }
-    };
+    }
 
-    const deselectAll = () => setSelectedLocations([]);
+    const deselectAll = () => setSelectedLocations([])
 
-    const toggleExpand = (name: string) => {
-        setExpandedForvaltninger((prev) => (prev.includes(name) ? prev.filter((f) => f !== name) : [...prev, name]));
-    };
-
-    const toggleForvaltningFilter = (name: string) => {
-        setSelectedForvaltninger((prev) => (prev.includes(name) ? prev.filter((f) => f !== name) : [...prev, name]));
-    };
-
-    const shouldShowForvaltning = (name: string) => {
-        return selectedForvaltninger.length === 0 || selectedForvaltninger.includes(name);
-    };
+    const handleOpen = () => {
+        setSelectedLocations(preSelectedLocations)
+        setActiveForvaltning(sortedForvaltningNames[0] ?? null)
+        setOpen(true)
+    }
 
     const handleClose = () => {
-        setSelectedLocations(preSelectedLocations);
-        setOpen(false);
-    };
+        setSelectedLocations(preSelectedLocations)
+        setSearchQuery('')
+        setOpen(false)
+    }
 
-    const handleOk = () => {
-        onSelectionChange(selectedLocations);
-        setOpen(false);
-    };
+    const handleConfirm = () => {
+        onSelectionChange(selectedLocations)
+        setSearchQuery('')
+        setOpen(false)
+    }
 
     return (
         <>
-            <div className="w-64 bg-white">
-                <label className="text-lg font-semibold text-black">Vælg lokationer</label>
-                <Box className="mt-2 rounded-lg py-2 px-4 cursor-pointer" sx={{ border: '1px solid', borderColor: 'divider' }} onClick={() => setOpen(true)}>
-                    <label className="block text-sm font-medium text-gray-700 cursor-pointer">Vælg lokationer...</label>
+            <div>
+                <Typography variant="subtitle2" color="text.primary" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <PlaceIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                    Lokation
+                </Typography>
+                <Box
+                    className="rounded-lg py-2 px-4 cursor-pointer flex items-center justify-between"
+                    sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}
+                    onClick={handleOpen}
+                >
+                    <Typography
+                        variant="body2"
+                        color={preSelectedLocations.length === 0 ? 'text.secondary' : 'text.primary'}
+                        noWrap
+                    >
+                        {triggerLabel}
+                    </Typography>
+                    <KeyboardArrowDownIcon fontSize="small" sx={{ color: 'text.secondary', ml: 0.5, flexShrink: 0 }} />
                 </Box>
-                <div className="mt-4 mb-20 relative overflow-visible">
-                    <div className="absolute left-0 whitespace-nowrap space-x-1 w-[64px] sm:w-full">
-                        {selectedLocations.length === 0 || selectedLocations.length > 3 ? (
-                            <Tooltip
-                                title={
-                                    <div>
-                                        {selectedLocations.map((sel, i) => {
-                                            const loc = locations.find((l) => l.id === sel.id);
-                                            if (!loc) return null;
-                                            return (
-                                                <div key={`${sel.forvaltning}-${sel.id}-${i}`}>
-                                                    {sel.forvaltning}: {loc.address}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                }
-                            >
-                                <Chip
-                                    onClick={() => setOpen(true)}
-                                    key="locationSelectedMain"
-                                    label={`${selectedLocations.length} lokationer valgt`}
-                                    color="default"
-                                    disabled={selectedLocations.length === 0}
-                                />
-                            </Tooltip>
-                        ) : (
-                            selectedLocations.map((location) => {
-                                const loc = locations.find((l) => l.id === location.id);
-                                const fullLabel = loc ? `${location.forvaltning}: ${loc.address}` : '';
-                                const truncatedLabel = fullLabel.length > 20 ? fullLabel.slice(0, 20) + '...' : fullLabel;
-                                return (
-                                    <Tooltip key={`tooltip-${location.id}`} title={fullLabel}>
-                                        <Chip
-                                            onClick={() => setOpen(true)}
-                                            key={`locationSelected${location.id}`}
-                                            label={truncatedLabel}
-                                            color="default"
-                                            disabled={selectedLocations.length === 0}
-                                        />
-                                    </Tooltip>
-                                );
-                            })
-                        )}
-                    </div>
-                </div>
             </div>
-            <Dialog open={open} fullWidth maxWidth="md">
-                <DialogTitle>Vælg lokationer</DialogTitle>
-                <DialogContent className="h-[800px] flex flex-col">
-                    <div className="absolute top-4 right-4 cursor-pointer">
-                        <CloseIcon onClick={handleClose} fontSize="small" className="text-gray-500 hover:text-black" />
+
+            <Dialog
+                open={open}
+                onClose={handleClose}
+                fullWidth
+                maxWidth={hasMultipleForvaltninger ? 'md' : 'sm'}
+                slotProps={{ paper: { sx: { borderRadius: 3, height: '70vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' } } }}
+            >
+                <Box sx={{ px: 3, pt: 2.5, pb: 2, borderBottom: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
+                    <div className="flex items-center justify-between mb-2">
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            Vælg lokationer
+                        </Typography>
+                        <IconButton size="small" onClick={handleClose}>
+                            <CloseIcon fontSize="small" />
+                        </IconButton>
                     </div>
                     <TextField
                         fullWidth
-                        className="my-1 bg-[#F5F5F5] rounded-lg px-1"
-                        variant="standard"
-                        placeholder="Søg i lokationer..."
+                        size="small"
+                        placeholder="Søg lokationer..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         slotProps={{
                             input: {
-                                disableUnderline: true,
                                 startAdornment: (
                                     <InputAdornment position="start">
-                                        <SearchIcon fontSize="small" />
+                                        <SearchIcon fontSize="small" color="action" />
                                     </InputAdornment>
                                 ),
-                                endAdornment: searchQuery && (
+                                endAdornment: searchQuery ? (
                                     <InputAdornment position="end">
-                                        <IconButton onClick={() => setSearchQuery('')}>
+                                        <IconButton size="small" onClick={() => setSearchQuery('')}>
                                             <ClearIcon fontSize="small" />
                                         </IconButton>
                                     </InputAdornment>
-                                ),
-                                sx: {
-                                    height: 36,
-                                    fontSize: 14,
-                                    paddingX: 1,
-                                },
+                                ) : null,
                             },
+                        }}
+                    />
+                </Box>
 
-                            htmlInput: {
-                                style: {
-                                    padding: 0,
-                                    fontSize: 14,
-                                },
-                            }
-                        }} />
-                    <div className="flex mb-2 space-y-1">
-                        <span className="self-center text-sm text-gray-500 mr-2">Valgte Lokationer:</span>
-                        <Tooltip
-                            title={
-                                <div>
-                                    {selectedLocations.map((sel, i) => {
-                                        const loc = locations.find((l) => l.id === sel.id);
-                                        if (!loc) return null;
-                                        return (
-                                            <div key={`${sel.forvaltning}-${sel.id}-${i}`}>
-                                                {sel.forvaltning}: {loc.address}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            }
+                <div className="flex flex-1 overflow-hidden min-h-0">
+                    {hasMultipleForvaltninger && (
+                        <Box
+                            sx={{ borderRight: '1px solid', borderColor: 'divider', bgcolor: 'grey.50' }}
+                            className="w-56 flex-shrink-0 overflow-auto flex flex-col"
                         >
-                            <Chip
-                                key="locationSelected"
-                                label={`${selectedLocations.length} lokation${selectedLocations.length === 1 ? '' : 'er'}`}
-                                color={selectedLocations.length === 0 ? 'default' : 'primary'}
-                                onDelete={deselectAll}
-                                disabled={selectedLocations.length === 0}
-                            />
-                        </Tooltip>
-                    </div>
+                            <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ px: 2, pt: 2, pb: 1, fontWeight: 600, display: 'block' }}
+                            >
+                                Forvaltning
+                            </Typography>
+                            <div className="flex-1 overflow-auto px-1.5 pb-1.5 space-y-1">
+                                {visibleForvaltninger.map((name) => (
+                                    <ForvaltningItem
+                                        key={name}
+                                        name={name}
+                                        isActive={activeForvaltning === name}
+                                        locationCount={locationsByForvaltning[name]?.length ?? 0}
+                                        selectedCount={selectedLocations.filter((sel) => sel.forvaltning === name).length}
+                                        onClick={() => setActiveForvaltning(name)}
+                                    />
+                                ))}
+                            </div>
+                        </Box>
+                    )}
 
-                    <div className="flex space-x-1 mb-2 flex-wrap">
-                        <span className="self-center text-sm text-gray-500 mr-2">Forvaltninger:</span>
-                        {Object.keys(locationsByForvaltning)
-                            .sort((a, b) => {
-                                if (a === 'Ingen Forvaltning') return 1;
-                                if (b === 'Ingen Forvaltning') return -1;
-                                return a.localeCompare(b);
-                            })
-                            .map((name) => (
-                                <Chip
-                                    key={name}
-                                    label={name}
-                                    clickable
-                                    color={selectedForvaltninger.includes(name) ? 'primary' : 'default'}
-                                    onClick={() => toggleForvaltningFilter(name)}
+                    <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+                        {activeForvaltning && (
+                            <Box
+                                sx={{ px: 2.5, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}
+                                className="flex items-center justify-between flex-shrink-0"
+                            >
+                                <div>
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }} color="text.primary">
+                                        {activeForvaltning}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                        {currentLocs.length} adresser
+                                    </Typography>
+                                </div>
+                                <Button
+                                    size="small"
+                                    onClick={() => activeForvaltning && toggleAllInForvaltning(activeForvaltning)}
+                                    sx={{ textTransform: 'none', fontSize: '0.75rem', minWidth: 0, px: 1 }}
+                                >
+                                    {currentAllSelected ? 'Fravælg alle' : 'Vælg alle'}
+                                </Button>
+                            </Box>
+                        )}
+
+                        <div className="flex-1 overflow-auto">
+                            {currentLocs.length === 0 && activeForvaltning && <EmptyState />}
+                            {activeForvaltning && currentLocs.map((location) => (
+                                <LocationRow
+                                    key={`${activeForvaltning}-${location.id}`}
+                                    address={location.address}
+                                    selected={isLocationSelected(selectedLocations, location.id, activeForvaltning)}
+                                    onClick={() => toggleLocation(location.id, activeForvaltning)}
                                 />
                             ))}
+                        </div>
                     </div>
+                </div>
 
-                    <div className="overflow-auto border-[#eee] border rounded-lg p-2">
-                        {filteredForvaltninger
-                            .sort((a, b) => {
-                                if (a[0] === 'Ingen Forvaltning') return 1;
-                                if (b[0] === 'Ingen Forvaltning') return -1;
-                                return a[0].localeCompare(b[0]);
-                            })
-                            .map(([forvaltning]) => {
-                                const filteredLocs = getFilteredLocations(forvaltning);
-                                if (!shouldShowForvaltning(forvaltning) || filteredLocs.length === 0) return null;
-                                const isExpanded = expandedForvaltninger.includes(forvaltning);
-                                const allSelected = filteredLocs.every((l) =>
-                                    selectedLocations.some((sel) => sel.id === l.id && sel.forvaltning === forvaltning)
-                                );
-                                const selectedLocationsInForvaltning = selectedLocations.filter((loc) => loc.forvaltning === forvaltning).length;
-                                return (
-                                    <div className="mb-2" key={forvaltning}>
-                                        <div
-                                            onClick={() => toggleExpand(forvaltning)}
-                                            className="flex items-center justify-between bg-gray-100 cursor-pointer rounded-lg pr-2 pl-6"
-                                        >
-                                            <FormControlLabel
-                                                className="cursor-pointer"
-                                                control={
-                                                    <Checkbox
-                                                        disabled
-                                                        className="hidden"
-                                                        checked={allSelected}
-                                                        onChange={() => toggleAllLocationsOfForvaltning(forvaltning)}
-                                                    />
-                                                }
-                                                label={
-                                                    <span className="text-gray-700 font-semibold text-md">
-                                                        {forvaltning}
-                                                        <span className="ml-3 text-gray-500 text-xs">({filteredLocs.length} lokationer)</span>
-                                                        <span className="ml-3 text-gray-500 text-xs">
-                                                            {selectedLocationsInForvaltning === 0 ? '' : `(${selectedLocationsInForvaltning} valgt)`}
-                                                        </span>
-                                                    </span>
-                                                }
-                                            />
-                                            <IconButton onClick={() => toggleExpand(forvaltning)}>
-                                                {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                                            </IconButton>
-                                        </div>
-                                        <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                                            <FormGroup className="pl-6">
-                                                {filteredLocs.map((location) => (
-                                                    <FormControlLabel
-                                                        key={`${forvaltning}-${location.id}`}
-                                                        control={
-                                                            <Checkbox
-                                                                sx={{ '&:hover': { bgcolor: 'transparent' } }}
-                                                                checkedIcon={<BpCheckedIcon />}
-                                                                icon={<BpIcon />}
-                                                                checked={selectedLocations.some(
-                                                                    (sel) => sel.id === location.id && sel.forvaltning === forvaltning
-                                                                )}
-                                                                onChange={() => toggleLocationSelection(location.id, forvaltning)}
-                                                            />
-                                                        }
-                                                        label={
-                                                            <div>
-                                                                <span className="text-sm font-medium self-baseline text-gray-600">{location.address}</span>
-                                                            </div>
-                                                        }
-                                                    />
-                                                ))}
-                                            </FormGroup>
-                                        </Collapse>
-                                    </div>
-                                );
-                            })}
+                <Box
+                    sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider', flexShrink: 0 }}
+                    className="flex items-center justify-between"
+                >
+                    <div className="flex items-center gap-2">
+                        <Typography variant="body2" color="text.secondary">
+                            {selectedLocations.length === 0
+                                ? 'Ingen valgt'
+                                : `${selectedLocations.length} lokation${selectedLocations.length === 1 ? '' : 'er'} valgt`}
+                        </Typography>
+                        {selectedLocations.length > 0 && (
+                            <Button
+                                size="small"
+                                color="inherit"
+                                onClick={deselectAll}
+                                sx={{ textTransform: 'none', fontSize: '0.8125rem', minWidth: 0 }}
+                            >
+                                Ryd
+                            </Button>
+                        )}
                     </div>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose} variant="outlined">
-                        LUK
-                    </Button>
-                    <Button onClick={handleOk} variant="contained">
-                        Bekræft
-                    </Button>
-                </DialogActions>
+                    <div className="flex gap-2">
+                        <Button onClick={handleClose} variant="outlined" size="small">
+                            Annuller
+                        </Button>
+                        <Button onClick={handleConfirm} variant="contained" size="small">
+                            Bekræft ({selectedLocations.length})
+                        </Button>
+                    </div>
+                </Box>
             </Dialog>
         </>
-    );
+    )
 }

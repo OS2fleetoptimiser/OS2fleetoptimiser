@@ -1,16 +1,16 @@
 import WifiOffIcon from '@mui/icons-material/WifiOff';
-import Box from '@mui/material/Box';
+import { Card, Typography } from '@mui/material';
 
 const NoConnectionError = () => {
     return (
-        <Box className="flex items-start space-x-4 w-full max-w-md p-5 mb-10 rounded-2xl bg-white" sx={{ border: '1px solid', borderColor: 'divider' }}>
-            <div className="pt-1">
-                <WifiOffIcon className="text-red-500" fontSize="large" />
+        <Card sx={{ p: 3, maxWidth: 480 }} className="flex items-start space-x-4">
+            <div className="pt-0.5">
+                <WifiOffIcon color="error" fontSize="large" />
             </div>
-            <div className="text-gray-700 font-medium leading-relaxed">
-                Beklager, vi kunne ikke hente data - der er ingen forbindelse til serveren... Prøv igen senere eller kontakt support. <br />
-            </div>
-        </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                Beklager, vi kunne ikke hente data - der er ingen forbindelse til serveren. Prøv igen senere eller kontakt support.
+            </Typography>
+        </Card>
     );
 };
 

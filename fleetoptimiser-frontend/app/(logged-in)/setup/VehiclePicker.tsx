@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import {
     Table,
     TableBody,
@@ -6,7 +6,7 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper,
+    Card,
     Checkbox,
     MenuItem,
     FormControl,
@@ -15,8 +15,8 @@ import {
     Select,
     Chip,
     SelectChangeEvent,
-    ButtonGroup,
     CircularProgress,
+    Typography,
 } from '@mui/material';
 import { useMediaQuery } from 'react-responsive';
 import { VehicleWithStatus } from '@/components/hooks/useGetVehiclesByLocation';
@@ -170,20 +170,23 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
     const headerStyle = 'p-3 text-gray-500 text-sm font-bold bg-gray-50';
     const allDepartments = Array.from(new Set(vehicles.map((vehicle) => vehicle.department || 'Ingen afdeling')));
     return (
-        <div className="pr">
-            <div className="mt-2">
-                <div className="flex flex-row">
-                    <label className="block mb-2 text-lg font-semibold text-black">Vælg køretøjer til simulering</label>
-                    {onDownload && (
-                        <Button onClick={onDownload} startIcon={<DownloadIcon />} size="small" className="ml-auto" variant="outlined">
-                            Download dataperiode
-                        </Button>
-                    )}
-                </div>
+        <Card sx={{ p: 3 }}>
+            <div className="flex items-center justify-between mb-1">
+                <Typography variant="subtitle2" color="text.primary">
+                    Vælg køretøjer til simulering
+                </Typography>
+                {onDownload && (
+                    <Button onClick={onDownload} startIcon={<DownloadIcon />} size="small" variant="outlined">
+                        Download dataperiode
+                    </Button>
+                )}
+            </div>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                Marker de køretøjer der skal indgå i simuleringen. Køretøjer med manglende metadata kan ikke vælges.
+            </Typography>
                 <TableContainer
-                        component={Paper}
-                        className={`relative my-4 max-h-[calc(100vh-450px)] ${isLoading ? 'overflow-hidden' : 'overflow-auto'}`}
-                        sx={{ border: '1px solid', borderColor: 'divider' }}
+                        className={`relative max-h-[calc(100vh-480px)] ${isLoading ? 'overflow-hidden' : 'overflow-auto'}`}
+                        sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
                     >
                         {isLoading && (
                             <div className="absolute inset-0 flex justify-center items-center bg-white bg-opacity-70 z-10" style={{ pointerEvents: 'auto' }}>
@@ -279,17 +282,22 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
                                 })}
                         </TableBody>
                     </Table>
-                    <div className="sticky bottom-0 bg-white border-t border-gray-100 flex justify-between items-center sm:flex-row space-y-2 sm:space-y-0 flex-col p-2 py-4">
-                        <ButtonGroup>
-                            <Button variant="outlined" size="small" onClick={selectAll}>
-                                Vælg alle
-                            </Button>
-                            <Button variant="outlined" size="small" onClick={deselectAll}>
-                                Fravælg alle
-                            </Button>
-                        </ButtonGroup>
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 flex justify-between items-center sm:flex-row space-y-2 sm:space-y-0 flex-col px-3 py-3">
+                        <div className="flex items-center gap-3">
+                            <Typography variant="body2" color="text.secondary">
+                                {selectedVehicleIds.length} af {vehicles.length} valgt
+                            </Typography>
+                            <div className="flex gap-1">
+                                <Button variant="text" size="small" onClick={selectAll} sx={{ textTransform: 'none', fontSize: '0.8125rem', minWidth: 0 }}>
+                                    Vælg alle
+                                </Button>
+                                <Button variant="text" size="small" color="inherit" onClick={deselectAll} sx={{ textTransform: 'none', fontSize: '0.8125rem', minWidth: 0 }}>
+                                    Ryd
+                                </Button>
+                            </div>
+                        </div>
 
-                        <div className="flex space-x-2 md:flex-row md:space-y-0 space-y-2 flex-col">
+                        <div className="flex gap-2">
                             <Button
                                 disabled={simulationDisabled}
                                 onClick={() => router.push('/fleet')}
@@ -314,7 +322,6 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
                         </div>
                     </div>
                 </TableContainer>
-            </div>
-        </div>
+        </Card>
     );
 }
