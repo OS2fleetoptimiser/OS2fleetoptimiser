@@ -1,327 +1,215 @@
-import { ReactNode, useState } from 'react';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Card,
-    Checkbox,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    Button,
-    Select,
-    Chip,
-    SelectChangeEvent,
-    CircularProgress,
-    Typography,
-} from '@mui/material';
-import { useMediaQuery } from 'react-responsive';
-import { VehicleWithStatus } from '@/components/hooks/useGetVehiclesByLocation';
-import { BpIcon, BpCheckedIcon } from './CheckBoxIcons';
-import Tooltip from '@mui/material/Tooltip';
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import ElectricCarIcon from '@mui/icons-material/ElectricCar';
-import ElectricBikeIcon from '@mui/icons-material/ElectricBike';
-import PedalBikeIcon from '@mui/icons-material/PedalBike';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import MemoryIcon from '@mui/icons-material/Memory';
-import { useRouter } from 'next/navigation';
-import DownloadIcon from '@mui/icons-material/Download';
-import { prepareGoalSimulation } from "@/components/redux/SimulationSlice";
-import { useAppDispatch } from "@/components/redux/hooks";
+import { useMemo, forwardRef } from 'react'
+import { Button, Card, Checkbox, Chip, Tooltip, Typography } from '@mui/material'
+import { DataGrid, GridColDef, GridRenderCellParams, GridRowSelectionModel } from '@mui/x-data-grid'
+import { daDK } from '@mui/x-data-grid/locales'
+import { VehicleWithStatus } from '@/components/hooks/useGetVehiclesByLocation'
+import { BpIcon, BpCheckedIcon } from './CheckBoxIcons'
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
+import MemoryIcon from '@mui/icons-material/Memory'
+import DownloadIcon from '@mui/icons-material/Download'
+import { useRouter } from 'next/navigation'
+import { prepareGoalSimulation } from '@/components/redux/SimulationSlice'
+import { useAppDispatch } from '@/components/redux/hooks'
+
+const RoundedCheckbox = forwardRef<HTMLButtonElement, any>((props, ref) => (
+    <Checkbox ref={ref} {...props} icon={<BpIcon />} checkedIcon={<BpCheckedIcon />} />
+))
 
 interface VehiclePickerProps {
-    vehicles: VehicleWithStatus[];
-    selectedVehicleIds: number[];
-    onSelectionChange: (vehicleIds: number[]) => void;
-    isLoading: boolean;
-    simulationDisabled: boolean;
-    onDownload?: () => void;
+    vehicles: VehicleWithStatus[]
+    selectedVehicleIds: number[]
+    onSelectionChange: (vehicleIds: number[]) => void
+    isLoading: boolean
+    simulationDisabled: boolean
+    onDownload?: () => void
 }
 
-interface DepartmentFilterProps {
-    allDepartments: string[];
-    selectedDepartment?: string;
-    setSelectedDepartment: (departments: string) => void;
+function getStatusChip(status: string) {
+    if (status === 'dataMissing') return <Chip color="error" label="Manglende metadata" />
+    if (status === 'leasingEnded') return <Chip color="warning" label="Udløbet leasing" />
+    if (status === 'locationChanged') return <Chip color="warning" label="Lokation skiftet" />
+    if (status === 'notActive') return <Chip color="default" label="Ikke aktiv" />
+    return <Chip color="success" label="OK" />
 }
 
-const DepartmentVehicleFilter = ({ allDepartments, selectedDepartment, setSelectedDepartment }: DepartmentFilterProps) => {
-    const handleChange = (event: SelectChangeEvent<string>) => {
-        setSelectedDepartment(event.target.value);
-    };
-
-    return (
-        <FormControl variant="outlined" size="small" className="min-w-[150px]">
-            <InputLabel id="department-filter-label" className="text-[0.875rem] text-gray-600">
-                Afdeling
-            </InputLabel>
-            <Select
-                labelId="department-filter-label"
-                value={selectedDepartment}
-                onChange={handleChange}
-                label="Afdeling"
-                className="text-[0.875rem] text-gray-600"
-                renderValue={(selected) => <Chip label={selected || 'Alle'} size="small" className="bg-gray-50 text-gray-500 text-sm font-bold" />}
-                sx={{
-                    '& .MuiSelect-select': { padding: '8px' },
-                }}
-            >
-                <MenuItem value="">
-                    <em>Alle</em>
-                </MenuItem>
-                {allDepartments.map((dept) => (
-                    <MenuItem key={dept} value={dept}>
-                        {dept}
-                    </MenuItem>
-                ))}
-            </Select>
-        </FormControl>
-    );
-};
+function getToolTipInfo(status: string) {
+    if (status === 'dataMissing')
+        return 'Køretøjet mangler metadata, men har været aktiv på lokationen i den valgte datoperiode. Gå til konfigurationen, find køretøjet og tilføj som minimum mærke, model, wltp og omkostning år for køretøjet.'
+    if (status === 'notActive') return 'Køretøjet er tilknyttet denne lokation, men har ikke været aktiv i den valgte datoperiode.'
+    if (status === 'leasingEnded')
+        return 'Køretøjet har overgået slut-dato for leasingperioden, men har fortsat været aktiv på lokationen i den valgte datoperiode. Gå til konfigurationen for at ændre datoen for den valgte slut-dato.'
+    if (status === 'locationChanged')
+        return 'Køretøjet har fået skiftet sin lokation, men har været aktiv på denne lokation i den valgte datoperiode. Dvs. køretøjet er tilknyttet en anden lokation end denne og vil fremover kun bidrage med nye ture til lokationen valgt i konfigurationen.'
+    return ''
+}
 
 export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectionChange, isLoading, simulationDisabled, onDownload }: VehiclePickerProps) {
-    const router = useRouter();
-    const dispatch = useAppDispatch();
+    const router = useRouter()
+    const dispatch = useAppDispatch()
 
-    // show progressively more vehicle data in the table
-    const isXlScreen = useMediaQuery({ minWidth: '1280px' });
-    const isLargeScreen = useMediaQuery({ minWidth: '1024px' });
-    const isMediumScreen = useMediaQuery({ minWidth: '768px' });
-    const [filteredDepartment, setFilteredDepartments] = useState<string>();
+    const columns: GridColDef[] = useMemo(
+        () => [
+            {
+                field: 'name',
+                headerName: 'Køretøj',
+                flex: 1.5,
+                minWidth: 200,
+            },
+            {
+                field: 'status',
+                headerName: 'Status',
+                flex: 0.7,
+                minWidth: 130,
+                renderCell: (params: GridRenderCellParams) => {
+                    const vehicle = params.row as VehicleWithStatus
+                    const chip = getStatusChip(vehicle.status)
+                    const tooltip = getToolTipInfo(vehicle.status)
+                    return tooltip ? (
+                        <Tooltip placement="top" title={tooltip}>{chip}</Tooltip>
+                    ) : chip
+                },
+            },
+            {
+                field: 'type',
+                headerName: 'Type',
+                flex: 0.6,
+                minWidth: 90,
+                valueGetter: (_value: unknown, row: VehicleWithStatus) => row.type?.name || 'Ukendt',
+            },
+            {
+                field: 'wltp',
+                headerName: 'WLTP',
+                flex: 0.7,
+                minWidth: 100,
+                valueGetter: (_value: unknown, row: VehicleWithStatus) => {
+                    if (row.wltp_el) return row.wltp_el
+                    if (row.wltp_fossil) return row.wltp_fossil
+                    return null
+                },
+                renderCell: (params: GridRenderCellParams) => {
+                    const vehicle = params.row as VehicleWithStatus
+                    if (vehicle.wltp_el) return `${vehicle.wltp_el.toLocaleString()} Wh/km`
+                    if (vehicle.wltp_fossil) return `${vehicle.wltp_fossil.toLocaleString()} km/l`
+                    return 'Intet drivmiddel'
+                },
+            },
+            {
+                field: 'omkostning_aar',
+                headerName: 'Omkostning / år',
+                type: 'number',
+                flex: 0.7,
+                minWidth: 120,
+                valueFormatter: (value: number | null) => value ? value.toLocaleString() : '-',
+            },
+            {
+                field: 'department',
+                headerName: 'Afdeling',
+                flex: 0.8,
+                minWidth: 120,
+                valueGetter: (_value: unknown, row: VehicleWithStatus) => row.department || 'Ingen afdeling',
+            },
+            {
+                field: 'location',
+                headerName: 'Lokation',
+                flex: 1,
+                minWidth: 150,
+                valueGetter: (_value: unknown, row: VehicleWithStatus) => row.location?.address || '',
+            },
+            {
+                field: 'end_leasing',
+                headerName: 'Slut leasing',
+                flex: 0.7,
+                minWidth: 110,
+                valueFormatter: (value: string | null) =>
+                    value ? new Date(value).toLocaleDateString() : 'Ejet',
+            },
+        ],
+        []
+    )
 
-    const propellantFormat = (vehicle: VehicleWithStatus) => {
-        if (vehicle.wltp_el) {
-            return vehicle.wltp_el.toLocaleString() + ' Wh/km';
-        } else if (vehicle.wltp_fossil) {
-            return vehicle.wltp_fossil.toLocaleString() + ' km/l';
-        } else {
-            return 'Intet drivmiddel';
-        }
-    };
-    const iconLookup = (vtype: string | undefined): ReactNode => {
-        switch (vtype) {
-            case 'fossilbil':
-                return <DirectionsCarIcon className="mr-2" />;
-            case 'elbil':
-                return <ElectricCarIcon className="mr-2" />;
-            case 'elcykel':
-                return <ElectricBikeIcon className="mr-2" />;
-            case 'cykel':
-                return <PedalBikeIcon className="mr-2" />;
-            case undefined:
-                return <HelpOutlineIcon className="mr-2" />;
-        }
-    };
-    const getTextToolTip = (text?: string, cutCharacters: number = 20) => {
-        if (!text) return <></>;
-        return text.length > cutCharacters ? (
-            <Tooltip placement="top" title={text}>
-                <span>{text.slice(0, cutCharacters) + '...'}</span>
-            </Tooltip>
-        ) : (
-            <span>{text}</span>
-        );
-    };
+    const selectionModel: GridRowSelectionModel = useMemo(
+        () => ({ type: 'include' as const, ids: new Set<number>(selectedVehicleIds) }),
+        [selectedVehicleIds]
+    )
 
-    const getToolTipInfo = (vehicleStatus: string) => {
-        if (vehicleStatus === 'dataMissing')
-            return 'Køretøjet mangler metadata, men har været aktiv på lokationen i den valgte datoperiode. Gå til konfigurationen, find køretøjet og tilføj som minimum mærke, model, wltp og omkostning år for køretøjet.';
-        if (vehicleStatus === 'notActive') return 'Køretøjet er tilknyttet denne lokation, men har ikke været aktiv i den valgte datoperiode.';
-        if (vehicleStatus === 'leasingEnded')
-            return 'Køretøjet har overgået slut-dato for leasingperioden, men har fortsat været aktiv på lokationen i den valgte datoperiode. Gå til konfigurationen for at ændre datoen for den valgte slut-dato.';
-        if (vehicleStatus === 'locationChanged')
-            return 'Køretøjet har fået skiftet sin lokation, men har været aktiv på denne lokation i den valgte datoperiode. Dvs. køretøjet er tilknyttet en anden lokation end denne og vil fremover kun bidrage med nye ture til lokationen valgt i konfigurationen.';
-        return '';
-    };
-    const getStatusChip = (vehicleStatus: string) => {
-        if (vehicleStatus === 'dataMissing') return <Chip size="small" variant="outlined" color="error" label="Manglende metadata" />;
-        if (vehicleStatus === 'leasingEnded')
-            return <Chip size="small" style={{ color: '#ca8a04', borderColor: '#ca8a04' }} variant="outlined" label="Udløbet leasing" />;
-        if (vehicleStatus === 'locationChanged')
-            return <Chip size="small" style={{ color: '#ca8a04', borderColor: '#ca8a04' }} variant="outlined" label="Lokation skiftet" />;
-        if (vehicleStatus === 'notActive') return <Chip color="primary" variant="outlined" size="small" label="Ikke aktiv" />;
-        return <Chip variant="outlined" color="success" label="OK" />;
-    };
+    const handleSelectionChange = (model: GridRowSelectionModel) => {
+        onSelectionChange(Array.from(model.ids) as number[])
+    }
 
-    const toggleVehicle = (id: number) => {
-        const newSelected = selectedVehicleIds.includes(id) ? selectedVehicleIds.filter((v) => v !== id) : [...selectedVehicleIds, id];
-        onSelectionChange(newSelected);
-    };
-
-    const selectAll = () => {
-        const filteredVehicles = vehicles.filter((vehicle) => {
-            return !filteredDepartment || (vehicle.department ? vehicle.department === filteredDepartment : filteredDepartment === 'Ingen afdeling');
-        });
-        onSelectionChange(filteredVehicles.map((v) => v.id));
-    };
-
-    const deselectAll = () => {
-        const filteredVehicles = vehicles.filter((vehicle) => {
-            return !filteredDepartment || (vehicle.department ? vehicle.department === filteredDepartment : filteredDepartment === 'Ingen afdeling');
-        });
-
-        const filteredVehicleIds = filteredVehicles.map((v) => v.id);
-        const newSelectedVehicleIds = selectedVehicleIds.filter((id) => !filteredVehicleIds.includes(id));
-        onSelectionChange(newSelectedVehicleIds);
-    };
-    const headerStyle = 'p-3 text-gray-500 text-sm font-bold bg-gray-50';
-    const allDepartments = Array.from(new Set(vehicles.map((vehicle) => vehicle.department || 'Ingen afdeling')));
     return (
         <Card sx={{ p: 3 }}>
-            <div className="flex items-center justify-between mb-1">
-                <Typography variant="subtitle2" color="text.primary">
-                    Vælg køretøjer til simulering
-                </Typography>
-                {onDownload && (
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                Vælg køretøjer til simulering
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 3, display: 'block' }}>
+                Marker de køretøjer der skal indgå i simuleringen. Køretøjer med manglende metadata kan ikke vælges.
+            </Typography>
+            {onDownload && (
+                <div className="flex justify-end mb-1">
                     <Button onClick={onDownload} startIcon={<DownloadIcon />} size="small" variant="outlined">
                         Download dataperiode
                     </Button>
-                )}
+                </div>
+            )}
+            <DataGrid
+                rows={vehicles}
+                columns={columns}
+                getRowId={(row) => row.id}
+                density="compact"
+                loading={isLoading}
+                checkboxSelection
+                disableColumnResize
+                disableColumnSelector
+                rowSelectionModel={selectionModel}
+                onRowSelectionModelChange={handleSelectionChange}
+                isRowSelectable={(params) => params.row.status !== 'dataMissing'}
+                initialState={{
+                    pagination: { paginationModel: { pageSize: 20 } },
+                    sorting: { sortModel: [{ field: 'name', sort: 'asc' }] },
+                }}
+                pageSizeOptions={[10, 20, 50]}
+                localeText={{
+                    ...daDK.components.MuiDataGrid.defaultProps.localeText,
+                    paginationRowsPerPage: 'Rækker per side:',
+                    paginationDisplayedRows: ({ from, to, count }) => `${from}–${to} af ${count}`,
+                }}
+                slots={{
+                    baseCheckbox: RoundedCheckbox,
+                }}
+                sx={{
+                    mt: 1,
+                    cursor: 'pointer',
+                    '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
+                        outline: 'none',
+                    },
+                    '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
+                        outline: 'none',
+                    },
+                }}
+            />
+            <div className="flex gap-2 mt-3 justify-end">
+                <Button
+                    disabled={simulationDisabled}
+                    onClick={() => router.push('/fleet')}
+                    startIcon={<DirectionsCarIcon />}
+                    variant="contained"
+                    size="small"
+                >
+                    Manuel simulering
+                </Button>
+                <Button
+                    disabled={simulationDisabled}
+                    startIcon={<MemoryIcon />}
+                    onClick={async () => {
+                        await dispatch(prepareGoalSimulation())
+                        router.push('/goal')
+                    }}
+                    variant="contained"
+                    size="small"
+                >
+                    Automatisk simulering
+                </Button>
             </div>
-            <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
-                Marker de køretøjer der skal indgå i simuleringen. Køretøjer med manglende metadata kan ikke vælges.
-            </Typography>
-                <TableContainer
-                        className={`relative max-h-[calc(100vh-480px)] ${isLoading ? 'overflow-hidden' : 'overflow-auto'}`}
-                        sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
-                    >
-                        {isLoading && (
-                            <div className="absolute inset-0 flex justify-center items-center bg-white bg-opacity-70 z-10" style={{ pointerEvents: 'auto' }}>
-                                <CircularProgress />
-                            </div>
-                        )}
-                    <Table stickyHeader>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell padding="checkbox" className={headerStyle} />
-                                <TableCell className={headerStyle}>Køretøjer</TableCell>
-                                <TableCell className={headerStyle}>WLTP</TableCell>
-                                <TableCell className={headerStyle}>Omkostning / år</TableCell>
-                                {isMediumScreen && (
-                                    <TableCell className={headerStyle}>
-                                        <div className="flex items-center">
-                                            <DepartmentVehicleFilter
-                                                allDepartments={allDepartments}
-                                                selectedDepartment={filteredDepartment}
-                                                setSelectedDepartment={setFilteredDepartments}
-                                            />
-                                        </div>
-                                    </TableCell>
-                                )}
-                                {isLargeScreen && <TableCell className={headerStyle}>Lokation</TableCell>}
-                                {isXlScreen && <TableCell className={headerStyle}>Slut leasing</TableCell>}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {vehicles
-                                .sort((a, b) => {
-                                    if ((a.status !== 'ok') !== (b.status !== 'ok')) {
-                                        // sort first on status
-                                        return a.status !== 'ok' ? -1 : 1;
-                                    }
-                                    const addressA = a.location?.address || ''; // second on location
-                                    const addressB = b.location?.address || '';
-                                    if (addressA !== addressB) {
-                                        return addressA.localeCompare(addressB);
-                                    }
-                                    return a.name.localeCompare(b.name); // finally on vehicle name
-                                })
-                                .map((vehicle, index) => {
-                                    if (
-                                        !(
-                                            (// if departments is selected and the vehicle has that department
-                                            (!filteredDepartment || // if no departments is selected at all
-                                            (vehicle.department && filteredDepartment === vehicle.department) || (!vehicle.department && filteredDepartment === 'Ingen afdeling'))) // if departments is not set on the vehicle and departments is selected
-                                        )
-                                    ) {
-                                        return;
-                                    }
-                                    const isChecked = selectedVehicleIds.includes(vehicle.id);
-                                    const leasingDate = vehicle.end_leasing ? new Date(vehicle.end_leasing).toLocaleDateString() : 'Ejet';
-                                    const rowStyle = `p-2 align-middle`;
-
-                                    return (
-                                        <Tooltip key={`${vehicle.id}_tooltip`} placement="top" title={getToolTipInfo(vehicle.status)}>
-                                            <TableRow
-                                                key={vehicle.id}
-                                                className={`cursor-pointer hover:bg-gray-50 text-sm ${
-                                                    index < vehicles.length - 1 ? 'border-b border-gray-100' : ''
-                                                }`}
-                                                onClick={() => toggleVehicle(vehicle.id)}
-                                            >
-                                                <TableCell padding="checkbox" className={rowStyle}>
-                                                    {vehicle.status !== 'dataMissing' && (
-                                                        <Checkbox
-                                                            sx={{ '&:hover': { bgcolor: 'transparent' } }}
-                                                            checkedIcon={<BpCheckedIcon />}
-                                                            icon={<BpIcon />}
-                                                            checked={isChecked}
-                                                            onChange={() => toggleVehicle(vehicle.id)}
-                                                        />
-                                                    )}
-                                                </TableCell>
-                                                <TableCell className={`${rowStyle}`}>
-                                                    <div className="items-center flex space-x-1">
-                                                        {iconLookup(vehicle.type?.name)} {getTextToolTip(vehicle.name, 35)}{' '}
-                                                        {vehicle.status !== 'ok' && <div className="pl-2">{getStatusChip(vehicle.status)}</div>}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className={rowStyle}>{propellantFormat(vehicle)}</TableCell>
-                                                <TableCell className={rowStyle}>
-                                                    {vehicle.omkostning_aar ? `${vehicle.omkostning_aar.toLocaleString()}` : '-'}
-                                                </TableCell>
-                                                {isMediumScreen && <TableCell className={rowStyle}>{vehicle.department || 'Ingen afdeling'}</TableCell>}
-                                                {isLargeScreen && <TableCell className={rowStyle}>{getTextToolTip(vehicle.location?.address) || ''}</TableCell>}
-                                                {isXlScreen && <TableCell className={rowStyle}>{leasingDate}</TableCell>}
-                                            </TableRow>
-                                        </Tooltip>
-                                    );
-                                })}
-                        </TableBody>
-                    </Table>
-                    <div className="sticky bottom-0 bg-white border-t border-gray-200 flex justify-between items-center sm:flex-row space-y-2 sm:space-y-0 flex-col px-3 py-3">
-                        <div className="flex items-center gap-3">
-                            <Typography variant="body2" color="text.secondary">
-                                {selectedVehicleIds.length} af {vehicles.length} valgt
-                            </Typography>
-                            <div className="flex gap-1">
-                                <Button variant="text" size="small" onClick={selectAll} sx={{ textTransform: 'none', fontSize: '0.8125rem', minWidth: 0 }}>
-                                    Vælg alle
-                                </Button>
-                                <Button variant="text" size="small" color="inherit" onClick={deselectAll} sx={{ textTransform: 'none', fontSize: '0.8125rem', minWidth: 0 }}>
-                                    Ryd
-                                </Button>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <Button
-                                disabled={simulationDisabled}
-                                onClick={() => router.push('/fleet')}
-                                startIcon={<DirectionsCarIcon />}
-                                variant="contained"
-                                size="small"
-                            >
-                                Manuel simulering
-                            </Button>
-                            <Button
-                                disabled={simulationDisabled}
-                                startIcon={<MemoryIcon />}
-                                onClick={async () => {
-                                  await dispatch(prepareGoalSimulation());
-                                  router.push('/goal');
-                              }}
-                                variant="contained"
-                                size="small"
-                            >
-                                Automatisk simulering
-                            </Button>
-                        </div>
-                    </div>
-                </TableContainer>
         </Card>
-    );
+    )
 }
