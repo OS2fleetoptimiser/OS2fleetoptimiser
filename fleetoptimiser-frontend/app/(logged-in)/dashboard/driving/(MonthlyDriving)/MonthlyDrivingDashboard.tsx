@@ -2,7 +2,7 @@
 
 import ApiError from '@/components/ApiError';
 import useGetDrivingData from '@/components/hooks/useGetDrivingData';
-import { Card, CardContent, CircularProgress } from '@mui/material';
+import { Box, Card, CircularProgress, Typography } from '@mui/material';
 import MonthlyDrivingGraph from './MonthlyDrivingGraph';
 import { getInterval } from '../../ShiftNameTranslater';
 import dayjs from 'dayjs';
@@ -67,43 +67,41 @@ const MonthlyDrivingDashboard = ({ availableshifts, end, start, departments, for
 
     return (
         <div>
-            <h1 className="mb-4 text-xl">Kørte kilometer pr. måned</h1>
-            <div className="flex">
-                {dashboardData.data && (
-                    <>
-                        <Card sx={{ textAlign: 'center' }}>
-                            <CardContent>
-                                <h4>Kørte kilometer</h4>
-                                <p>{Math.round(dashboardData.data.totalDriven).toLocaleString()} km</p>
-                            </CardContent>
-                        </Card>
-                        <Card sx={{ textAlign: 'center' }}>
-                            <CardContent>
-                                <h4>Køretøjer der indgår i grafen</h4>
-                                <p>{dashboardData.data.uniqueVehicles}</p>
-                            </CardContent>
-                        </Card>
-                    </>
-                )}
-            </div>
-            <>
-                {dashboardData.isError && <ApiError retryFunction={dashboardData.refetch}>Der opstod en netværksfejl</ApiError>}
-                {dashboardData.isPending && (
-                    <div className="p-10 flex justify-center">
-                        <CircularProgress />
-                    </div>
-                )}
-                {dashboardData.data &&
-                    (dashboardData.data.drivingData.length > 0 ? (
+            {dashboardData.isError && <ApiError retryFunction={dashboardData.refetch}>Der opstod en netværksfejl</ApiError>}
+            {dashboardData.isPending && (
+                <div className="p-10 flex justify-center">
+                    <CircularProgress />
+                </div>
+            )}
+            {dashboardData.data && (
+                dashboardData.data.drivingData.length > 0 ? (
+                    <Card sx={{ p: 3 }}>
+                        <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                            Kørte kilometer pr. måned
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ mb: 3, display: 'block' }}>
+                            Grafen viser det samlede antal kørte kilometer pr. måned i den valgte periode.
+                        </Typography>
+                        <Box className="flex w-fit divide-x divide-gray-300 py-3 mb-4 rounded-lg" sx={{ bgcolor: '#fcfcfc' }}>
+                            <div className="px-5">
+                                <div className="text-xs text-gray-500">Kørte kilometer</div>
+                                <div className="text-lg font-semibold">{Math.round(dashboardData.data.totalDriven).toLocaleString()} km</div>
+                            </div>
+                            <div className="px-5">
+                                <div className="text-xs text-gray-500">Køretøjer i grafen</div>
+                                <div className="text-lg font-semibold">{dashboardData.data.uniqueVehicles}</div>
+                            </div>
+                        </Box>
                         <div className="h-96">
                             <DownloadableGraph filename={`maanedelig_koersel-${fileNameAppendix}.png`}>
-                                <MonthlyDrivingGraph data={dashboardData.data.drivingData} colorMapper={shiftColorMapper}></MonthlyDrivingGraph>
+                                <MonthlyDrivingGraph data={dashboardData.data.drivingData} colorMapper={shiftColorMapper} />
                             </DownloadableGraph>
                         </div>
-                    ) : (
-                        <p className="m-4">Der er ingen kørselsdata for de valgte filtre.</p>
-                    ))}
-            </>
+                    </Card>
+                ) : (
+                    <p className="m-4">Der er ingen kørselsdata for de valgte filtre.</p>
+                )
+            )}
         </div>
     );
 };

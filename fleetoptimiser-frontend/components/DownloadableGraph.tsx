@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
-import Tooltip from '@mui/material/Tooltip';
-import { IconButton } from '@mui/material';
+import { Button } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 
 type DownloadableGraphProps = {
@@ -81,11 +80,15 @@ export const DownloadableGraph = ({ filename = 'graph.png', children, downloadPl
     return (
         <div className="w-full h-full relative" ref={containerRef}>
             {children}
-            <Tooltip title="Download som billede">
-                <IconButton onClick={handleDownload} className={`${downloadPlacement ?? 'absolute top-0 right-2'} text-gray-700 hover:text-black`}>
-                    <DownloadIcon fontSize="small" />
-                </IconButton>
-            </Tooltip>
+            <Button
+                onClick={handleDownload}
+                size="small"
+                startIcon={<DownloadIcon fontSize="small" />}
+                className={downloadPlacement ?? 'absolute top-0 right-0'}
+                sx={{ textTransform: 'none', color: 'text.secondary' }}
+            >
+                Download
+            </Button>
         </div>
     );
 };

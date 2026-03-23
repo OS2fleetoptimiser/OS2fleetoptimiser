@@ -8,7 +8,7 @@ import AddFilter from '@/components/AddFilter';
 import { Filters } from '../(filters)/FilterHeader';
 import { FilterHeaderWrapper } from '@/app/(logged-in)/dashboard/(filters)/FilterWrapper';
 import useGetSettings from '@/components/hooks/useGetSettings';
-import { Card, CardContent, CircularProgress } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 import PageTitle from '@/components/PageTitle';
 
 type Props = {
@@ -44,57 +44,39 @@ export default function DrivingDashboard({ searchParams: searchParamsPromise }: 
             <PageTitle title="Kørsel" />
             <FilterHeaderWrapper shiftFilter={false}></FilterHeaderWrapper>
 
-            {!enabled && (
-                <Card className="mb-4">
-                    <CardContent>
-                        <AddFilter />
-                    </CardContent>
-                </Card>
-            )}
+            {!enabled && <AddFilter />}
             {enabled && (
-                <div className="space-y-6">
-                    <Card>
-                        <CardContent>
-                            <DailyDrivingDashboard
-                                start={searchParams.startdate}
-                                end={searchParams.enddate}
-                                locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
-                                forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
-                                departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
-                                vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
-                                availableshifts={availableShifts}
-                                shifts={typeof searchParams.shifts === 'string' ? [+searchParams.shifts] : searchParams.shifts?.map((shift) => +shift)}
-                            ></DailyDrivingDashboard>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent>
-                            <AverageDrivingDashboard
-                                start={searchParams.startdate}
-                                end={searchParams.enddate}
-                                locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
-                                forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
-                                departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
-                                vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
-                                availableshifts={availableShifts}
-                                shifts={typeof searchParams.shifts === 'string' ? [+searchParams.shifts] : searchParams.shifts?.map((shift) => +shift)}
-                            ></AverageDrivingDashboard>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent>
-                            <MonthlyDrivingDashboard
-                                start={searchParams.startdate}
-                                end={searchParams.enddate}
-                                locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
-                                forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
-                                departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
-                                vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
-                                availableshifts={availableShifts}
-                                shifts={typeof searchParams.shifts === 'string' ? [+searchParams.shifts] : searchParams.shifts?.map((shift) => +shift)}
-                            ></MonthlyDrivingDashboard>
-                        </CardContent>
-                    </Card>
+                <div className="space-y-4">
+                    <DailyDrivingDashboard
+                        start={searchParams.startdate}
+                        end={searchParams.enddate}
+                        locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
+                        forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
+                        departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
+                        vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
+                        availableshifts={availableShifts}
+                        shifts={typeof searchParams.shifts === 'string' ? [+searchParams.shifts] : searchParams.shifts?.map((shift) => +shift)}
+                    />
+                    <AverageDrivingDashboard
+                        start={searchParams.startdate}
+                        end={searchParams.enddate}
+                        locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
+                        forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
+                        departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
+                        vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
+                        availableshifts={availableShifts}
+                        shifts={typeof searchParams.shifts === 'string' ? [+searchParams.shifts] : searchParams.shifts?.map((shift) => +shift)}
+                    />
+                    <MonthlyDrivingDashboard
+                        start={searchParams.startdate}
+                        end={searchParams.enddate}
+                        locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
+                        forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
+                        departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
+                        vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
+                        availableshifts={availableShifts}
+                        shifts={typeof searchParams.shifts === 'string' ? [+searchParams.shifts] : searchParams.shifts?.map((shift) => +shift)}
+                    />
                 </div>
             )}
         </>
