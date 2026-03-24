@@ -1,13 +1,17 @@
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import { Card, Typography } from '@mui/material'
 
 export const LocationsWidget = ({ locations }: { locations: string[] }) => {
     return (
-        <div className="flex flex-col text-sm mb-2">
-            <div className="flex font-bold text-black items-center">
-                <HomeOutlinedIcon fontSize="small" className="text-gray-500 mr-2" />
+        <Card sx={{ p: 2, flex: 1 }}>
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
                 Lokationer
-            </div>
-            <div className="flex flex-row space-x-1 mt-1 text-gray-500 ml-1">{locations.join(', ')}</div>
-        </div>
-    );
-};
+            </Typography>
+            <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                {locations.length}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+                valgt til simulering
+            </Typography>
+        </Card>
+    )
+}

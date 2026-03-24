@@ -1,9 +1,8 @@
 import { LocationsWidget } from '@/app/(logged-in)/fleet/LocationsWidget';
 import { DatesWidget } from '@/app/(logged-in)/fleet/DatesWidget';
-import { SimulationSettingsWidget } from '@/app/(logged-in)/fleet/SimulationSettingsWidget';
-import { Alert, Button } from '@mui/material';
+import { VehicleCountWidget } from '@/app/(logged-in)/fleet/VehicleCountWidget';
+import { Alert } from '@mui/material';
 import { VehiclesWidget } from '@/app/(logged-in)/fleet/VehiclesWidget';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { useAppSelector } from '@/components/redux/hooks';
 import useSimulateFleet from '@/components/hooks/useSimulateFleet';
 
@@ -28,32 +27,27 @@ export const FleetSimulation = ({ simulation, setTab }: FleetSimulationProps) =>
     };
     return (
         <div>
-            <LocationsWidget
-                locations={
-                    locationAddresses
-                        ? locationAddresses.filter((location) => locations.includes(location.id)).map((location) => location.address)
-                        : locations.map((loc) => `Lokation ID: ${loc}`)  // fallback to displaying id
-                }
-            />
-            <DatesWidget startDate={startDate} endDate={endDate} manualSimulation={true} />
-            <SimulationSettingsWidget manualSimulation={true} />
+            <div className="grid grid-cols-3 gap-4 mb-4 max-w-[75%]">
+                <LocationsWidget
+                    locations={
+                        locationAddresses
+                            ? locationAddresses.filter((location) => locations.includes(location.id)).map((location) => location.address)
+                            : locations.map((loc) => `Lokation ID: ${loc}`)
+                    }
+                />
+                <DatesWidget startDate={startDate} endDate={endDate} manualSimulation={true} />
+                <VehicleCountWidget manualSimulation={true} />
+            </div>
             {simulationDisabled && (
                 <Alert className="w-64 mt-2" variant="filled" severity="error">
                     Vagtlagene på lokationerne er ikke ens. Opdater dem for at simulere.
                 </Alert>
             )}
-            <VehiclesWidget manualSimulation={true} />
-            <div className="mt-2 w-full flex justify-end">
-                <Button
-                    onClick={startSimulationGoToResultTab}
-                    disabled={simulationDisabled}
-                    color="primary"
-                    variant="contained"
-                    endIcon={<ArrowForwardIosIcon />}
-                >
-                    Start simulering
-                </Button>
-            </div>
+            <VehiclesWidget
+                manualSimulation={true}
+                onStart={startSimulationGoToResultTab}
+                startDisabled={simulationDisabled}
+            />
         </div>
     );
 };

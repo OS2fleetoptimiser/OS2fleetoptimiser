@@ -33,8 +33,8 @@ export const SimulationSettingsWidget = ({ manualSimulation }: { manualSimulatio
         <div>
             <Button
                 onClick={() => setIsOpen(true)}
-                className="mt-4 text-gray-700 border-gray-700"
                 variant="outlined"
+                color="inherit"
                 startIcon={<SettingsOutlinedIcon />}
                 size="small"
             >

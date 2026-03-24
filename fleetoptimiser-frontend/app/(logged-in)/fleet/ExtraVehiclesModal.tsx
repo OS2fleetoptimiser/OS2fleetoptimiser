@@ -63,7 +63,7 @@ const ExtraVehicleModal = ({ buttonAppearance = false }: { buttonAppearance?: bo
     return (
         <>
             {buttonAppearance && (
-                <Button size="small" onClick={handleOpen} variant="outlined" className="text-black border-black" startIcon={<AddIcon />}>
+                <Button size="small" onClick={handleOpen} variant="outlined" color="inherit" startIcon={<AddIcon />}>
                     Tilføj testkøretøj
                 </Button>
             )}

@@ -28,59 +28,21 @@ export default function FleetSimulationHandler({ simulationId }: { simulationId?
                 value={value}
                 onChange={(e, v) => setValue(v)}
                 aria-label="Simulerings Tabs"
-                TabIndicatorProps={{
-                    hidden: true,
-                }}
-                sx={{
-                    // sx necessary to access these styles
-                    '& .MuiTabs-flexContainer': {
-                        backgroundColor: '#f5f5f5',
-                        borderRadius: '5px',
-                        padding: '6px',
-                        width: 'fit-content',
-                    },
-                    '& .MuiTab-root': {
-                        borderRadius: '5px',
-                        backgroundColor: '#f5f5f5',
-                        color: 'gray',
-                        minWidth: 120,
-                        minHeight: 36,
-                        padding: '6px 16px',
-                        '&:hover': {
-                            backgroundColor: '#e0e0e0',
-                        },
-                    },
-                    '& .MuiTab-root.Mui-selected': {
-                        backgroundColor: 'white',
-                        color: 'black',
-                        fontWeight: 'bold',
-                    },
-                }}
             >
                 <Tab
                     value={0}
                     label="Simuleringsopsætning"
                     icon={<TuneIcon />}
                     iconPosition="start"
-                    sx={{
-                        '&.Mui-selected': {
-                            backgroundColor: 'white',
-                        },
-                    }}
                 />
                 <Tab
                     value={1}
                     label="Resultater"
                     icon={<InsightsIcon />}
                     iconPosition="start"
-                    sx={{
-                        '&.Mui-selected': {
-                            backgroundColor: 'white',
-                        },
-                    }}
                 />
             </Tabs>
-            <div className="p-1 bg-white mt-4">
+            <div className="mt-4">
                 {value === 0 && <FleetSimulation simulation={simulation} setTab={setValue} />}
                 {value === 1 && (
                     <SimulationResultsPage
