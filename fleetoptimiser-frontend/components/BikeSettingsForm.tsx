@@ -1,9 +1,10 @@
-import ToolTip from '@/components/ToolTip';
-import { Button, Divider, TextField } from '@mui/material';
+import { Alert, Box, Button, Paper, TextField, Typography } from '@mui/material';
 import { FieldArray, Form, Formik } from 'formik';
 import { useState } from 'react';
 import { InferType, number, object, array, string } from 'yup';
 import SaveIcon from '@mui/icons-material/Save';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import usePatchConfigurations from '@/components/hooks/usePatchConfigurations';
 import { useAppDispatch } from './redux/hooks';
 import { setBikeSettings } from './redux/SimulationSlice';
@@ -58,6 +59,17 @@ const bikeSchema = object({
 });
 
 type FormData = InferType<typeof bikeSchema>;
+
+const SectionHeader = ({ title, description }: { title: string; description?: string }) => (
+    <Box sx={{ px: 2.5, py: 1.5, bgcolor: 'action.hover', borderBottom: 1, borderColor: 'divider' }}>
+        <Typography variant="subtitle2" color="text.primary">{title}</Typography>
+        {description && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.4, mt: 0.25 }}>
+                {description}
+            </Typography>
+        )}
+    </Box>
+);
 
 const BikeForm = (props: FormData) => {
     const { hasWritePrivilege } = useWritePrivilegeContext();
@@ -122,153 +134,170 @@ const BikeForm = (props: FormData) => {
             >
                 {({ values, touched, errors, handleChange, isSubmitting, status, handleSubmit }) => {
                     return (
-                        <Form>
-                            <TextField
-                                className="subtle w-1/4"
-                                id="maxTripDistance"
-                                name="maxTripDistance"
-                                label="Maks. km. pr. tur"
-                                onChange={handleChange}
-                                value={values.maxTripDistance}
-                                error={touched.maxTripDistance && Boolean(errors.maxTripDistance)}
-                                helperText={
-                                    (touched.maxTripDistance && errors.maxTripDistance) || 'Maksimal længde på individuelle ture, der kan køres på cykel.'
-                                }
-                            />
-                            <TextField
-                                className="subtle w-1/4 mx-4"
-                                id="percentTaken"
-                                name="percentTaken"
-                                label="Procent af disse ture som køres"
-                                value={values.percentTaken}
-                                onChange={handleChange}
-                                error={touched.percentTaken && Boolean(errors.percentTaken)}
-                                helperText={
-                                    (touched.percentTaken && errors.percentTaken) ||
-                                    'Hvor mange procent af ture, der kvalificerer sig til at blive allokeret til cykel, skal accepteres.'
-                                }
-                            />
-                            <Divider className="my-8" />
-                            <TextField
-                                className="subtle w-1/4"
-                                id="bikeSpeed"
-                                name="bikeSpeed"
-                                label="Almindelig cykel, maks. gnms. hastighed"
-                                value={values.bikeSpeed}
-                                onChange={handleChange}
-                                error={touched.bikeSpeed && Boolean(errors.bikeSpeed)}
-                                helperText={touched.bikeSpeed && errors.bikeSpeed}
-                            />
-                            <TextField
-                                className="subtle w-1/4 mx-4"
-                                id="electricalBikeSpeed"
-                                name="electricalBikeSpeed"
-                                label="Elcykel, maks. gnms. hastighed"
-                                value={values.electricalBikeSpeed}
-                                onChange={handleChange}
-                                error={touched.electricalBikeSpeed && Boolean(errors.electricalBikeSpeed)}
-                                helperText={touched.electricalBikeSpeed && errors.electricalBikeSpeed}
-                            />
-                            <p>
-                                <span className="text-explanation leading-explanation text-xs w-1/2 block ml-4 mt-2">
-                                    Hvor hurtigt (km/t) kan der køres på cykler - effektiv køretid ekskl. pause/parkering.<br></br>
-                                    Vær opmærksom på, at parkeringstiden er ekskluderet. Det anbefales at sætte hastigheden højere end den forventede hastighed,
-                                    for at maksimere antallet af realistiske cykelruter.
-                                </span>
-                            </p>
-                            <Divider className="my-6" />
-                            <h3 className="mb-4">
-                                Tidsrum hvor cykler kan tildeles
-                                <ToolTip>
-                                    Det tidsrum hvor ture på cykel kan accepteres. Der kan f.eks. være politik om, at cykler kun må bruges mellem 8:00 og 15:00.
-                                    Det er muligt at tilføje flere end et tidsrum.
-                                </ToolTip>
-                            </h3>
-                            <FieldArray name="bikeIntervals">
-                                {({ insert, remove, push }) => (
-                                    <div className="mb-4">
-                                        {values.bikeIntervals &&
-                                            values.bikeIntervals.map((interval, index) => (
-                                                <div className="flex mb-4" key={index}>
-                                                    <TextField
-                                                        className="mr-2"
-                                                        name={`bikeIntervals.${index}.start`}
-                                                        id={`bikeIntervals.${index}.start`}
-                                                        label="Start"
-                                                        onChange={handleChange}
-                                                        value={interval.start}
-                                                        type="time"
-                                                        // @ts-expect-error Formik nested array touched/errors type mismatch
-                                                        error={touched.bikeIntervals?.[index].start && Boolean(errors.bikeIntervals?.[index].start)}
-                                                        // @ts-expect-error Formik nested array touched/errors type mismatch
-                                                        helperText={touched.bikeIntervals?.[index].start && errors.bikeIntervals?.[index].start}
-                                                    />
-                                                    <TextField
-                                                        className="mr-2"
-                                                        name={`bikeIntervals.${index}.end`}
-                                                        id={`bikeIntervals.${index}.end`}
-                                                        label="Slut"
-                                                        onChange={handleChange}
-                                                        value={interval.end}
-                                                        type="time"
-                                                        // @ts-expect-error Formik nested array touched/errors type mismatch
-                                                        error={touched.bikeIntervals?.[index].end && Boolean(errors.bikeIntervals?.[index].end)}
-                                                        // @ts-expect-error Formik nested array touched/errors type mismatch
-                                                        helperText={touched.bikeIntervals?.[index].end && errors.bikeIntervals?.[index].end}
-                                                    />
+                        <>
+                            {status === 'success' && (
+                                <Alert className="mb-3" severity="success">Ændringerne er blevet gemt</Alert>
+                            )}
+                            {status === 'ServerError' && (
+                                <Alert className="mb-3" severity="error">Der opstod en fejl</Alert>
+                            )}
+                            <Form>
+                                <div className="space-y-4">
+                                    <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                                        <SectionHeader
+                                            title="Turindstillinger"
+                                            description="Maksimal turlængde og andel af kvalificerede rundture der allokeres til cykel."
+                                        />
+                                        <div className="grid grid-cols-2 gap-3 p-4">
+                                            <TextField
+                                                id="maxTripDistance"
+                                                name="maxTripDistance"
+                                                label="Maks. km pr. tur"
+                                                size="small"
+                                                onChange={handleChange}
+                                                value={values.maxTripDistance}
+                                                error={touched.maxTripDistance && Boolean(errors.maxTripDistance)}
+                                                helperText={touched.maxTripDistance && errors.maxTripDistance}
+                                            />
+                                            <TextField
+                                                id="percentTaken"
+                                                name="percentTaken"
+                                                label="Procent af ture som køres (%)"
+                                                size="small"
+                                                value={values.percentTaken}
+                                                onChange={handleChange}
+                                                error={touched.percentTaken && Boolean(errors.percentTaken)}
+                                                helperText={touched.percentTaken && errors.percentTaken}
+                                            />
+                                        </div>
+                                    </Paper>
 
-                                                    <Button
-                                                        onClick={() => {
-                                                            remove(index);
-                                                        }}
-                                                        color="error"
-                                                    >
-                                                        Slet
+                                    <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                                        <SectionHeader
+                                            title="Hastighed"
+                                            description="Effektiv køretid i km/t ekskl. parkering. Det anbefales at sætte hastigheden højere end forventet for at maksimere antallet af realistiske cykelruter."
+                                        />
+                                        <div className="grid grid-cols-2 gap-3 p-4">
+                                            <TextField
+                                                id="bikeSpeed"
+                                                name="bikeSpeed"
+                                                label="Almindelig cykel (km/t)"
+                                                size="small"
+                                                value={values.bikeSpeed}
+                                                onChange={handleChange}
+                                                error={touched.bikeSpeed && Boolean(errors.bikeSpeed)}
+                                                helperText={touched.bikeSpeed && errors.bikeSpeed}
+                                            />
+                                            <TextField
+                                                id="electricalBikeSpeed"
+                                                name="electricalBikeSpeed"
+                                                label="Elcykel (km/t)"
+                                                size="small"
+                                                value={values.electricalBikeSpeed}
+                                                onChange={handleChange}
+                                                error={touched.electricalBikeSpeed && Boolean(errors.electricalBikeSpeed)}
+                                                helperText={touched.electricalBikeSpeed && errors.electricalBikeSpeed}
+                                            />
+                                        </div>
+                                    </Paper>
+
+                                    <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                                        <SectionHeader
+                                            title="Tidsrum for cykeltildeling"
+                                            description="Angiv hvornår rundture kan tildeles cykler. Der kan tilføjes flere tidsrum."
+                                        />
+                                        <FieldArray name="bikeIntervals">
+                                            {({ remove, push }) => (
+                                                <div className="p-4 space-y-3">
+                                                    {values.bikeIntervals &&
+                                                        values.bikeIntervals.map((interval, index) => (
+                                                            <div className="flex items-center gap-3" key={index}>
+                                                                <Typography variant="caption" color="text.secondary" sx={{ width: 64, fontWeight: 600 }}>
+                                                                    Interval {index + 1}
+                                                                </Typography>
+                                                                <TextField
+                                                                    name={`bikeIntervals.${index}.start`}
+                                                                    id={`bikeIntervals.${index}.start`}
+                                                                    label="Start"
+                                                                    onChange={handleChange}
+                                                                    value={interval.start}
+                                                                    type="time"
+                                                                    size="small"
+                                                                    sx={{ width: 130 }}
+                                                                    slotProps={{ inputLabel: { shrink: true } }}
+                                                                    // @ts-expect-error Formik nested array touched/errors type mismatch
+                                                                    error={touched.bikeIntervals?.[index]?.start && Boolean(errors.bikeIntervals?.[index]?.start)}
+                                                                    // @ts-expect-error Formik nested array touched/errors type mismatch
+                                                                    helperText={touched.bikeIntervals?.[index]?.start && errors.bikeIntervals?.[index]?.start}
+                                                                />
+                                                                <TextField
+                                                                    name={`bikeIntervals.${index}.end`}
+                                                                    id={`bikeIntervals.${index}.end`}
+                                                                    label="Slut"
+                                                                    onChange={handleChange}
+                                                                    value={interval.end}
+                                                                    type="time"
+                                                                    size="small"
+                                                                    sx={{ width: 130 }}
+                                                                    slotProps={{ inputLabel: { shrink: true } }}
+                                                                    // @ts-expect-error Formik nested array touched/errors type mismatch
+                                                                    error={touched.bikeIntervals?.[index]?.end && Boolean(errors.bikeIntervals?.[index]?.end)}
+                                                                    // @ts-expect-error Formik nested array touched/errors type mismatch
+                                                                    helperText={touched.bikeIntervals?.[index]?.end && errors.bikeIntervals?.[index]?.end}
+                                                                />
+                                                                <Button onClick={() => remove(index)} color="error" variant="outlined" size="small" startIcon={<DeleteOutlineIcon />}>
+                                                                    Slet
+                                                                </Button>
+                                                            </div>
+                                                        ))}
+                                                    {touched.bikeIntervals && errors.bikeIntervals && typeof errors.bikeIntervals === 'string' && (
+                                                        <Typography variant="caption" color="error" sx={{ display: 'block' }}>
+                                                            {errors.bikeIntervals}
+                                                        </Typography>
+                                                    )}
+                                                    <Button type="button" size="small" variant="outlined" onClick={() => push({ start: '08:00', end: '10:00' })} startIcon={<AddIcon />}>
+                                                        Tilføj tidsinterval
                                                     </Button>
                                                 </div>
-                                            ))}
-                                        {touched.bikeIntervals && errors.bikeIntervals && (
-                                            <p className="text-red-500">Tidsintervallerne for cykelkørsel må ikke overlappe</p>
-                                        )}
-                                        <Button type="button" onClick={() => push({ start: '08:00', end: '10:00' })}>
-                                            Tilføj tidsinterval
+                                            )}
+                                        </FieldArray>
+                                    </Paper>
+
+                                    <div className="flex gap-2 justify-end">
+                                        <Button
+                                            disabled={!hasWritePrivilege}
+                                            type="button"
+                                            onClick={() => {
+                                                setSubmitType('local');
+                                                handleSubmit();
+                                            }}
+                                            endIcon={<SaveIcon />}
+                                            loading={isSubmitting}
+                                            loadingPosition="end"
+                                            variant="outlined"
+                                            size="small"
+                                        >
+                                            Gem for nuværende simulering
+                                        </Button>
+                                        <Button
+                                            disabled={!hasWritePrivilege}
+                                            type="button"
+                                            onClick={() => {
+                                                setSubmitType('global');
+                                                handleSubmit();
+                                            }}
+                                            endIcon={<SaveIcon />}
+                                            loading={isSubmitting}
+                                            loadingPosition="end"
+                                            variant="contained"
+                                            size="small"
+                                        >
+                                            Gem globalt
                                         </Button>
                                     </div>
-                                )}
-                            </FieldArray>
-                            <div className="flex items-end flex-col">
-                                <Button
-                                    disabled={!hasWritePrivilege}
-                                    type="button"
-                                    onClick={() => {
-                                        setSubmitType('local');
-                                        handleSubmit();
-                                    }}
-                                    endIcon={<SaveIcon />}
-                                    loading={isSubmitting}
-                                    loadingPosition="end"
-                                    variant="contained"
-                                    className="mb-2"
-                                >
-                                    <span>Gem for nuværende simulering</span>
-                                </Button>
-                                <Button
-                                    disabled={!hasWritePrivilege}
-                                    type="button"
-                                    onClick={() => {
-                                        setSubmitType('global');
-                                        handleSubmit();
-                                    }}
-                                    endIcon={<SaveIcon />}
-                                    loading={isSubmitting}
-                                    loadingPosition="end"
-                                    variant="contained"
-                                >
-                                    <span>Gem globalt</span>
-                                </Button>
-                            </div>
-                            {status === 'ServerError' && <p>Der opstod en fejl på serveren der forhindrede ændringerne i at blive gemt</p>}
-                        </Form>
+                                </div>
+                            </Form>
+                        </>
                     );
                 }}
             </Formik>
