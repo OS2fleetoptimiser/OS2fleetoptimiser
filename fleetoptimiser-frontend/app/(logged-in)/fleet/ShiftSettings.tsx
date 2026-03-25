@@ -1,55 +1,33 @@
-import { Button, Modal } from '@mui/material';
-import { AiOutlineClose } from 'react-icons/ai';
+import { Button, Dialog, DialogTitle, DialogContent, IconButton, Typography } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { useState } from 'react';
 import { ShiftForm } from '@/components/ShiftSettingsForm';
 import { useAppSelector } from '@/components/redux/hooks';
 import { shift_settings } from '@/components/hooks/useGetSettings';
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
-type organisedLocationShifts = Record<string, shift_settings>;
-
 const ShiftModal = ({ locationId, buttonText, locationIds }: { locationId?: number; buttonText?: string; locationIds?: number[] }) => {
     const [open, setOpen] = useState<boolean>(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-    const locationIdSettings = useAppSelector(
+    const singleLocationShifts = useAppSelector(
         (state) =>
-            state.simulation.settings.shift_settings.find((shiftSettings) => shiftSettings.location_id === locationId) || {
+            state.simulation.settings.shift_settings.find((s) => s.location_id === locationId) || {
                 location_id: locationId,
                 shifts: [],
             }
     );
 
-    const locationIdssSettings = useAppSelector((state) => {
+    const allLocationShifts = useAppSelector((state) => {
         const { location_ids, settings } = state.simulation;
 
-        return (location_ids || []).reduce((acc: organisedLocationShifts, locationId) => {
-            const shiftSetting = settings.shift_settings.find((shiftLocation) => shiftLocation.location_id === locationId);
-
-            acc[locationId] = shiftSetting || { location_id: locationId, shifts: [], address: '' };
-
+        return (location_ids || []).reduce((acc: Record<number, shift_settings>, locId) => {
+            const shiftSetting = settings.shift_settings.find((s) => s.location_id === locId);
+            acc[locId] = shiftSetting || { location_id: locId, shifts: [], address: '' };
             return acc;
         }, {});
     });
-
-    let modalContent
-    if (locationId) {
-        modalContent = locationIdSettings && <ShiftForm locationId={locationId} shifts={locationIdSettings.shifts}></ShiftForm>
-    }
-    else {
-        modalContent = locationIds && locationIds.map((locId) => (
-            <div key={'shiftdiv' + locationIdssSettings[locId].location_id} className="my-8">
-                <ShiftForm
-                    key={'ShiftFormKey' + locationIdssSettings[locId].location_id}
-                    locationId={locationIdssSettings[locId].location_id}
-                    shifts={locationIdssSettings[locId].shifts}
-                    addressName={locationIdssSettings[locId].address}
-                    closeIt={handleClose}
-                ></ShiftForm>
-            </div>
-        ))
-    }
 
     return (
         <>
@@ -60,18 +38,32 @@ const ShiftModal = ({ locationId, buttonText, locationIds }: { locationId?: numb
                                 className="text-blue-500 hover:text-blue-400 rounded-2xl p-1 bg-blue-100"/>
                 <span>Vagtlag</span>
             </div>}
-            <Modal open={open} onClose={handleClose} className="m-10 overflow-y-auto mx-auto flex items-center justify-center">
-                <div className="relative max-h-[80vh] w-[550px] bg-white rounded p-8 overflow-y-auto">
-                    <div className="flex justify-between pb-2 mb-8">
-                        <h1 className="text-2xl">Vagtlagsindstillinger</h1>
-                        <AiOutlineClose onClick={handleClose} size={30} className="cursor-pointer hover:text-blue-600" />
+            <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#fcfcfc' }}>
+                    <Typography variant="h6" component="span">Vagtlagsindstillinger</Typography>
+                    <IconButton onClick={handleClose} size="small" aria-label="luk">
+                        <CloseIcon fontSize="small" />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent sx={{ bgcolor: '#fcfcfc', px: 3, pb: 3, pt: 3 }}>
+                    <div className="space-y-4">
+                        {locationId && (
+                            <ShiftForm locationId={locationId} shifts={singleLocationShifts.shifts} />
+                        )}
+                        {!locationId && locationIds && locationIds.map((locId) => (
+                            <ShiftForm
+                                key={'ShiftFormKey' + locId}
+                                locationId={allLocationShifts[locId].location_id}
+                                shifts={allLocationShifts[locId].shifts}
+                                addressName={allLocationShifts[locId].address}
+                                closeIt={handleClose}
+                            />
+                        ))}
                     </div>
-                    {modalContent}
-                </div>
-            </Modal>
+                </DialogContent>
+            </Dialog>
         </>
     );
-
 };
 
 export default ShiftModal;

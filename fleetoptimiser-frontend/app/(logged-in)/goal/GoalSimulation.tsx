@@ -1,6 +1,6 @@
 import { LocationsWidget } from '@/app/(logged-in)/fleet/LocationsWidget';
 import { DatesWidget } from '@/app/(logged-in)/fleet/DatesWidget';
-import { SimulationSettingsWidget } from '@/app/(logged-in)/fleet/SimulationSettingsWidget';
+import { SimulationSettingsWidget } from '@/app/(logged-in)/fleet/simulation-settings/SimulationSettingsDialog';
 import { Alert, Button } from '@mui/material';
 import { VehiclesWidget } from '@/app/(logged-in)/fleet/VehiclesWidget';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
