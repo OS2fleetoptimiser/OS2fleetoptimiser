@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { DataGrid, GridColDef, GridPinnedRowsProp, GridRenderCellParams } from '@mui/x-data-grid'
 import { daDK } from '@mui/x-data-grid/locales'
+import { Chip } from '@mui/material'
 import { ReducedVehicleGroup } from '@/app/(logged-in)/fleet/VehiclesWidget'
 import { useAppSelector } from '@/components/redux/hooks'
 import { InputVehicleCount } from './InputVehicleCount'
@@ -51,12 +52,20 @@ export const VehiclesSelectionTable = ({
                     row._isTotal
                         ? 'Total'
                         : `${row.vehicle.make} ${row.vehicle.model}`,
-                renderCell: (params: GridRenderCellParams) =>
-                    (params.row as any)._isTotal ? (
-                        <strong>{params.value}</strong>
-                    ) : (
-                        params.value
-                    ),
+                renderCell: (params: GridRenderCellParams) => {
+                    if ((params.row as any)._isTotal) {
+                        return <strong>{params.value}</strong>
+                    }
+                    if ((params.row as ReducedVehicleGroup).extra) {
+                        return (
+                            <div className="flex items-center gap-1.5">
+                                <span>{params.value}</span>
+                                <Chip size="small" color="info" label="Tilføjet" />
+                            </div>
+                        )
+                    }
+                    return params.value
+                },
             },
             {
                 field: 'wltp',
@@ -183,7 +192,7 @@ export const VehiclesSelectionTable = ({
                 '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within':
                     { outline: 'none' },
                 '& .extra-vehicle-row': {
-                    color: 'primary.main',
+                    backgroundColor: 'hsl(210, 100%, 97%)',
                 },
             }}
         />

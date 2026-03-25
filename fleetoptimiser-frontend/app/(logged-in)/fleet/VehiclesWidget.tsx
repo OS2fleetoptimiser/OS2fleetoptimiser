@@ -8,7 +8,9 @@ import { useMemo, useState } from 'react'
 import { TestVehiclesPage } from '@/app/(logged-in)/fleet/TestVehiclesPage'
 import { VehicleFormContent } from '@/app/(logged-in)/configuration/CreateOrUpdateVehicle'
 import { VehiclesSelectionTable } from '@/app/(logged-in)/fleet/VehiclesSelection'
-import { useAppSelector } from '@/components/redux/hooks'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import { useAppDispatch, useAppSelector } from '@/components/redux/hooks'
+import { clearExtraVehicles, clearTestVehicles } from '@/components/redux/SimulationSlice'
 import { duplicateVehicle, reduceDuplicateVehicles } from '@/components/DuplicateReducer'
 import { Vehicle } from '@/components/hooks/useGetVehicles'
 import useGetDropDownData from '@/components/hooks/useGetDropDownData'
@@ -36,6 +38,7 @@ const pageTitles: Record<VehiclesDialogPage, string> = {
 export const VehiclesWidget = ({ manualSimulation, onStart, startDisabled }: VehiclesWidgetProps) => {
     const [vehiclesOpen, setVehiclesOpen] = useState(false)
     const [currentPage, setCurrentPage] = useState<VehiclesDialogPage>('list')
+    const dispatch = useAppDispatch()
     const { data: dropDownData, isFetching } = useGetDropDownData()
     const currentGroups: duplicateVehicle[] = useAppSelector((state) => reduceDuplicateVehicles(state.simulation.selectedVehicles))
     const extraGroups: duplicateVehicle[] = useAppSelector((state) => reduceDuplicateVehicles(state.simulation.fleetSimulationSettings.extraVehicles))
@@ -107,7 +110,23 @@ export const VehiclesWidget = ({ manualSimulation, onStart, startDisabled }: Veh
             </Dialog>
             <VehiclesSelectionTable manualSimulation={manualSimulation} vehicles={fleet} />
             {onStart && (
-                <div className="mt-3 flex justify-end">
+                <div className="mt-3 flex justify-between items-center">
+                    {extraGroups.length > 0 ? (
+                        <Button
+                            size="small"
+                            onClick={() => {
+                                dispatch(clearExtraVehicles())
+                                dispatch(clearTestVehicles())
+                            }}
+                            variant="outlined"
+                            color="error"
+                            startIcon={<DeleteOutlineIcon />}
+                        >
+                            Fjern tilføjede
+                        </Button>
+                    ) : (
+                        <div />
+                    )}
                     <Button
                         onClick={onStart}
                         disabled={startDisabled}

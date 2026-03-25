@@ -5,7 +5,7 @@ import { buttonBaseClasses } from '@mui/material/ButtonBase';
 import { chipClasses } from '@mui/material/Chip';
 import { iconButtonClasses } from '@mui/material/IconButton';
 import { outlinedInputClasses } from '@mui/material/OutlinedInput';
-import { gray, red, green } from '../themePrimitives';
+import { brand, gray, red, green } from '../themePrimitives';
 
 /* eslint-disable import/prefer-default-export */
 export const dataDisplayCustomizations: Components<Theme> = {
@@ -126,6 +126,21 @@ export const dataDisplayCustomizations: Components<Theme> = {
               },
               [`& .${chipClasses.icon}`]: {
                 color: green[500],
+              },
+            },
+          },
+          {
+            props: {
+              color: 'info',
+            },
+            style: {
+              borderColor: brand[200],
+              backgroundColor: brand[50],
+              [`& .${chipClasses.label}`]: {
+                color: brand[500],
+              },
+              [`& .${chipClasses.icon}`]: {
+                color: brand[500],
               },
             },
           },
