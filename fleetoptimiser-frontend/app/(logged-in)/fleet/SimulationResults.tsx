@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CircularProgress, IconButton, Tab, Tabs } from '@mui/material';
+import { Button, CircularProgress, Tab, Tabs } from '@mui/material';
 import NoSimulationResults from '@/app/(logged-in)/fleet/NoResults';
 import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
 import { SimResultHeader } from '@/app/(logged-in)/fleet/SimResultHeader';
@@ -39,7 +39,7 @@ export const SimulationResultsPage = ({
                 </div>
             )}
             <div className="w-auto rounded-lg m-auto">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between">
                     <Tabs
                         value={tabValue}
                         onChange={(e, v) => setTabValue(v)}
@@ -66,9 +66,15 @@ export const SimulationResultsPage = ({
                         />
                     </Tabs>
                     {simulationId && (
-                        <IconButton href={downloadLink} disabled={!simulationId} className="text-gray-700 hover:text-black" download>
-                            <DownloadIcon fontSize="small" />
-                        </IconButton>
+                        <Button
+                            href={downloadLink}
+                            startIcon={<DownloadIcon />}
+                            variant="outlined"
+                            size="small"
+                            download
+                        >
+                            Download
+                        </Button>
                     )}
                 </div>
                 {tabValue === 0 && simulationResults && <ResultsOverviewTab simulationResults={simulationResults} />}
