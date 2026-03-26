@@ -1,8 +1,7 @@
 import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
-import ToolTip from '@/components/ToolTip';
 import { useMemo } from 'react';
 import { VehicleUsageTable } from './VehicleResultsTable';
-import { Card, CardContent } from '@mui/material';
+import { Card, Typography } from '@mui/material';
 
 export interface VehicleUsageRow {
     Koeretoej: string;
@@ -28,22 +27,26 @@ export const VehicleResults = ({ simulationResults }: { simulationResults: Simul
     }, [simulationResults.vehicleUsage.current]);
 
     return (
-        <Card className="mt-4"><CardContent>
-            <span className="font-bold text-sm">Detaljer om køretøjsforbrug i simulerede og nuværende flåde</span>
-            <ToolTip>
-                Se hvilke effekter det har på din køreplan og flåde ved at simulere med en ny flådesammensætning. Du kan se de aktivt allokerede km på hvert
-                køretøj og hvad det resulterer i over et år. Udgifterne forbundet med køretøjet, både omkostning - og udledningsmæssigt forbrug bliver også
-                vist.
-            </ToolTip>
-            <div className="mt-2 mb-6 space-y-2">
-                <span className="font-semibold text-sm">Simuleret forbrug</span>
+        <div className="mt-4 space-y-4">
+            <Card sx={{ p: 2 }}>
+                <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                    Simuleret køretøjsforbrug
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                    Detaljeret oversigt over km, udledning og omkostninger for den simulerede flådesammensætning
+                </Typography>
                 <VehicleUsageTable rows={simulatedVehicleUsage} />
-            </div>
-            <div className="space-y-2">
-                <span className="font-semibold text-sm">Nuværende forbrug</span>
+            </Card>
+            <Card sx={{ p: 2 }}>
+                <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                    Nuværende køretøjsforbrug
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                    Detaljeret oversigt over km, udledning og omkostninger for den nuværende flådesammensætning
+                </Typography>
                 <VehicleUsageTable rows={currentVehicleUsage} />
-            </div>
-        </CardContent></Card>
+            </Card>
+        </div>
     );
 };
 
