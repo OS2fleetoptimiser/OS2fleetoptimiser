@@ -1,27 +1,42 @@
-import ToolTip from '@/components/ToolTip';
-import { Card, CardContent } from '@mui/material';
+import { Card, Chip, Tooltip, Typography } from '@mui/material';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 interface MetricCardProps {
     title: string;
     keyfigure: string | number;
-    basefigure: string | number;
     good: boolean;
+    caption: string;
     tooltipText?: string;
+    changePercent?: number;
 }
 
-export const MetricCard = ({ title, keyfigure, basefigure, good, tooltipText }: MetricCardProps) => {
+export const MetricCard = ({ title, keyfigure, good, caption, tooltipText, changePercent }: MetricCardProps) => {
+    const sign = changePercent !== undefined && changePercent > 0 ? '+' : '';
     return (
-        <Card>
-            <CardContent sx={{ pt: 1 }}>
-                <div className="flex text-gray-500 text-sm items-center">
-                    {title}
-                    {tooltipText && <ToolTip>{tooltipText}</ToolTip>}
-                </div>
-                <div className="flex items-baseline justify-between mt-2">
-                    <span className={`text-xl font-bold ${good ? 'text-green-600' : 'text-red-600'}`}>{keyfigure}</span>
-                    <span className="text-sm text-gray-500">/ {basefigure}</span>
-                </div>
-            </CardContent>
+        <Card sx={{ p: 2, flex: 1 }}>
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                {title}
+                {tooltipText && (
+                    <Tooltip title={tooltipText} placement="right">
+                        <InfoOutlinedIcon sx={{ fontSize: 14, color: 'text.secondary', cursor: 'help' }} />
+                    </Tooltip>
+                )}
+            </Typography>
+            <div className="flex items-center gap-2">
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                    {keyfigure}
+                </Typography>
+                {changePercent !== undefined && (
+                    <Chip
+                        label={`${sign}${changePercent.toFixed(0)}%`}
+                        size="small"
+                        color={changePercent === 0 ? 'default' : good ? 'success' : 'error'}
+                    />
+                )}
+            </div>
+            <Typography variant="caption" color="text.secondary">
+                {caption}
+            </Typography>
         </Card>
     );
 };
