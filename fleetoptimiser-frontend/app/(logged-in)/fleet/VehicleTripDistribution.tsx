@@ -1,9 +1,8 @@
 import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
 import { useMemo } from 'react';
-import ToolTip from '@/components/ToolTip';
 import { drivingBook } from '@/components/hooks/useSimulateFleet';
 import {VehicleTripDistributionBar} from "@/app/(logged-in)/fleet/DistributionGraph";
-import { Card, CardContent } from '@mui/material';
+import { Card, Typography } from '@mui/material';
 
 export const VehicleTripDistribution = ({ simulationResults }: { simulationResults: SimulationResults }) => {
     const getTripsByType = (data: drivingBook[], dataType: 'simulation' | 'current') => {
@@ -63,27 +62,31 @@ export const VehicleTripDistribution = ({ simulationResults }: { simulationResul
     const simulationTrips = useMemo(() => getTripsByType(simulationResults.drivingBook, 'simulation'), [simulationResults.drivingBook]);
 
     return (
-        <div className="grid w-full grid-cols-1 xl:grid-cols-2 gap-6 h-96">
-            <Card className="w-full h-96"><CardContent>
-                <div className="flex items-center">
-                    <span className="text-sm font-semibold">Nuværende turfordeling på køretøjstype</span>
-                    <ToolTip>
-                        Fordelingen af ture på køretøjstype for den nuværende pulje (faktiske kørsel) i datoperioden. Det vises hvor mange ture i forskellige
-                        længder, der er kørt af hhv. cykler, elcykler, elbiler og fossilbiler. Kør musen over for en bar for at se det specifikke antal.
-                    </ToolTip>
+        <div className="grid w-full grid-cols-1 xl:grid-cols-2 gap-6">
+            <Card sx={{ p: 2 }}>
+                <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                    Nuværende turfordeling på køretøjstype
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                    Fordelingen af ture på køretøjstype for den nuværende pulje (faktisk kørsel) i datoperioden. Grafen viser, hvor mange ture af forskellige
+                    længder der er kørt af hhv. cykler, elcykler, elbiler og fossilbiler.
+                </Typography>
+                <div className="h-80">
+                    <VehicleTripDistributionBar data={currentTrips} />
                 </div>
-                <VehicleTripDistributionBar data={currentTrips} />
-            </CardContent></Card>
-            <Card className="w-full h-96"><CardContent>
-                <div className="flex items-center">
-                    <span className="text-sm font-semibold">Simuleret turfordeling på køretøjstype</span>
-                    <ToolTip>
-                        Fordelingen af ture på køretøjstype for den simulerede pulje i datoperioden. Det vises hvor mange ture i forskellige længder, der er
-                        kørt af hhv. cykler, elcykler, elbiler og fossilbiler. Kør musen over for en bar for at se det specifikke antal.
-                    </ToolTip>
+            </Card>
+            <Card sx={{ p: 2 }}>
+                <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                    Simuleret turfordeling på køretøjstype
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                    Fordelingen af ture på køretøjstype for den simulerede pulje i datoperioden. Grafen viser, hvor mange ture af forskellige længder
+                    der er kørt af hhv. cykler, elcykler, elbiler og fossilbiler.
+                </Typography>
+                <div className="h-80">
+                    <VehicleTripDistributionBar data={simulationTrips} />
                 </div>
-                <VehicleTripDistributionBar data={simulationTrips} />
-            </CardContent></Card>
+            </Card>
         </div>
     );
 };

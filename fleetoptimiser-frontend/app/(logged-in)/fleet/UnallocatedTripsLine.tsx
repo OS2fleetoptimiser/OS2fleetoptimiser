@@ -1,9 +1,8 @@
 import { ResponsiveLine } from '@nivo/line';
 import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
 import dayjs from 'dayjs';
-import ToolTip from '@/components/ToolTip';
 import { drivingBook } from '@/components/hooks/useSimulateFleet';
-import { Card, CardContent } from '@mui/material';
+import { Card, Typography } from '@mui/material';
 
 export const getYTicks = (sums: number[], maxTicks: number = 5) => {
     const maxAntal = Math.max(...sums);
@@ -49,15 +48,15 @@ export const UnallocatedTripsLineChart = ({ simulationResults }: { simulationRes
     const yTicks = getYTicks(ySums); // need this to control count and float values
 
     return (
-        <Card className="w-full h-full overflow-y-auto"><CardContent>
-            <div className="flex items-center">
-                <span className="text-sm font-semibold">Ikke kørte rundture pr. dag</span>
-                <ToolTip>
-                    Overblik over fordelingen af ukørte ture over den valgte datoperiode. Såfremt der er ture, der ikke er blevet kørt vil det vise sig som et
-                    udsving i nedenstående trendlinje. Der vises en linje for både den nuværende - og den valgte simulerede pulje.
-                </ToolTip>
-            </div>
-            <div style={{ height: '320px' }}>
+        <Card sx={{ p: 2 }}>
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                Ikke kørte rundture pr. dag
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                Overblik over fordelingen af ukørte ture over den valgte datoperiode. Såfremt der er ture, der ikke er blevet kørt, vil det vise sig som et
+                udsving i nedenstående trendlinje.
+            </Typography>
+            <div className="h-80">
                 <ResponsiveLine
                     data={data}
                     margin={{ top: 20, right: 30, bottom: 60, left: 60 }}
@@ -111,6 +110,6 @@ export const UnallocatedTripsLineChart = ({ simulationResults }: { simulationRes
                     }}
                 />
             </div>
-        </CardContent></Card>
+        </Card>
     );
 };

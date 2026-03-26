@@ -94,7 +94,7 @@ const ResultsOverviewTab = ({ simulationResults }: { simulationResults: Simulati
     return (
         <div className="mt-4 space-y-6">
             <SimResultHeader simulationResults={simulationResults} />
-            <div className="grid w-full grid-cols-1 xl:grid-cols-2 gap-6 h-auto xl:h-96">
+            <div className="grid w-full grid-cols-1 xl:grid-cols-2 gap-6">
                 <FleetChangesTable simulationResults={simulationResults} />
                 <UnallocatedTripsLineChart simulationResults={simulationResults} />
             </div>
