@@ -84,7 +84,7 @@ export const SimulationResultsPage = ({
                     </div>
                 )}
                 {tabValue === 1 && simulationResults && <VehicleResults simulationResults={simulationResults} />}
-                {tabValue === 2 && simulationResults && <DrivingBookTable data={simulationResults.drivingBook} />}
+                {tabValue === 2 && simulationResults && <div className="mt-4"><DrivingBookTable data={simulationResults.drivingBook} /></div>}
             </div>
         </div>
     );
