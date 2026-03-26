@@ -44,63 +44,25 @@ export const SimulationResultsPage = ({
                         value={tabValue}
                         onChange={(e, v) => setTabValue(v)}
                         aria-label="resultstabs"
-                        TabIndicatorProps={{
-                            hidden: true,
-                        }}
+                        variant="standard"
                         sx={{
-                            '& .MuiTabs-flexContainer': {
-                                backgroundColor: '#f5f5f5',
-                                borderRadius: '5px',
-                                padding: '6px',
-                                width: 'fit-content',
-                                height: '35px',
-                            },
+                            minHeight: 36,
                             '& .MuiTab-root': {
-                                borderRadius: '5px',
-                                backgroundColor: '#f5f5f5',
-                                color: 'gray',
-                                minWidth: 120,
-                                minHeight: 20,
-                                padding: '6px 6px',
-                                '&:hover': {
-                                    backgroundColor: '#e0e0e0',
-                                },
-                            },
-                            '& .MuiTab-root.Mui-selected': {
-                                backgroundColor: 'white',
-                                color: 'black',
-                                fontWeight: 'bold',
+                                minHeight: 36,
+                                fontSize: '0.8125rem',
                             },
                         }}
                     >
-                        <Tab
-                            label="Oversigt"
-                            value={0}
-                            sx={{
-                                '&.Mui-selected': {
-                                    backgroundColor: 'white',
-                                },
-                            }}
-                        />
+                        <Tab label="Oversigt" value={0} />
                         <Tab
                             label="Køretøjsdetaljer"
                             disabled={!simulationResults}
                             value={1}
-                            sx={{
-                                '&.Mui-selected': {
-                                    backgroundColor: 'white',
-                                },
-                            }}
                         />
                         <Tab
                             label="Ruter"
                             disabled={!simulationResults}
                             value={2}
-                            sx={{
-                                '&.Mui-selected': {
-                                    backgroundColor: 'white',
-                                },
-                            }}
                         />
                     </Tabs>
                     {simulationId && (
