@@ -186,7 +186,7 @@ export const dataDisplayCustomizations: Components<Theme> = {
   MuiTableContainer: {
     styleOverrides: {
       root: ({ theme }) => ({
-        overflow: 'clip',
+        overflowX: 'auto',
         borderColor: (theme.vars || theme).palette.divider,
         backgroundColor: '#ffffff',
       }),

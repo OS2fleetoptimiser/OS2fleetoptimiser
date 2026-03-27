@@ -59,12 +59,12 @@ export const VehicleUsageTable = ({ rows }: VehicleUsageTableProps) => {
     }, [rows, order, orderBy]);
 
     return (
-        <TableContainer sx={{ maxHeight: 400, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-            <Table size="small" stickyHeader>
+        <TableContainer sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+            <Table size="small">
                 <TableHead>
                     <TableRow>
                         {headCells.map((headCell) => (
-                            <TableCell key={headCell.id}>
+                            <TableCell key={headCell.id} sx={{ whiteSpace: 'nowrap' }}>
                                 <TableSortLabel
                                     active={orderBy === headCell.id}
                                     direction={orderBy === headCell.id ? order : 'asc'}
@@ -78,7 +78,7 @@ export const VehicleUsageTable = ({ rows }: VehicleUsageTableProps) => {
                 </TableHead>
                 <TableBody>
                     {sortedRows.map((row, idx) => (
-                        <TableRow hover key={idx}>
+                        <TableRow hover key={idx} sx={{ '& td': { whiteSpace: 'nowrap' } }}>
                             <TableCell>{row.Koeretoej}</TableCell>
                             <TableCell>{row.Allokerede_km}</TableCell>
                             <TableCell>{row.Aarlig_km}</TableCell>
