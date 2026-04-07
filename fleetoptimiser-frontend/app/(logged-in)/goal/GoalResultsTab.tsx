@@ -1,5 +1,4 @@
 import useSimulateGoal from '@/components/hooks/useSimulateGoal';
-import { useMemo } from 'react';
 import SearchAbortedMessage from '@/app/(logged-in)/goal/SearchAborted';
 import NoCarsSelectedMessage from '@/app/(logged-in)/goal/NoCarsSelected';
 import NoTripsError from '@/app/(logged-in)/fleet/NoTripsError';
@@ -7,21 +6,15 @@ import LoadingOverlay from '@/components/LoadingOverlay';
 import { SolutionComparisonBars } from '@/app/(logged-in)/goal/SolutionComparisonBars';
 import TipsAutomatic from '@/app/(logged-in)/goal/TipsBetterSolutionsModal';
 import NoSimulationResults from '@/app/(logged-in)/fleet/NoResults';
-import { convertGoalDataToSimulationResults } from '@/app/(logged-in)/goal/ConvertGoalData';
+import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
 import { SolutionsAccordion } from './SolutionsAccordion';
 
 type GoalResultsOverviewProps = {
     simulation: ReturnType<typeof useSimulateGoal>;
+    convertedGoalResults?: { solutions: SimulationResults[] };
 };
 
-export const GoalResultsOverview = ({ simulation }: GoalResultsOverviewProps) => {
-    const convertedGoalResults = useMemo(() => {
-        if (simulation.query.data?.status === 'SUCCESS' && simulation.query.data.result) {
-            return convertGoalDataToSimulationResults(simulation.query.data);
-        }
-        return undefined;
-    }, [simulation.query.data]);
-
+export const GoalResultsOverview = ({ simulation, convertedGoalResults }: GoalResultsOverviewProps) => {
     const solutions = simulation?.query?.data?.result?.solutions;
     const displayTips =
         solutions &&

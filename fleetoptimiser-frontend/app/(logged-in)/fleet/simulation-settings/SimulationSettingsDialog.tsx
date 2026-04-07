@@ -135,7 +135,7 @@ export const SimulationSettingsWidget = ({ manualSimulation }: { manualSimulatio
                             {!manualSimulation && (
                                 <div>
                                     <SectionLabel>Optimering</SectionLabel>
-                                    <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', p: 2 }}>
+                                    <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
                                         <OptimisationSettings />
                                     </Paper>
                                 </div>

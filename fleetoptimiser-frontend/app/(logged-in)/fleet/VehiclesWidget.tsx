@@ -26,6 +26,7 @@ type VehiclesWidgetProps = {
     manualSimulation: boolean
     onStart?: () => void
     startDisabled?: boolean
+    extraActions?: React.ReactNode
 }
 
 type VehiclesDialogPage = 'list' | 'create'
@@ -35,7 +36,7 @@ const pageTitles: Record<VehiclesDialogPage, string> = {
     create: 'Opret nyt testkøretøj',
 }
 
-export const VehiclesWidget = ({ manualSimulation, onStart, startDisabled }: VehiclesWidgetProps) => {
+export const VehiclesWidget = ({ manualSimulation, onStart, startDisabled, extraActions }: VehiclesWidgetProps) => {
     const [vehiclesOpen, setVehiclesOpen] = useState(false)
     const [currentPage, setCurrentPage] = useState<VehiclesDialogPage>('list')
     const dispatch = useAppDispatch()
@@ -73,6 +74,7 @@ export const VehiclesWidget = ({ manualSimulation, onStart, startDisabled }: Veh
                 Juster antal køretøjer der skal indgå i {manualSimulation ? 'simuleringen' : 'optimeringen'}, eller tilføj testkøretøjer.
             </Typography>
             <div className="flex gap-2 justify-end mb-2">
+                {extraActions}
                 <SimulationSettingsWidget manualSimulation={manualSimulation} />
                 <Button size="small" onClick={() => setVehiclesOpen(true)} variant="outlined" color="inherit" startIcon={<AddIcon />}>
                     Tilføj køretøjer
