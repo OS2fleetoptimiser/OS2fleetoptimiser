@@ -301,12 +301,12 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                 {!hasWritePrivilege && (
                     <>
                         <Tooltip title="Du har læserettigheder">
-                            <>
+                            <span>
                                 <Edit color="info" />
                                 <Delete color="info" />
                                 {row.original.disabled ? <PowerOff color="info" /> : <Power color="info" />}
                                 <LocationOnIcon color="info" />
-                            </>
+                            </span>
                         </Tooltip>
                     </>
                 )}
