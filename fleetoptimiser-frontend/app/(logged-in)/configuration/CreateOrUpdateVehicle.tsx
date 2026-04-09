@@ -485,7 +485,7 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                             defaultValue={formik.initialValues.start_leasing ? dayjs(formik.initialValues.start_leasing) : null}
                                             format="DD-MM-YYYY"
                                             label="Start Leasing"
-                                            onChange={(date) => formik.setFieldValue('start_leasing', date ? dayjs(date).format('YYYY-MM-DD') : '')}
+                                            onChange={(date) => formik.setFieldValue('start_leasing', date ? dayjs(date).format('YYYY-MM-DD') : null)}
                                             className={
                                                 formik.touched.start_leasing && formik.errors.start_leasing && !formik.values.start_leasing
                                                     ? 'error subtle'
@@ -497,7 +497,7 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                             defaultValue={formik.initialValues.end_leasing ? dayjs(formik.initialValues.end_leasing) : null}
                                             format="DD-MM-YYYY"
                                             label="Slut Leasing"
-                                            onChange={(date) => formik.setFieldValue('end_leasing', date ? dayjs(date).format('YYYY-MM-DD') : '')}
+                                            onChange={(date) => formik.setFieldValue('end_leasing', date ? dayjs(date).format('YYYY-MM-DD') : null)}
                                             slotProps={{
                                                 textField: {
                                                     required: selectedLeasingType === 1 || selectedLeasingType === 2,
