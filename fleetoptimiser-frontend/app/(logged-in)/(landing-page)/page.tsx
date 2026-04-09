@@ -16,7 +16,7 @@ export default function Home() {
     const { data: session } = useSession();
     // Better Auth uses 'id' instead of 'providerAccountId'
     const providerAccountId = session?.user?.id || 'developer';
-    const { data: lastLogin, isPending: loginIsLoading } = usePatchGetLoginTime(providerAccountId);
+    usePatchGetLoginTime(providerAccountId);
     const { data: kpiData, isPending: isKPIsLoading } = useGetLandingPageKPIs();
     const { data: latestSimulations, isPending: simulationsIsLoading } = useGetSimulationHighlights();
     const { data: usageGraphData } = useGetUsageGraphData();
@@ -25,8 +25,7 @@ export default function Home() {
     return (
         <>
             <PageTitle
-                title="Velkommen til FleetOptimiser"
-                subtitle={!loginIsLoading && lastLogin ? `Dit seneste besøg var ${new Date(lastLogin).toLocaleString()}` : undefined}
+                title="Forside"
             />
             <div className="flex flex-col space-y-4">
                 {!isKPIsLoading && kpiData && Object.keys(kpiData).length > 0 && <LandingPageKPIs data={kpiData} />}
