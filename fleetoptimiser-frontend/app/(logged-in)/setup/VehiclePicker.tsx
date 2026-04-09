@@ -192,7 +192,7 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
                     disabled={simulationDisabled}
                     onClick={() => router.push('/fleet')}
                     startIcon={<DirectionsCarIcon />}
-                    variant="contained"
+                    variant="outlined"
                     size="small"
                 >
                     Manuel simulering
@@ -204,7 +204,7 @@ export default function VehiclePicker({ vehicles, selectedVehicleIds, onSelectio
                         await dispatch(prepareGoalSimulation())
                         router.push('/goal')
                     }}
-                    variant="contained"
+                    variant="outlined"
                     size="small"
                 >
                     Automatisk simulering
