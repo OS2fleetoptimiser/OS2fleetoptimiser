@@ -7,7 +7,9 @@ import { SolutionComparisonBars } from '@/app/(logged-in)/goal/SolutionCompariso
 import TipsAutomatic from '@/app/(logged-in)/goal/TipsBetterSolutionsModal';
 import NoSimulationResults from '@/app/(logged-in)/fleet/NoResults';
 import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
-import { SolutionsAccordion } from './SolutionsAccordion';
+import { SolutionPicker } from './SolutionPicker';
+import { SolutionComparisonTable } from './SolutionComparisonTable';
+import PageTitle from '@/components/PageTitle';
 
 type GoalResultsOverviewProps = {
     simulation: ReturnType<typeof useSimulateGoal>;
@@ -15,10 +17,11 @@ type GoalResultsOverviewProps = {
 };
 
 export const GoalResultsOverview = ({ simulation, convertedGoalResults }: GoalResultsOverviewProps) => {
-    const solutions = simulation?.query?.data?.result?.solutions;
     const displayTips =
-        solutions &&
-        (solutions.length < 5 || solutions[0].simulation_expense > solutions[0].current_expense || solutions[0].simulation_co2e > solutions[0].current_co2e);
+        convertedGoalResults &&
+        (convertedGoalResults.solutions.length < 5 ||
+         convertedGoalResults.solutions[0].simulationExpense > convertedGoalResults.solutions[0].currentExpense ||
+         convertedGoalResults.solutions[0].simulationEmission > convertedGoalResults.solutions[0].currentEmission);
 
     return (
         <div>
@@ -33,9 +36,13 @@ export const GoalResultsOverview = ({ simulation, convertedGoalResults }: GoalRe
             )}
 
             {convertedGoalResults && convertedGoalResults.solutions.length > 0 && (
-                <div className="space-y-4">
-                    <SolutionComparisonBars solutions={convertedGoalResults.solutions} />
-                    <SolutionsAccordion solutions={convertedGoalResults.solutions} simulationId={simulation.query.data?.id} />
+                <div>
+                    <PageTitle level="section" title="Sammenligning" />
+                    <div className="space-y-6">
+                        <SolutionComparisonBars solutions={convertedGoalResults.solutions} />
+                        <SolutionComparisonTable solutions={convertedGoalResults.solutions} />
+                    </div>
+                    <SolutionPicker solutions={convertedGoalResults.solutions} simulationId={simulation.query.data?.id} />
                 </div>
             )}
             {displayTips && (
