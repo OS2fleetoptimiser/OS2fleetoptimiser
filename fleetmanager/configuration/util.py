@@ -882,7 +882,7 @@ def update_vehicle_metadata(
             session,
             vehicle,
             ignore_none_values=True,
-            accepted_none_values=["wltp_fossil", "wltp_el"]
+            accepted_none_values=["wltp_fossil", "wltp_el", "end_leasing", "start_leasing"]
         )
         count = count + 1
 
