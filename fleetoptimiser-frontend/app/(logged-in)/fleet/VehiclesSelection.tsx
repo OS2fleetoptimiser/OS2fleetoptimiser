@@ -1,9 +1,8 @@
 import { useMemo } from 'react'
-import { DataGrid, GridColDef, GridPinnedRowsProp, GridRenderCellParams } from '@mui/x-data-grid'
+import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import { daDK } from '@mui/x-data-grid/locales'
 import { Chip } from '@mui/material'
 import { ReducedVehicleGroup } from '@/app/(logged-in)/fleet/VehiclesWidget'
-import { useAppSelector } from '@/components/redux/hooks'
 import { InputVehicleCount } from './InputVehicleCount'
 import ToolTip from '@/components/ToolTip'
 
@@ -15,29 +14,7 @@ export const VehiclesSelectionTable = ({
     vehicles: ReducedVehicleGroup[]
 }) => {
     const name = manualSimulation ? 'simulering' : 'optimering'
-    const totalSimulation = useAppSelector((state) =>
-        state.simulation.fleetSimulationSettings.simulation_vehicles.reduce(
-            (acc, curr) => acc + curr.simulation_count,
-            0
-        )
-    )
-    const totalCurrent = useAppSelector((state) => state.simulation.selectedVehicles.length)
 
-    const pinnedRows: GridPinnedRowsProp = useMemo(
-        () => ({
-            bottom: [
-                {
-                    vehicle: { id: '__total__', make: '', model: '' },
-                    count: totalCurrent,
-                    groupIds: [],
-                    extra: false,
-                    _isTotal: true,
-                    _totalSimulation: totalSimulation,
-                },
-            ],
-        }),
-        [totalCurrent, totalSimulation]
-    )
     const automaticToolText =
         'Hvis du fjerner køretøjer, kan algoritmen erstatte dem med andre testkøretøjer for at finde det bedste mix. Hvis du beholder dem, vil algoritmen forsøge at reducere antallet ved overkapacitet. Dvs. den vil ikke forsøge at udskifte dem med andre testkøretøjer.'
 
@@ -48,14 +25,9 @@ export const VehiclesSelectionTable = ({
                 headerName: 'Køretøj',
                 flex: 1.5,
                 minWidth: 200,
-                valueGetter: (_value: unknown, row: any) =>
-                    row._isTotal
-                        ? 'Total'
-                        : `${row.vehicle.make} ${row.vehicle.model}`,
+                valueGetter: (_value: unknown, row: ReducedVehicleGroup) =>
+                    `${row.vehicle.make} ${row.vehicle.model}`,
                 renderCell: (params: GridRenderCellParams) => {
-                    if ((params.row as any)._isTotal) {
-                        return <strong>{params.value}</strong>
-                    }
                     if ((params.row as ReducedVehicleGroup).extra) {
                         return (
                             <div className="flex items-center gap-1.5">
@@ -114,17 +86,14 @@ export const VehiclesSelectionTable = ({
                         )}
                     </div>
                 ),
-                renderCell: (params: GridRenderCellParams) =>
-                    (params.row as any)._isTotal ? (
-                        <strong>{(params.row as any)._totalSimulation}</strong>
-                    ) : (
-                        <InputVehicleCount
-                            reducedVehicleGroup={
-                                params.row as ReducedVehicleGroup
-                            }
-                            restrict={!manualSimulation}
-                        />
-                    ),
+                renderCell: (params: GridRenderCellParams) => (
+                    <InputVehicleCount
+                        reducedVehicleGroup={
+                            params.row as ReducedVehicleGroup
+                        }
+                        restrict={!manualSimulation}
+                    />
+                ),
             },
             {
                 field: 'count',
@@ -132,12 +101,6 @@ export const VehiclesSelectionTable = ({
                 type: 'number',
                 flex: 0.7,
                 minWidth: 170,
-                renderCell: (params: GridRenderCellParams) =>
-                    (params.row as any)._isTotal ? (
-                        <strong>{params.value}</strong>
-                    ) : (
-                        params.value
-                    ),
             },
         ]
 
@@ -161,7 +124,6 @@ export const VehiclesSelectionTable = ({
         <DataGrid
             rows={vehicles}
             columns={columns}
-            pinnedRows={pinnedRows}
             getRowId={(row) => row.vehicle.id}
             density="compact"
             disableColumnResize
