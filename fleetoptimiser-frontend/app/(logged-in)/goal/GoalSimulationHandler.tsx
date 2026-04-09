@@ -1,6 +1,6 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { Tabs, Tab } from '@mui/material';
+import { Divider, Tabs, Tab } from '@mui/material';
 import TuneIcon from '@mui/icons-material/Tune';
 import InsightsIcon from '@mui/icons-material/Insights';
 import { GoalSimulation } from '@/app/(logged-in)/goal/GoalSimulation';
@@ -23,7 +23,7 @@ export default function GoalSimulationHandler({ simulationId }: { simulationId?:
         <div>
             <Tabs
                 value={value}
-                onChange={(e, v) => setValue(v)}
+                onChange={(_, v) => setValue(v)}
                 aria-label="Automatisk Tabs"
             >
                 <Tab
@@ -39,6 +39,7 @@ export default function GoalSimulationHandler({ simulationId }: { simulationId?:
                     iconPosition="start"
                 />
             </Tabs>
+            <Divider />
             <div className="mt-4">
                 {value === 0 && <GoalSimulation simulation={simulation} setTab={setValue} />}
                 {value === 1 && (
