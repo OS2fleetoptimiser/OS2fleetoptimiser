@@ -13,50 +13,38 @@ const hashCode = function (string: string) {
     return hash;
 };
 
-// Generate random pastel colors from seed. Used to generate colors in dashboard
-export function generateColor(seed: string, opacity?: number) {
-    const rng = seedrandom(hashCode(seed).toString());
-    const hue = 360 * rng();
-    const saturation = 50;
-    const lightness = 70;
-    if (opacity) return `hsl(${hue} ${saturation}% ${lightness}% / ${opacity})`;
-    else return `hsl(${hue} ${saturation}% ${lightness}% / 1)`;
-}
-
-
-const extendedSoftColorPalette = [
-  '#A8D5BA', // Soft Mint Green
-  '#F6D8AE', // Gentle Peach
-  '#FFD3B4', // Light Coral
-  '#D4A5A5', // Soft Rose
-  '#A0C1B8', // Muted Aqua
-  '#F1E1A6', // Light Honey Yellow
-  '#BFD7EA', // Pale Sky Blue
-  '#E8D9B5', // Soft Beige
-  '#C8B8DB', // Lavender Mist
-  '#EFD9CE', // Blush Pink
-  '#C2E1C2', // Light Sage Green
-  '#FFE2CC', // Soft Apricot
-  '#F7C7C7', // Soft Pastel Red
-  '#D3BECF', // Muted Lilac
-  '#A4C5C6', // Light Powder Blue
-  '#F2E4C7', // Gentle Sand
-  '#DAE8FC', // Pale Periwinkle Blue
-  '#E7E3D4', // Soft Warm Gray
-  '#D1C2E8', // Gentle Lilac
-  '#E6CBC5'  // Soft Pink Blush
+const distinctPalette = [
+    '#4E79A7',
+    '#F28E2B',
+    '#E15759',
+    '#76B7B2',
+    '#59A14F',
+    '#EDC948',
+    '#B07AA1',
+    '#FF9DA7',
+    '#9C755F',
+    '#BAB0AC',
+    '#5591C3',
+    '#D4742C',
+    '#8CD17D',
+    '#F1CE63',
+    '#A0CBE8',
+    '#FABFD2',
 ];
 
+const paletteCache = new Map<string, string>();
 
 export function generateFromPalette(seed: string, opacity?: number) {
-    const rng = seedrandom(hashCode(seed).toString());
-    const colorIndex = Math.floor(rng() * extendedSoftColorPalette.length);
-    const selectedColor = extendedSoftColorPalette[colorIndex];
+    const key = `${seed}:${opacity ?? 1}`;
+    const cached = paletteCache.get(key);
+    if (cached) return cached;
 
-    if (opacity !== undefined) {
-        return hexToRgba(selectedColor, opacity);
-    }
-    return hexToRgba(selectedColor, 1);
+    const rng = seedrandom(hashCode(seed).toString());
+    const colorIndex = Math.floor(rng() * distinctPalette.length);
+    const selectedColor = distinctPalette[colorIndex];
+    const result = hexToRgba(selectedColor, opacity ?? 1);
+    paletteCache.set(key, result);
+    return result;
 }
 
 function hexToRgba(hex: string, opacity: number) {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { ResponsiveLine, LineSeries, LineCustomSvgLayerProps, LineCustomSvgLayer } from '@nivo/line';
 import { nivoTheme } from '@/theme/nivoTheme';
+import { brand, gray } from '@/theme/themePrimitives';
 import { line } from 'd3-shape';
 import { generateParkingSegments, generateDrivingSegments, generateAccumulatedDriving, formatTimeFromISO } from './SegmentUtility';
 
@@ -229,7 +230,7 @@ const ToolTipGen = (pointDec: ToolTipWrap): React.JSX.Element => {
             <div>
                 <strong>{point.serieId}</strong>
             </div>
-            <div style={{ color: '#A6A6A6', padding: '3px 0' }}>Akkumuleret distance: {Math.round(point.data.accumulated_distance * 100) / 100} km.</div>
+            <div style={{ color: gray[400], padding: '3px 0' }}>Akkumuleret distance: {Math.round(point.data.accumulated_distance * 100) / 100} km.</div>
         </div>
     );
 };
@@ -255,7 +256,7 @@ const RoundTripChart = (props: rtchartinput) => {
         // loop in order to alternate the segments for appearance advantages
         transformed.push({
             id: drivingSegments[i].name,
-            color: '#d1eff3', //'#7030A0',
+            color: brand[200],
             data: [
                 {
                     // tilføj drivingSegment så det kan vises på den ny tooltip
@@ -284,7 +285,7 @@ const RoundTripChart = (props: rtchartinput) => {
         if (i < parkingSegments.length) {
             transformed.push({
                 id: parkingSegments[i].name,
-                color: '#038696',
+                color: brand[500],
                 data: [
                     {
                         x: parkingSegments[i].start_time,
@@ -311,7 +312,7 @@ const RoundTripChart = (props: rtchartinput) => {
 
     transformed.push({
         id: 'Akkumuleret distance',
-        color: '#A6A6A6',
+        color: gray[400],
         data: accumulatedDistance.map((distance) => ({
             x: distance.time,
             y: distance.accumulated_distance,
@@ -387,17 +388,17 @@ const RoundTripChart = (props: rtchartinput) => {
                             {
                                 id: 'A',
                                 label: 'Kørsel',
-                                color: '#d1eff3',
+                                color: brand[200],
                             },
                             {
                                 id: 'B',
                                 label: 'Parkering',
-                                color: '#038696',
+                                color: brand[500],
                             },
                             {
                                 id: 'C',
                                 label: 'Akkumuleret distance',
-                                color: '#A6A6A6',
+                                color: gray[400],
                             },
                         ],
                         effects: [

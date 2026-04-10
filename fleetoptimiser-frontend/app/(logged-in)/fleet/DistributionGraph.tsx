@@ -1,6 +1,6 @@
 import { getYTicks } from '@/app/(logged-in)/fleet/UnallocatedTripsLine';
 import { ResponsiveBar } from '@nivo/bar';
-import { nivoTheme } from '@/theme/nivoTheme';
+import { nivoTheme, vehicleTypeColors } from '@/theme/nivoTheme';
 
 export type entry = {
     label: string;
@@ -16,17 +16,12 @@ type props = {
     data: entry[];
 };
 
-type Colors = {
-    [key: string]: string;
-};
-
 export const VehicleTripDistributionBar = ({ data }: props) => {
     const sumsY = data.map((bucket) => {
         const { km, ...counts } = bucket;
         return Object.values(counts).reduce((sum: number, val) => sum + (typeof val === 'number' ? val : 0), 0);
     });
     const yTicks = getYTicks(sumsY);
-    const colors: Colors = { Cykel: '#40dd7f', 'El-cykel': '#ffbc1f', 'El-bil': '#109cf1', 'Fossil-bil': '#ff6760', 'Ikke tildelt': '#52575c' };
     return (
         <ResponsiveBar
             data={data.sort((a, b) => a.km - b.km)}
@@ -36,7 +31,7 @@ export const VehicleTripDistributionBar = ({ data }: props) => {
             padding={0.3}
             valueScale={{ type: 'linear' }}
             indexScale={{ type: 'band', round: true }}
-            colors={(e) => colors[e.id]}
+            colors={(e) => vehicleTypeColors[e.id]}
             borderColor={{
                 from: 'color',
                 modifiers: [['darker', 1.6]],

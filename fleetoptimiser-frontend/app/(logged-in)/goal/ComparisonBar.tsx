@@ -1,6 +1,7 @@
 import { getYTicks } from '@/app/(logged-in)/fleet/UnallocatedTripsLine';
 import { ResponsiveBar } from '@nivo/bar';
 import { nivoTheme } from '@/theme/nivoTheme';
+import { brand, gray } from '@/theme/themePrimitives';
 import { useMediaQuery } from 'react-responsive';
 
 type Solution = {
@@ -17,11 +18,11 @@ type Props = {
 export function CostComparisonBar({ currentValue, solutions, yAxis }: Props) {
     const showTicks = useMediaQuery({ minWidth: '850px' }); // ticks become overlapping below 850px
     const data = [
-        { id: 'Nuværende', value: currentValue, color: '#000000' },
+        { id: 'Nuværende', value: currentValue, color: gray[500] },
         ...solutions.map((sol) => ({
             id: sol.label,
             value: sol.value,
-            color: '#4b63a1',
+            color: brand[400],
         })),
     ];
 

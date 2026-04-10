@@ -1,5 +1,6 @@
 import { shift } from "@/components/hooks/useGetSettings";
 import { getInterval } from "../ShiftNameTranslater";
+import { shiftGradient } from '@/theme/nivoTheme';
 
 
 // Helper function to extract the start time (in minutes from 00:00) from the shift string
@@ -64,7 +65,7 @@ const createColorMap = (shiftNames: Array<string>, colors: Array<string>) => {
 type IdShift = (shift & { id: number });
 
 const getColorMapperFunc = (availableShifts: Array<IdShift> | undefined) => {
-    const colors = ['#abc9e1', '#9ecae1', '#4292c6', '#2171b5', '#084594'];
+    const colors = [...shiftGradient];
 
     // handle case with empty or length 1 available shifts
 

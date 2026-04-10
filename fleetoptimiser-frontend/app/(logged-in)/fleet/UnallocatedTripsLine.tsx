@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { drivingBook } from '@/components/hooks/useSimulateFleet';
 import { Card, Typography } from '@mui/material';
 import { nivoTheme } from '@/theme/nivoTheme';
+import { gray } from '@/theme/themePrimitives';
 
 export const getYTicks = (sums: number[], maxTicks: number = 5) => {
     const maxAntal = Math.max(...sums);
@@ -90,7 +91,7 @@ export const UnallocatedTripsLineChart = ({ simulationResults }: { simulationRes
                     pointBorderWidth={2}
                     enableArea={false}
                     useMesh={true}
-                    colors={['#9CA3AF']}
+                    colors={[gray[400]]}
                     tooltip={({ point }) => (
                         <div
                             style={{

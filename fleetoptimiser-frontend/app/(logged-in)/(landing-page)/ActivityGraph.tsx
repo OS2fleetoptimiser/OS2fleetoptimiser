@@ -1,6 +1,6 @@
 import { ResponsiveHeatMap } from '@nivo/heatmap';
 import { Typography } from '@mui/material';
-import { nivoTheme } from '@/theme/nivoTheme';
+import { nivoTheme, heatmapWarningGradient } from '@/theme/nivoTheme';
 
 interface ActivityHeatmapProps {
     data: {
@@ -93,7 +93,7 @@ const ActivityHeatmap = ({ data, showKeys = true }: ActivityHeatmapProps & { sho
                 }
                 colors={{
                     type: 'sequential',
-                    colors: ['#b95f5f', '#fff'],
+                    colors: [...heatmapWarningGradient],
                 }}
                 axisLeft={{
                     tickSize: 5,

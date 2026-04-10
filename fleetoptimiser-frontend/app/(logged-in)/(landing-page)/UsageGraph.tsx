@@ -2,6 +2,7 @@ import { ResponsiveBar } from '@nivo/bar';
 import { Typography } from '@mui/material';
 import { LocationUsage } from '@/components/hooks/useGetLandingPage';
 import { nivoTheme } from '@/theme/nivoTheme';
+import { brand } from '@/theme/themePrimitives';
 
 interface BarData extends LocationUsage {
     [key: string]: any;
@@ -23,7 +24,7 @@ const UsageBarChart = ({ data, showKeys = true }: { data: BarData[]; showKeys?: 
                 indexBy="address"
                 margin={{ top: 10, right: 20, bottom: 100, left: 60 }}
                 padding={0.4}
-                colors="#4b63a1"
+                colors={brand[400]}
                 borderRadius={4}
                 axisBottom={{
                     tickSize: 5,
