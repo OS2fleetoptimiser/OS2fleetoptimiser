@@ -11,7 +11,7 @@ import { DownloadableGraph } from "@/components/DownloadableGraph";
 
 const AvailabilityHighlightCard = ({ title, value }: { title: string; value: string | number }) => {
     return (
-        <Card className="w-48">
+        <Card className="flex-1 min-w-0">
             <CardContent className="space-y-2">
                 <div className="text-sm">{title}</div>
                 <div className="text-2xl font-bold">{value}</div>
