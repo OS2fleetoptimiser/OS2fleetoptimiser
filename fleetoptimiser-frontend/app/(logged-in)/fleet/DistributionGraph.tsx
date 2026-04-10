@@ -1,5 +1,6 @@
 import { getYTicks } from '@/app/(logged-in)/fleet/UnallocatedTripsLine';
 import { ResponsiveBar } from '@nivo/bar';
+import { nivoTheme } from '@/theme/nivoTheme';
 
 export type entry = {
     label: string;
@@ -93,8 +94,8 @@ export const VehicleTripDistributionBar = ({ data }: props) => {
                 </div>
             )}
             theme={{
-                labels: { text: { fontWeight: 'bold', fontSize: '0.75rem' } },
-                grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
+                ...nivoTheme,
+                labels: { text: { ...nivoTheme.labels.text, fontWeight: 'bold', fontSize: '0.75rem' } },
             }}
         />
     );

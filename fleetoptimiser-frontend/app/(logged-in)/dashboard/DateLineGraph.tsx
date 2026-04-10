@@ -1,5 +1,6 @@
 import { ResponsiveLine } from '@nivo/line';
 import { getYTicks } from '@/app/(logged-in)/fleet/UnallocatedTripsLine';
+import { nivoTheme } from '@/theme/nivoTheme';
 import React from 'react';
 
 type dataPoint = {
@@ -80,9 +81,7 @@ const DateLineGraph = ({ data, yLabel, color }: props) => {
                 from: 'color',
                 modifiers: [['darker', 0.3]],
             }}
-            theme={{
-                grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
-            }}
+            theme={nivoTheme}
             useMesh={true}
             enableSlices={false}
             enableArea={true}

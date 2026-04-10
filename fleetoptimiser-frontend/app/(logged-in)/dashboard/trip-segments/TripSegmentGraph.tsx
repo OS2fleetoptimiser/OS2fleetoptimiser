@@ -1,6 +1,7 @@
 import React from 'react';
 import {generateFromPalette} from '@/components/ColorGenerator';
 import { ResponsiveBar } from '@nivo/bar';
+import { nivoTheme } from '@/theme/nivoTheme';
 import { getYTicks } from "@/app/(logged-in)/fleet/UnallocatedTripsLine";
 
 export type trip = {
@@ -37,7 +38,7 @@ const TripSegmentGraph = ({ data, setFocus, focus }: { data: ogData; setFocus: (
                 x={0}
                 dy={15}
                 fontSize="14"
-                fontFamily="'Roboto', 'Helvetica', 'Arial', sans-serif"
+                fontFamily="'Inter', sans-serif"
                 key="plate"
             >
                 {plate}
@@ -46,7 +47,7 @@ const TripSegmentGraph = ({ data, setFocus, focus }: { data: ogData; setFocus: (
 
         departmentWords.forEach((word: any, index: number) => {
             children.push(
-                <tspan x={-2} dy={index === 0 ? '10' : '10'} fontFamily="'Roboto', 'Helvetica', 'Arial', sans-serif" fontSize="9" key={`department-${index}`}>
+                <tspan x={-2} dy={index === 0 ? '10' : '10'} fontFamily="'Inter', sans-serif" fontSize="9" key={`department-${index}`}>
                     {word}
                 </tspan>
             );
@@ -132,6 +133,7 @@ const TripSegmentGraph = ({ data, setFocus, focus }: { data: ogData; setFocus: (
                 from: 'color',
                 modifiers: [['darker', 1.6]],
             }}
+            theme={nivoTheme}
         />
     );
 };

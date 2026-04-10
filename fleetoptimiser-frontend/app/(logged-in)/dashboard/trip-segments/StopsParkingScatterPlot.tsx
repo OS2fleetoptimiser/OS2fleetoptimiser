@@ -1,6 +1,6 @@
 import { generateFromPalette } from '@/components/ColorGenerator';
 import { ResponsiveScatterPlotCanvas, ScatterPlotDatum } from '@nivo/scatterplot';
-import { isInteger } from 'lodash';
+import { nivoTheme } from '@/theme/nivoTheme';
 
 export interface scatterPlotEntry extends ScatterPlotDatum {
     tripId: number;
@@ -72,7 +72,7 @@ const ParkingTimeScatterPlot = ({
                 legend: distance ? 'Samlet distance på rundturen (km)' : 'Antal stop på rundturen',
                 legendPosition: 'middle',
                 legendOffset: 46,
-                format: (v) => (isInteger(v) ? v : ''),
+                format: (v) => (Number.isInteger(v) ? v : ''),
             }}
             axisLeft={{
                 tickSize: 5,
@@ -81,8 +81,9 @@ const ParkingTimeScatterPlot = ({
                 legend: 'Parkeringstid på rundturen (minutter)',
                 legendPosition: 'middle',
                 legendOffset: -60,
-                format: (v) => (isInteger(v) ? v : ''),
+                format: (v) => (Number.isInteger(v) ? v : ''),
             }}
+            theme={nivoTheme}
             tooltip={(node) => {
                 const entry = node.node.data as scatterPlotEntry;
                 return (

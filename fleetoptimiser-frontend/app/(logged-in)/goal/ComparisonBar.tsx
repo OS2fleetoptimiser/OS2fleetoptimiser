@@ -1,5 +1,6 @@
 import { getYTicks } from '@/app/(logged-in)/fleet/UnallocatedTripsLine';
 import { ResponsiveBar } from '@nivo/bar';
+import { nivoTheme } from '@/theme/nivoTheme';
 import { useMediaQuery } from 'react-responsive';
 
 type Solution = {
@@ -54,9 +55,9 @@ export function CostComparisonBar({ currentValue, solutions, yAxis }: Props) {
             valueFormat={(val) => formatValue(Number(val))}
             labelTextColor="white"
             theme={{
-                axis: { ticks: { text: { fontSize: 12, fill: '#555' } } },
-                grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
-                labels: { text: { fontWeight: 'bold', fontSize: '0.75rem' } },
+                ...nivoTheme,
+                axis: { ...nivoTheme.axis, ticks: { text: { ...nivoTheme.axis.ticks.text, fontSize: 12, fill: '#555' } } },
+                labels: { text: { ...nivoTheme.labels.text, fontWeight: 'bold', fontSize: '0.75rem' } },
             }}
             tooltip={({ value, indexValue }) => (
                 <div className="bg-[#222] text-white p-2 rounded-lg text-xs">

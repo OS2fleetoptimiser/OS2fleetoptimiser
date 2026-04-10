@@ -1,6 +1,7 @@
 import { ResponsiveBar } from '@nivo/bar';
 import { Typography } from '@mui/material';
 import { LocationUsage } from '@/components/hooks/useGetLandingPage';
+import { nivoTheme } from '@/theme/nivoTheme';
 
 interface BarData extends LocationUsage {
     [key: string]: any;
@@ -65,9 +66,9 @@ const UsageBarChart = ({ data, showKeys = true }: { data: BarData[]; showKeys?: 
                     window.location.href = `/dashboard/timeactivity?startdate=${formatted}&locations=${data.location_id}`;
                 }}
                 theme={{
-                    axis: { ticks: { text: { fontSize: 12, fill: '#555' } } },
-                    grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
-                    labels: { text: { fontWeight: 'bold', fontSize: '0.75rem' } },
+                    ...nivoTheme,
+                    axis: { ...nivoTheme.axis, ticks: { text: { ...nivoTheme.axis.ticks.text, fontSize: 12, fill: '#555' } } },
+                    labels: { text: { ...nivoTheme.labels.text, fontWeight: 'bold', fontSize: '0.75rem' } },
                 }}
                 enableLabel={true}
                 role="button"

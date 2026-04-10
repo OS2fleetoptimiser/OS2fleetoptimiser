@@ -1,5 +1,6 @@
 import { ResponsiveHeatMapCanvas } from '@nivo/heatmap';
 import { useMediaQuery } from 'react-responsive';
+import { nivoTheme } from '@/theme/nivoTheme';
 import { rgb } from 'd3-color';
 
 type HeatMapGroupWithMetaData = {
@@ -60,6 +61,7 @@ export default function TimeActivityHeatMap({ data, threshold }: { data: heatmap
                         </div>
                     );
                 }}
+                theme={nivoTheme}
                 emptyColor="#555555"
                 enableLabels={true}
                 legends={[

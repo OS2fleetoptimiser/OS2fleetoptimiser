@@ -1,5 +1,6 @@
 import { ResponsiveHeatMap } from '@nivo/heatmap';
 import { Typography } from '@mui/material';
+import { nivoTheme } from '@/theme/nivoTheme';
 
 interface ActivityHeatmapProps {
     data: {
@@ -134,7 +135,8 @@ const ActivityHeatmap = ({ data, showKeys = true }: ActivityHeatmapProps & { sho
                     window.location.href = `/dashboard/activity?startdate=${cell.data.start_date}&enddate=${cell.data.end_date}&locations=${locationId}`;
                 }}
                 theme={{
-                    labels: { text: { fontWeight: 'bold', fontSize: '0.75rem' } },
+                    ...nivoTheme,
+                    labels: { text: { ...nivoTheme.labels.text, fontWeight: 'bold', fontSize: '0.75rem' } },
                 }}
                 legends={[
                     {

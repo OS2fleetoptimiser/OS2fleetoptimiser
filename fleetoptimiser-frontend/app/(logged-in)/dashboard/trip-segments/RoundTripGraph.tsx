@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { ResponsiveLine, LineSeries, LineCustomSvgLayerProps, LineCustomSvgLayer } from '@nivo/line';
+import { nivoTheme } from '@/theme/nivoTheme';
 import { line } from 'd3-shape';
 import { generateParkingSegments, generateDrivingSegments, generateAccumulatedDriving, formatTimeFromISO } from './SegmentUtility';
 
@@ -373,6 +374,7 @@ const RoundTripChart = (props: rtchartinput) => {
                     legend: 'Akkumuleret distance (km)',
                     legendOffset: -40,
                 }}
+                theme={nivoTheme}
                 legends={[
                     {
                         anchor: 'right',

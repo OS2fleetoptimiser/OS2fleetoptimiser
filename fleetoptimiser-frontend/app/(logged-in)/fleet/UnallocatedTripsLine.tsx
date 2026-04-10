@@ -3,6 +3,7 @@ import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
 import dayjs from 'dayjs';
 import { drivingBook } from '@/components/hooks/useSimulateFleet';
 import { Card, Typography } from '@mui/material';
+import { nivoTheme } from '@/theme/nivoTheme';
 
 export const getYTicks = (sums: number[], maxTicks: number = 5) => {
     const maxAntal = Math.max(...sums);
@@ -105,9 +106,7 @@ export const UnallocatedTripsLineChart = ({ simulationResults }: { simulationRes
                             Ikke kørte ture: <span className="font-bold">{(point.data.yFormatted || point.data.y).toString()}</span>
                         </div>
                     )}
-                    theme={{
-                        grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
-                    }}
+                    theme={nivoTheme}
                 />
             </div>
         </Card>

@@ -1,5 +1,6 @@
 import { ResponsiveLineCanvas } from '@nivo/line';
 import { getYTicks } from '@/app/(logged-in)/fleet/UnallocatedTripsLine';
+import { nivoTheme } from '@/theme/nivoTheme';
 import React from 'react';
 
 type PointProps = {
@@ -52,9 +53,7 @@ export const AvailabilityGraph = ({ data, totalVehicles }: AvailabilityData) => 
             colors="#4b63a1"
             isInteractive={true}
             pointSize={0}
-            theme={{
-                grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
-            }}
+            theme={nivoTheme}
         />
     );
 };

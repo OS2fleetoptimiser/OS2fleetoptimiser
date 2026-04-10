@@ -1,6 +1,7 @@
 'use client';
 
 import { ResponsiveLine } from '@nivo/line';
+import { nivoTheme } from '@/theme/nivoTheme';
 
 export type Entry = {
     x: string;
@@ -68,9 +69,7 @@ const CombinedDailyDrivingGraph = ({ data, colorMapper }: Props) => {
                     }}
                     enablePointLabel={false}
                     pointSize={1}
-                    theme={{
-                        grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
-                    }}
+                    theme={nivoTheme}
                     pointBorderWidth={1}
                     pointBorderColor={{
                         from: 'color',

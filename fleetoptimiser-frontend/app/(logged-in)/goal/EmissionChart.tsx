@@ -1,4 +1,5 @@
 import { ResponsiveBar } from '@nivo/bar';
+import { nivoTheme } from '@/theme/nivoTheme';
 
 type dataEntry = {
     solution: string;
@@ -42,6 +43,7 @@ const EmissionChart = ({ data }: { data: dataEntry[] }) => {
             labelSkipHeight={12}
             labelTextColor={'white'}
             valueFormat={(v) => v.toLocaleString()}
+            theme={nivoTheme}
             role="application"
         />
     );

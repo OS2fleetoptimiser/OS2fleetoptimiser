@@ -1,5 +1,6 @@
 import { ComputedCell, ResponsiveHeatMapCanvas } from '@nivo/heatmap';
 import 'd3-scale-chromatic';
+import { nivoTheme } from '@/theme/nivoTheme';
 import dayjs from 'dayjs';
 import { useMediaQuery } from 'react-responsive';
 
@@ -70,6 +71,7 @@ export const DrivingHeatmapKm = ({
                     minValue: 0,
                     maxValue: maxHeatValue,
                 }}
+                theme={nivoTheme}
                 emptyColor="#b6b7b9"
                 legends={[
                     {

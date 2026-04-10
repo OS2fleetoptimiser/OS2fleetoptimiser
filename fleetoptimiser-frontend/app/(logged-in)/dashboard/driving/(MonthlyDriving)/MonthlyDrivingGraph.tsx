@@ -1,4 +1,5 @@
 import { ResponsiveBar } from '@nivo/bar';
+import { nivoTheme } from '@/theme/nivoTheme';
 
 type key = {
     monthYear: string;
@@ -60,9 +61,7 @@ const MonthlyDrivingGraph = ({ data, colorMapper }: { data: dataPoint[]; colorMa
                 from: 'color',
                 modifiers: [['darker', 1.6]],
             }}
-            theme={{
-                grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
-            }}
+            theme={nivoTheme}
             legends={[
                 {
                     dataFrom: 'keys',
