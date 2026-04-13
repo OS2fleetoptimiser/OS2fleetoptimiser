@@ -38,16 +38,16 @@ export const GoalResultsOverview = ({ simulation, convertedGoalResults }: GoalRe
             {convertedGoalResults && convertedGoalResults.solutions.length > 0 && (
                 <div>
                     <PageTitle level="section" title="Sammenligning" />
+                    {displayTips && (
+                        <div className="mb-4">
+                            <TipsAutomatic />
+                        </div>
+                    )}
                     <div className="space-y-6">
                         <SolutionComparisonBars solutions={convertedGoalResults.solutions} />
                         <SolutionComparisonTable solutions={convertedGoalResults.solutions} />
                     </div>
                     <SolutionPicker solutions={convertedGoalResults.solutions} simulationId={simulation.query.data?.id} />
-                </div>
-            )}
-            {displayTips && (
-                <div className="mb-4">
-                    <TipsAutomatic />
                 </div>
             )}
             {!convertedGoalResults && !isSimulating(simulation.query.status) && !simulation.running && <NoSimulationResults />}
