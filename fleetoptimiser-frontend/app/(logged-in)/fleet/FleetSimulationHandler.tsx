@@ -15,7 +15,7 @@ export default function FleetSimulationHandler({ simulationId }: { simulationId?
     const convertedSimulationResults = useMemo(() => {
         if (
             simulation.query.data?.status === 'SUCCESS' &&
-            simulation.query.data.result
+            simulation.query.data.result?.results
         ) {
             return convertDataToSimulationResults(simulation.query.data.result);
         }
