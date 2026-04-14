@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { fetchVehiclesByLocation, useGetForvaltninger, useGetLocations } from '@/components/hooks/useGetVehiclesByLocation';
 import LocationPicker, { SelectedLocation } from './LocationPicker';
-import { Card, CircularProgress } from '@mui/material';
+import { Card, CircularProgress, Skeleton } from '@mui/material';
 import PageTitle from '@/components/PageTitle';
 import { fetchSimulationSettings, setCars, setEndDate, setLocationForvaltning, setStartDate } from '@/components/redux/SimulationSlice';
 import { useQueries } from '@tanstack/react-query';
@@ -103,6 +103,13 @@ export default function Home() {
             {!locationsLoading && !onlyLocs && <NoConnectionError />}
             {!isLoadingVehicles && allVehicles.length === 0 && locationForvaltning.length > 0 && <NoSelectableVehicles />}
             {vehicles.some((q) => q.isError) && <NoConnectionError />}
+            {isLoadingVehicles && locationForvaltning.length > 0 && (
+                <Card sx={{ p: 3 }}>
+                    <Skeleton variant="text" width={250} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="text" width={400} height={16} sx={{ mb: 3 }} />
+                    <Skeleton variant="rounded" height={400} />
+                </Card>
+            )}
             {allVehicles.length > 0 && (
                 <VehiclePicker
                     vehicles={allVehicles}
