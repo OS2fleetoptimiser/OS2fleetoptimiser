@@ -2,6 +2,7 @@ import { Theme, alpha, Components } from '@mui/material/styles';
 import { svgIconClasses } from '@mui/material/SvgIcon';
 import { typographyClasses } from '@mui/material/Typography';
 import { buttonBaseClasses } from '@mui/material/ButtonBase';
+import { listItemIconClasses } from '@mui/material/ListItemIcon';
 import { chipClasses } from '@mui/material/Chip';
 import { iconButtonClasses } from '@mui/material/IconButton';
 import { outlinedInputClasses } from '@mui/material/OutlinedInput';
@@ -22,7 +23,7 @@ export const dataDisplayCustomizations: Components<Theme> = {
   MuiListItem: {
     styleOverrides: {
       root: ({ theme }) => ({
-        [`& .${svgIconClasses.root}`]: {
+        [`& .${listItemIconClasses.root} > .${svgIconClasses.root}`]: {
           width: '1rem',
           height: '1rem',
           color: (theme.vars || theme).palette.text.secondary,
@@ -30,7 +31,7 @@ export const dataDisplayCustomizations: Components<Theme> = {
         [`& .${typographyClasses.root}`]: {
           fontWeight: 500,
         },
-        [`& .${buttonBaseClasses.root}`]: {
+        [`& > .${buttonBaseClasses.root}`]: {
           display: 'flex',
           gap: 8,
           padding: '2px 8px',
@@ -39,7 +40,7 @@ export const dataDisplayCustomizations: Components<Theme> = {
           '&.Mui-selected': {
             opacity: 1,
             backgroundColor: alpha(theme.palette.action.selected, 0.3),
-            [`& .${svgIconClasses.root}`]: {
+            [`& .${listItemIconClasses.root} > .${svgIconClasses.root}`]: {
               color: (theme.vars || theme).palette.text.primary,
             },
             '&:focus-visible': {
