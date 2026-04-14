@@ -10,11 +10,7 @@ type props = {
 
 const LoadingOverlay = ({ progress, status, setCancel, buttonText, pendingText }: props) => {
     const isPending = status === 'PENDING'
-    const label = isPending
-        ? (pendingText ?? 'Starter simulering')
-        : (pendingText
-            ? `${pendingText} ${Math.round(progress)}%`
-            : `${Math.round(progress)}%`)
+    const rounded = Math.round(progress)
 
     return (
         <Box
@@ -42,18 +38,22 @@ const LoadingOverlay = ({ progress, status, setCancel, buttonText, pendingText }
                 }}
             >
                 <Typography variant="subtitle2">
-                    {label}
+                    {pendingText ?? (isPending ? 'Starter simulering' : 'Simulerer')}
                 </Typography>
-                <LinearProgress
-                    variant={isPending ? 'indeterminate' : 'determinate'}
-                    value={progress}
-                    sx={{ width: '100%' }}
-                />
+                <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <LinearProgress
+                        variant={isPending ? 'indeterminate' : 'determinate'}
+                        value={progress}
+                    />
+                    <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', fontVariantNumeric: 'tabular-nums', visibility: isPending ? 'hidden' : 'visible' }}>
+                        {rounded}%
+                    </Typography>
+                </Box>
                 <Button
                     variant="outlined"
                     color="error"
                     size="small"
-                    onClick={() => setCancel()}
+                    onClick={setCancel}
                 >
                     {buttonText ?? 'Afbryd simulering'}
                 </Button>
