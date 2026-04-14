@@ -152,7 +152,7 @@ export const KeyLocationFigures = ({ data }: Props) => {
   );
 
   if (!data) {
-    return <div className="flex my-4 items-center">Ingen data</div>;
+    return <Typography variant="body2" color="text.secondary" sx={{ my: 2 }}>Ingen data</Typography>;
   }
 
   if (!keyFigures?.lowest || !keyFigures?.highest || !keyFigures?.average) {

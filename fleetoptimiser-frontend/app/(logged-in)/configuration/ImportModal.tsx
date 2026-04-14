@@ -1,4 +1,4 @@
-import { CircularProgress, Button, Dialog, DialogContent, DialogTitle, DialogActions } from '@mui/material';
+import { CircularProgress, Button, Dialog, DialogContent, DialogTitle, DialogActions, Typography } from '@mui/material';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import Done from '@mui/icons-material/Done';
 import { isAxiosError, AxiosError } from 'axios';
@@ -33,7 +33,7 @@ interface ErrorResponse {
 
 const ValidationResultList = ({ validationResult }: { validationResult: ValidationResultType | null }) => {
     if (validationResult == null) {
-        return <div className="flex flex-col">Ingen resultater fra validering</div>;
+        return <Typography variant="body2" color="text.secondary">Ingen resultater fra validering</Typography>;
     }
 
     if (validationResult.errors.length) {

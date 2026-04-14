@@ -215,10 +215,10 @@ const TripSegmentsDashboard = ({ availableshifts, end, start, departments, locat
                         </div>
                     </>
                 ) : (
-                    <p className="m-4">
+                    <Typography variant="body2" color="text.secondary" sx={{ m: 2 }}>
                         Der er ingen data der matcher de valgte filtre. Du kan forsøge at sætte maks tur distancen op hvis der er kørt ture i den valgte
                         periode.
-                    </p>
+                    </Typography>
                 ))}
             {selectedTripSegments && (
                 <div className="h-[500px] mb-4">
