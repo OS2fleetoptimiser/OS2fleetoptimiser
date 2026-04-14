@@ -2,7 +2,7 @@
 
 import ApiError from '@/components/ApiError';
 import useGetStatisticsOverview from '@/components/hooks/useGetStatisticsOverview';
-import { Card, CircularProgress, Typography } from '@mui/material';
+import { Card, Skeleton, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import React from 'react';
 import DateLineGraph from './DateLineGraph';
@@ -72,9 +72,7 @@ export default function OverViewGraphs({ endDate, forvaltninger, locations, star
                 </Typography>
                 {emissionSeries.isError && <ApiError retryFunction={emissionSeries.refetch}>Dashboard data kunne ikke hentes</ApiError>}
                 {emissionSeries.isPending && (
-                    <div className="p-10 flex justify-center">
-                        <CircularProgress />
-                    </div>
+                    <Skeleton variant="rounded" height={320} />
                 )}
                 {emissionSeries.data &&
                     (emissionSeries.data.data.length > 0 ? (
@@ -96,9 +94,7 @@ export default function OverViewGraphs({ endDate, forvaltninger, locations, star
                 </Typography>
                 {shareSeries.isError && <ApiError retryFunction={shareSeries.refetch}>Dashboard data kunne ikke hentes</ApiError>}
                 {shareSeries.isPending && (
-                    <div className="p-10 flex justify-center">
-                        <CircularProgress />
-                    </div>
+                    <Skeleton variant="rounded" height={320} />
                 )}
                 {shareSeries.data &&
                     (shareSeries.data.data.length > 0 ? (
@@ -120,9 +116,7 @@ export default function OverViewGraphs({ endDate, forvaltninger, locations, star
                 </Typography>
                 {drivenSeries.isError && <ApiError retryFunction={drivenSeries.refetch}>Dashboard data kunne ikke hentes</ApiError>}
                 {drivenSeries.isPending && (
-                    <div className="p-10 flex justify-center">
-                        <CircularProgress />
-                    </div>
+                    <Skeleton variant="rounded" height={320} />
                 )}
                 {drivenSeries.data &&
                     (drivenSeries.data.data.length > 0 ? (

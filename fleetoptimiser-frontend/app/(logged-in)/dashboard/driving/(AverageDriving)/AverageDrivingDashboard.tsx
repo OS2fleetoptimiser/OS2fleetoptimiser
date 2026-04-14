@@ -1,7 +1,7 @@
 'use client';
 
 import useGetDrivingData from '@/components/hooks/useGetDrivingData';
-import { Box, Card, CircularProgress, Typography } from '@mui/material';
+import { Box, Card, Skeleton, Typography } from '@mui/material';
 import { drivingData } from '@/components/hooks/useGetDrivingData';
 import { getInterval } from '../../../dashboard/ShiftNameTranslater';
 import AverageDrivingGraph from './AverageDrivingGraph';
@@ -94,9 +94,12 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
         <div>
             {drivingData.isError && <ApiError retryFunction={drivingData.refetch}>Der opstod en netværksfejl</ApiError>}
             {drivingData.isPending && (
-                <div className="p-10 flex justify-center">
-                    <CircularProgress />
-                </div>
+                <Card sx={{ p: 3 }}>
+                    <Skeleton variant="text" width="40%" />
+                    <Skeleton variant="text" width="70%" sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" width="40%" height={48} sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" height={384} />
+                </Card>
             )}
             {drivingData.data && (
                 drivingData.data.dataPoints.length > 0 ? (

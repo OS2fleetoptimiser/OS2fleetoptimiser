@@ -1,7 +1,7 @@
 'use client';
 
 import useGetDrivingData from '@/components/hooks/useGetDrivingData';
-import { Card, CircularProgress, Divider, InputAdornment, Paper, TextField, Typography } from '@mui/material';
+import { Card, Divider, InputAdornment, Paper, Skeleton, TextField, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import ParkingTimeScatterPlot, { scatterplotProps } from './StopsParkingScatterPlot';
@@ -165,9 +165,11 @@ const TripSegmentsDashboard = ({ availableshifts, end, start, departments, locat
             </Paper>
             {drivingData.isError && <ApiError retryFunction={drivingData.refetch}>Der opstod en netværksfejl</ApiError>}
             {drivingData.isPending && (
-                <div className="p-10 flex justify-center">
-                    <CircularProgress />
-                </div>
+                <Card sx={{ p: 2 }}>
+                    <Skeleton variant="text" width="30%" />
+                    <Skeleton variant="text" width="70%" sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" height={500} />
+                </Card>
             )}
             {drivingData.data &&
                 (drivingData.data.barChart.length > 0 ? (

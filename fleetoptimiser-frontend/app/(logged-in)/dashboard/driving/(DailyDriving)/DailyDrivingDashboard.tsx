@@ -2,7 +2,7 @@
 
 import ApiError from '@/components/ApiError';
 import useGetDrivingData from '@/components/hooks/useGetDrivingData';
-import { Box, Card, CircularProgress, Typography } from '@mui/material';
+import { Box, Card, Skeleton, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { getInterval } from '../../../dashboard/ShiftNameTranslater';
 import { filterProps } from '../../(filters)/FilterHeader';
@@ -124,9 +124,12 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
         <div>
             {dashboardData.isError && <ApiError retryFunction={dashboardData.refetch}>Der opstod en netværksfejl</ApiError>}
             {dashboardData.isPending && (
-                <div className="p-10 flex justify-center">
-                    <CircularProgress />
-                </div>
+                <Card sx={{ p: 3 }}>
+                    <Skeleton variant="text" width="40%" />
+                    <Skeleton variant="text" width="70%" sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" width="40%" height={48} sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" height={384} />
+                </Card>
             )}
             {dashboardData.data &&
                 (Object.keys(dashboardData.data).length > 0 ? (

@@ -1,7 +1,7 @@
 'use client';
 
 import useGetDrivingData from '@/components/hooks/useGetDrivingData';
-import { Card, CircularProgress, Divider, InputAdornment, Paper, TextField, Typography } from '@mui/material';
+import { Card, Divider, InputAdornment, Paper, Skeleton, TextField, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import ApiError from '@/components/ApiError';
 import { useState } from 'react';
@@ -91,9 +91,11 @@ function TimeActivityDashboard({ end, locations, forvaltninger, start, departmen
                 </ApiError>
             )}
             {heatMapData.isPending && (
-                <div className="p-10 flex justify-center">
-                    <CircularProgress />
-                </div>
+                <Card sx={{ p: 2 }}>
+                    <Skeleton variant="text" width="30%" />
+                    <Skeleton variant="text" width="70%" sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" height={400} />
+                </Card>
             )}
             {heatMapData.data && (
                 <Card sx={{ p: 2 }}>

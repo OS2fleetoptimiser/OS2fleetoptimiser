@@ -5,7 +5,7 @@ import DeleteRoundTrips from '@/app/(logged-in)/configuration/DeleteRoundTrips';
 import ApiError from '@/components/ApiError';
 import useGetDropDownData from '@/components/hooks/useGetDropDownData';
 import useGetVehicles from '@/components/hooks/useGetVehicles';
-import { CircularProgress } from '@mui/material';
+import { Skeleton } from '@mui/material';
 import PageTitle from '@/components/PageTitle';
 import { useState } from 'react';
 import VehicleTable from './ConfigTable';
@@ -27,7 +27,12 @@ export default function Page() {
             ) : dropDownValues.isError ? (
                 <ApiError retryFunction={dropDownValues.refetch}>Meta Data kunne ikke hentes</ApiError>
             ) : tableData.isPending || dropDownValues.isPending ? (
-                <CircularProgress />
+                <div>
+                    <Skeleton variant="rounded" height={52} sx={{ mb: 1 }} />
+                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                        <Skeleton key={i} variant="text" height={36} sx={{ mb: 0.5 }} />
+                    ))}
+                </div>
             ) : (
                 <div>
                     <VehicleTable dropDownData={dropDownValues.data} vehicleData={tableData.data?.vehicles} onDeleteRoundTrips={() => setShowDeleteRoundtripsModal(true)} />

@@ -6,7 +6,7 @@ import PageTitle from '@/components/PageTitle';
 import LandingPageKPIs from '@/app/(logged-in)/(landing-page)/KPIs';
 import SimulationHighlights from '@/app/(logged-in)/(landing-page)/SimulationHighlights';
 import { useGetSimulationHighlights, useGetUsageGraphData, useGetActivityGraphData, useGetLandingPageKPIs } from '@/components/hooks/useGetLandingPage';
-import { Button, CircularProgress } from '@mui/material';
+import { Button, Card, CardContent, Skeleton } from '@mui/material';
 import Link from 'next/link';
 import LandingPageGraphs from '@/app/(logged-in)/(landing-page)/LandingPageGraphs';
 import NoConnectionError from '@/app/(logged-in)/(landing-page)/NoConnectionError';
@@ -19,8 +19,8 @@ export default function Home() {
     usePatchGetLoginTime(providerAccountId);
     const { data: kpiData, isPending: isKPIsLoading } = useGetLandingPageKPIs();
     const { data: latestSimulations, isPending: simulationsIsLoading } = useGetSimulationHighlights();
-    const { data: usageGraphData } = useGetUsageGraphData();
-    const { data: activityGraphData } = useGetActivityGraphData();
+    const { data: usageGraphData, isPending: usageIsLoading } = useGetUsageGraphData();
+    const { data: activityGraphData, isPending: activityIsLoading } = useGetActivityGraphData();
 
     return (
         <>
@@ -30,7 +30,25 @@ export default function Home() {
             <div className="flex flex-col space-y-4">
                 {!isKPIsLoading && kpiData && Object.keys(kpiData).length > 0 && <LandingPageKPIs data={kpiData} />}
                 {!isKPIsLoading && (!kpiData || Object.keys(kpiData).length === 0) && <NoConnectionError />}
-                {isKPIsLoading && <CircularProgress />}
+                {isKPIsLoading && (
+                    <div className="flex flex-col md:flex-row md:flex-wrap md:gap-6 gap-4">
+                        {[0, 1, 2, 3].map((i) => (
+                            <Card key={i} className="relative flex-1 min-w-0">
+                                <CardContent className="flex flex-col">
+                                    <Skeleton variant="circular" width={40} height={40} />
+                                    <Skeleton variant="text" width={80} sx={{ mt: 1, fontSize: '1.5rem' }} />
+                                    <Skeleton variant="text" width={160} />
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+                {simulationsIsLoading && (
+                    <div className="w-full">
+                        <Skeleton variant="text" width={200} sx={{ fontSize: '1.25rem', mb: 1 }} />
+                        <Skeleton variant="rounded" height={220} />
+                    </div>
+                )}
                 {!simulationsIsLoading && latestSimulations && latestSimulations.length > 0 && (
                     <SimulationHighlights simulations={latestSimulations} />
                 )}
@@ -47,6 +65,15 @@ export default function Home() {
                                 Simuleringshistorik
                             </Button>
                         </Link>
+                    </div>
+                )}
+                {(usageIsLoading || activityIsLoading) && (!usageGraphData || !activityGraphData) && (
+                    <div>
+                        <Skeleton variant="text" width={260} sx={{ fontSize: '1.25rem', mb: 1 }} />
+                        <div className="flex flex-col md:flex-row md:space-x-4">
+                            <Skeleton variant="rounded" height={300} className="w-full md:w-1/2" />
+                            <Skeleton variant="rounded" height={300} className="w-full md:w-1/2 mt-4 md:mt-0" />
+                        </div>
                     </div>
                 )}
                 {usageGraphData && activityGraphData && usageGraphData.length > 0 && <LandingPageGraphs activityData={activityGraphData} usageData={usageGraphData} />}

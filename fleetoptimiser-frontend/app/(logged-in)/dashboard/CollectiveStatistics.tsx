@@ -1,7 +1,7 @@
 'use client';
 
 import { useGetSummedStatistics } from '@/components/hooks/useGetSummedStatistics';
-import { Card, CircularProgress, Typography } from '@mui/material';
+import { Card, Skeleton, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 
 type Props = {
@@ -22,8 +22,14 @@ export const CollectiveStatistics = ({ start, end, forvaltninger, locations }: P
     return (
         <>
             {summedStatistics.isPending && (
-                <div className="p-10 flex justify-center">
-                    <CircularProgress />
+                <div className="flex gap-4 mb-4">
+                    {[0, 1, 2].map((i) => (
+                        <Card key={i} sx={{ p: 2, flex: 1 }}>
+                            <Skeleton variant="text" width="60%" />
+                            <Skeleton variant="text" sx={{ fontSize: '1.5rem' }} width="40%" />
+                            <Skeleton variant="text" width="50%" />
+                        </Card>
+                    ))}
                 </div>
             )}
             {summedStatistics.data && (

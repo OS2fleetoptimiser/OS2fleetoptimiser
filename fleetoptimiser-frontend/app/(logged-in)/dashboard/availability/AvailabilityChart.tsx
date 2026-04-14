@@ -3,7 +3,7 @@
 import React from 'react';
 import { useGetVehicleAvailability } from '@/components/hooks/useGetDrivingData';
 import dayjs from 'dayjs';
-import { Card, CardContent, CircularProgress, Typography } from '@mui/material'
+import { Card, CardContent, Skeleton, Typography } from '@mui/material'
 
 import { filterProps } from '../(filters)/FilterHeader';
 import { AvailabilityGraph } from '@/app/(logged-in)/dashboard/availability/AvailabilityGraph';
@@ -33,9 +33,23 @@ export default function AvailabilityChart({ start, end, locations, departments, 
     return (
         <div>
             {vehicle_availability.isPending && (
-                <div className="flex justify-center items-center h-[500px]">
-                    <CircularProgress></CircularProgress>
-                </div>
+                <>
+                    <div className="flex flex-wrap my-4 items-center gap-4">
+                        {[0, 1, 2, 3].map((i) => (
+                            <Card key={i} className="flex-1 min-w-0">
+                                <CardContent className="space-y-2">
+                                    <Skeleton variant="text" width="60%" />
+                                    <Skeleton variant="text" sx={{ fontSize: '1.5rem' }} width="40%" />
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                    <Card sx={{ p: 2 }}>
+                        <Skeleton variant="text" width="30%" />
+                        <Skeleton variant="text" width="80%" sx={{ mb: 2 }} />
+                        <Skeleton variant="rounded" height={500} />
+                    </Card>
+                </>
             )}
             {vehicle_availability.data && (
                 <>

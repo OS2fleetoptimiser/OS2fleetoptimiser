@@ -1,7 +1,7 @@
 'use client';
 
 import { useGetGroupedDrivingData } from '@/components/hooks/useGetDrivingData';
-import { Button, Card, CircularProgress, InputAdornment, Paper, Tab, TextField, Typography } from '@mui/material';
+import { Button, Card, InputAdornment, Paper, Skeleton, Tab, TextField, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { useState } from 'react';
@@ -129,9 +129,11 @@ const VehicleActivityDashboard = ({
                 </ApiError>
             )}
             {heatMapData.isPending && (
-                <div className="p-10 flex justify-center">
-                    <CircularProgress />
-                </div>
+                <Card sx={{ p: 2 }}>
+                    <Skeleton variant="text" width="30%" />
+                    <Skeleton variant="text" width="70%" sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" height={400} />
+                </Card>
             )}
             {heatMapData.data && (
                 <Card sx={{ p: 2 }}>

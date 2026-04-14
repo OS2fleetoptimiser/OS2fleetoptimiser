@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useGetFleetSimulationHistory, useGetGoalSimulationHistory } from '@/components/hooks/useGetSimulationHistory';
 import {
-    CircularProgress,
+    Skeleton,
     Divider,
     Tab,
     Table,
@@ -39,8 +39,11 @@ function HistoryTable({ data, basePath, loading }: { data?: SimulationHistory[];
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center py-12">
-                <CircularProgress size={32} />
+            <div className="py-4">
+                <Skeleton variant="rounded" height={40} sx={{ mb: 1 }} />
+                {[0, 1, 2, 3, 4].map((i) => (
+                    <Skeleton key={i} variant="text" height={32} sx={{ mb: 0.5 }} />
+                ))}
             </div>
         );
     }

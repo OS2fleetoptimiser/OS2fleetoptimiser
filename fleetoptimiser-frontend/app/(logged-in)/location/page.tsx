@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { KeyLocationFigures } from "@/app/(logged-in)/location/KeyLocationFigures";
 import { LocationPrecisionList } from "@/app/(logged-in)/location/LocationPrecisionList";
 import { useGetLocationPrecision } from "@/components/hooks/useGetLocationPrecision";
-import { Button, CircularProgress } from '@mui/material';
+import { Button, Card, CardContent, Skeleton } from '@mui/material';
 import PageTitle from '@/components/PageTitle';
 import TipsModal from "@/app/(logged-in)/location/TipsModal";
 import AddIcon from "@mui/icons-material/Add";
@@ -37,7 +37,19 @@ export default function Page() {
 
                 </div>
             }
-            {isLoading && <CircularProgress/>}
+            {isLoading && (
+                <div className="mb-20">
+                    <Card variant="outlined" sx={{ my: 2, width: 'fit-content', minWidth: 500 }}>
+                        <CardContent>
+                            <Skeleton variant="text" width="40%" sx={{ mb: 1 }} />
+                            {[0, 1, 2].map((i) => (
+                                <Skeleton key={i} variant="text" height={32} sx={{ mb: 0.5 }} />
+                            ))}
+                        </CardContent>
+                    </Card>
+                    <Skeleton variant="rounded" height={400} sx={{ mt: 4 }} />
+                </div>
+            )}
         </>
     )
 }
