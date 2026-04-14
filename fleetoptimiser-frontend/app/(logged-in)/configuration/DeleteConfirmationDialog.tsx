@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 
 type DeleteConfirmationDialogProps = {
     isOpen: boolean;
@@ -15,26 +15,22 @@ const DeleteConfirmationDialog = ({ isOpen, onClose, idValue, plateValue, makeVa
     const handleConfirm = () => onClose(true);
 
     return (
-        <Dialog open={isOpen} onClose={handleCancel}>
+        <Dialog open={isOpen} onClose={handleCancel} maxWidth="xs" fullWidth>
             <DialogTitle>Slet Køretøj</DialogTitle>
-            <DialogContent>
-                <DialogContentText component="div">
+            <DialogContent sx={{ '&&': { pt: 1 } }}>
+                <Typography variant="body2" color="text.secondary">
                     Er du sikker på at du vil slette?
-                    <div className="mt-3">
-                        <ul>
-                            <li>ID: {idValue}</li>
-                            {plateValue ? <li>Nummerplade: {plateValue}</li> : null}
-                            {makeValue ? <li>Mærke: {makeValue}</li> : null}
-                            {modelValue ? <li>Model: {modelValue}</li> : null}
-                        </ul>
-                    </div>
-                </DialogContentText>
+                </Typography>
+                <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 1, pl: 2 }}>
+                    <li>ID: {idValue}</li>
+                    {plateValue ? <li>Nummerplade: {plateValue}</li> : null}
+                    {makeValue ? <li>Mærke: {makeValue}</li> : null}
+                    {modelValue ? <li>Model: {modelValue}</li> : null}
+                </Typography>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={handleCancel}>Annuller</Button>
-                <Button onClick={handleConfirm} autoFocus>
-                    Bekræft
-                </Button>
+            <DialogActions sx={{ px: 3, pb: 2 }}>
+                <Button variant="text" color="inherit" onClick={handleCancel}>Annuller</Button>
+                <Button variant="contained" color="error" onClick={handleConfirm}>Slet</Button>
             </DialogActions>
         </Dialog>
     );
