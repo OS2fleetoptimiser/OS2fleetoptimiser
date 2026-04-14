@@ -3,6 +3,7 @@ import { outlinedInputClasses } from '@mui/material/OutlinedInput';
 import { svgIconClasses } from '@mui/material/SvgIcon';
 import { toggleButtonGroupClasses } from '@mui/material/ToggleButtonGroup';
 
+import type {} from '@mui/x-date-pickers/themeAugmentation';
 import { gray, brand, red } from '../themePrimitives';
 
 /* eslint-disable import/prefer-default-export */
@@ -375,6 +376,30 @@ export const inputsCustomizations: Components<Theme> = {
             },
           },
         ],
+      }),
+      notchedOutline: {
+        border: 'none',
+      },
+    },
+  },
+  MuiPickersOutlinedInput: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        color: (theme.vars || theme).palette.text.primary,
+        borderRadius: (theme.vars || theme).shape.borderRadius,
+        border: `1px solid ${(theme.vars || theme).palette.divider}`,
+        backgroundColor: (theme.vars || theme).palette.background.default,
+        transition: 'border 120ms ease-in',
+        '&:hover': {
+          borderColor: gray[400],
+        },
+        '&.Mui-focused': {
+          outline: `3px solid ${alpha(brand[500], 0.5)}`,
+          borderColor: brand[400],
+        },
+        '&.Mui-focused .MuiPickersOutlinedInput-notchedOutline': {
+          border: 'none',
+        },
       }),
       notchedOutline: {
         border: 'none',
