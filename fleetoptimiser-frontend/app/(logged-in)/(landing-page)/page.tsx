@@ -6,7 +6,7 @@ import PageTitle from '@/components/PageTitle';
 import LandingPageKPIs from '@/app/(logged-in)/(landing-page)/KPIs';
 import SimulationHighlights from '@/app/(logged-in)/(landing-page)/SimulationHighlights';
 import { useGetSimulationHighlights, useGetUsageGraphData, useGetActivityGraphData, useGetLandingPageKPIs } from '@/components/hooks/useGetLandingPage';
-import { Button, Card, CardContent, Skeleton } from '@mui/material';
+import { Button, Skeleton } from '@mui/material';
 import Link from 'next/link';
 import LandingPageGraphs from '@/app/(logged-in)/(landing-page)/LandingPageGraphs';
 import NoConnectionError from '@/app/(logged-in)/(landing-page)/NoConnectionError';
@@ -33,13 +33,7 @@ export default function Home() {
                 {isKPIsLoading && (
                     <div className="flex flex-col md:flex-row md:flex-wrap md:gap-6 gap-4">
                         {[0, 1, 2, 3].map((i) => (
-                            <Card key={i} className="relative flex-1 min-w-0">
-                                <CardContent className="flex flex-col">
-                                    <Skeleton variant="circular" width={40} height={40} />
-                                    <Skeleton variant="text" width={80} sx={{ mt: 1, fontSize: '1.5rem' }} />
-                                    <Skeleton variant="text" width={160} />
-                                </CardContent>
-                            </Card>
+                            <Skeleton key={i} variant="rounded" height={90} sx={{ flex: 1 }} />
                         ))}
                     </div>
                 )}
