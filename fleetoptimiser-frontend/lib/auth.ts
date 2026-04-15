@@ -72,10 +72,21 @@ export const auth = betterAuth({
             const privilegesB64 = claims.privileges_b64 as string | undefined;
             const { roleValid, writePrivilege } = decodePrivileges(privilegesB64);
 
+            // fallback for ctx2 saml users have their identity in the X509SubjectName NameID
+            // "c=dk,o=<cvr>,cn=<name>,serial=<uuid>".
+            const preferredUsername = (claims.preferred_username as string) ?? ""
+            const nameFromUsername =
+              preferredUsername.match(/,cn=([^,]+),serial=/i)?.[1] ?? ""
+            const name = (claims.name as string) || nameFromUsername
+            const serialFromUsername =
+              preferredUsername.match(/,serial=([^,\s]+)$/i)?.[1] ?? ""
+            const email =
+              (claims.email as string) ||
+              (serialFromUsername ? `${serialFromUsername}@ctx2.invalid` : "")
             return {
               id: (claims.sub as string) || "",
-              email: (claims.email as string) || "",
-              name: (claims.name as string) || "",
+              email,
+              name,
               emailVerified: (claims.email_verified as boolean) ?? false,
               roleValid,
               writePrivilege,
