@@ -249,6 +249,13 @@ const VehicleConfigTable = ({ vehicleData, dropDownData, onDeleteRoundTrips }: {
     const table = useMaterialReactTable({
         columns,
         data: vehicleData,
+        muiTableHeadCellProps: {
+            sx: {
+                backgroundColor: 'background.default',
+                color: 'text.secondary',
+                fontWeight: 500,
+            },
+        },
         muiTableBodyRowProps: {
             sx: { backgroundColor: 'background.paper' },
         },
@@ -281,23 +288,23 @@ const VehicleConfigTable = ({ vehicleData, dropDownData, onDeleteRoundTrips }: {
                 {hasWritePrivilege && (
                     <>
                         <Tooltip arrow placement="left" title="Rediger">
-                            <IconButton onClick={() => handleEditVehicle(row)}>
-                                <Edit />
+                            <IconButton size="medium" onClick={() => handleEditVehicle(row)}>
+                                <Edit fontSize="small" />
                             </IconButton>
                         </Tooltip>
                         <Tooltip arrow placement="right" title="Slet">
-                            <IconButton color="error" onClick={() => handleDeleteRow(row)}>
-                                <Delete />
+                            <IconButton size="medium" color="error" onClick={() => handleDeleteRow(row)}>
+                                <Delete fontSize="small" />
                             </IconButton>
                         </Tooltip>
                         <Tooltip arrow placement="right" title={row.original.disabled ? 'Aktiver køretøj' : 'Deaktiver køretøj'}>
-                            <IconButton color={row.original.disabled ? undefined : 'success'} onClick={() => handleDisableVehicle(row)}>
-                                {row.original.disabled ? <PowerOff /> : <Power />}
+                            <IconButton size="medium" color={row.original.disabled ? undefined : 'success'} onClick={() => handleDisableVehicle(row)}>
+                                {row.original.disabled ? <PowerOff fontSize="small" /> : <Power fontSize="small" />}
                             </IconButton>
                         </Tooltip>
                         <Tooltip arrow placement="right" title="Flyt Rundture">
-                            <IconButton onClick={() => handleMoveRoundTrips(row)}>
-                                <LocationOnIcon />
+                            <IconButton size="medium" onClick={() => handleMoveRoundTrips(row)}>
+                                <LocationOnIcon fontSize="small" />
                             </IconButton>
                         </Tooltip>
                     </>
@@ -305,17 +312,17 @@ const VehicleConfigTable = ({ vehicleData, dropDownData, onDeleteRoundTrips }: {
                 {!hasWritePrivilege && (
                     <Tooltip title="Du har læserettigheder">
                         <span>
-                            <Edit color="info" />
-                            <Delete color="info" />
-                            {row.original.disabled ? <PowerOff color="info" /> : <Power color="info" />}
-                            <LocationOnIcon color="info" />
+                            <Edit fontSize="small" color="info" />
+                            <Delete fontSize="small" color="info" />
+                            {row.original.disabled ? <PowerOff fontSize="small" color="info" /> : <Power fontSize="small" color="info" />}
+                            <LocationOnIcon fontSize="small" color="info" />
                         </span>
                     </Tooltip>
                 )}
             </Box>
         ),
         renderDetailPanel: ({ row }) => (
-            <Box className="bg-gray-100 w-full grid m-auto">
+            <Box sx={{ backgroundColor: 'background.default' }} className="w-full grid m-auto">
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -368,6 +375,16 @@ const VehicleConfigTable = ({ vehicleData, dropDownData, onDeleteRoundTrips }: {
             <MaterialReactTable table={table} />
             <div className="flex gap-4 items-center mt-2">
                 <Button
+                    variant="outlined"
+                    startIcon={<DeleteIcon />}
+                    disabled={!hasWritePrivilege}
+                    color="error"
+                    onClick={onDeleteRoundTrips}
+                >
+                    Automatisk tursletning
+                </Button>
+                <div className="flex-grow" />
+                <Button
                     color="primary"
                     onClick={() => {
                         const filteredRows = table.getPrePaginationRowModel().rows.map((row: MRT_Row<Vehicle>) => row.original);
@@ -395,16 +412,6 @@ const VehicleConfigTable = ({ vehicleData, dropDownData, onDeleteRoundTrips }: {
                     Importering af data, er kun for køretøjer, der er forbundet via. dit flådestyringssystem. Dvs. IDet skal stemme overens med et kendt
                     køretøj i dit flådesystem. Brug Tilføj nyt køretøj for at tilføje nye testkøretøjer.
                 </ToolTip>
-                <div className="flex-grow" />
-                <Button
-                    variant="outlined"
-                    startIcon={<DeleteIcon />}
-                    disabled={!hasWritePrivilege}
-                    color="error"
-                    onClick={onDeleteRoundTrips}
-                >
-                    Automatisk tursletning
-                </Button>
             </div>
             {isMoveRoundTripsOpen && (
                 <MoveRoundTripsDialog
