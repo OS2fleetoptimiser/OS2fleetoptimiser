@@ -6,7 +6,6 @@ import Box from '@mui/material/Box';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
-
 const segmentLabels: Record<string, string> = {
   dashboard: 'Dashboards',
   driving: 'Kørsel',
@@ -25,6 +24,14 @@ const segmentLabels: Record<string, string> = {
   profile: 'Profile',
 };
 
+function getSegmentLabel(seg: string, prevSeg?: string): string {
+  if (segmentLabels[seg]) return segmentLabels[seg];
+  if (prevSeg && (prevSeg === 'fleet' || prevSeg === 'goal')) {
+    return 'Simuleringsresultat';
+  }
+  return decodeURIComponent(seg);
+}
+
 export default function AppBreadcrumbs() {
   const pathname = usePathname();
   const segments = pathname.split('/').filter(Boolean);
@@ -33,7 +40,7 @@ export default function AppBreadcrumbs() {
   if (segments.length === 0) return <Box sx={{ height: 24, mb: 3 }} />;
 
   const crumbs = segments.map((seg, i) => ({
-    label: segmentLabels[seg] ?? decodeURIComponent(seg),
+    label: getSegmentLabel(seg, segments[i - 1]),
     href: '/' + segments.slice(0, i + 1).join('/'),
   }));
 
