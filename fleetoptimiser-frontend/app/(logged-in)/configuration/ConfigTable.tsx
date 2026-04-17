@@ -134,11 +134,11 @@ const VehicleConfigTable = ({ vehicleData, dropDownData, onDeleteRoundTrips }: {
     };
 
     const getStatus = (vehicle: Vehicle) => {
-        if (vehicle.disabled) return <Chip variant="outlined" style={{ color: '#888', borderColor: '#888' }} label="Deaktiveret"></Chip>;
-        if (hasMissingData(vehicle)) return <Chip variant="outlined" color="error" label="Manglende metadata"></Chip>;
-        if (vehicle.test_vehicle) return <Chip variant="outlined" color="primary" label="Testkøretøj"></Chip>; // prioritising to show missing metadata on test vehicles
-        if (hasEndedLeasing(vehicle)) return <Chip style={{ color: '#ca8a04', borderColor: '#ca8a04' }} variant="outlined" label="Udløbet leasing"></Chip>;
-        return <Chip variant="outlined" color="success" label="OK" deleteIcon={<DoneIcon />} onDelete={() => 'render icon'}></Chip>;
+        if (vehicle.disabled) return <Chip variant="outlined" color="default" label="Deaktiveret" />;
+        if (hasMissingData(vehicle)) return <Chip variant="outlined" color="error" label="Manglende metadata" />;
+        if (vehicle.test_vehicle) return <Chip variant="outlined" color="primary" label="Testkøretøj" />;
+        if (hasEndedLeasing(vehicle)) return <Chip variant="outlined" color="warning" label="Udløbet leasing" />;
+        return <Chip variant="outlined" color="success" icon={<DoneIcon />} label="OK" />;
     };
 
     const columns = useMemo<MRT_ColumnDef<Vehicle>[]>(() => {
