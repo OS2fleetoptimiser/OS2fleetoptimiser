@@ -133,7 +133,7 @@ export const LocationPrecisionList = ({ data }: Props) => {
         paginationRowsPerPage: 'Rækker per side:',
         paginationDisplayedRows: ({ from, to, count }) => `${from}–${to} af ${count}`,
       }}
-      sx={{ mt: 2, cursor: 'pointer' }}
+      sx={{ cursor: 'pointer' }}
     />
   );
 };
