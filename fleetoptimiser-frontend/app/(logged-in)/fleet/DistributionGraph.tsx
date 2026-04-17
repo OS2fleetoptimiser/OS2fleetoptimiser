@@ -88,10 +88,7 @@ export const VehicleTripDistributionBar = ({ data }: props) => {
                     {id}: <span className="font-bold">{value} ture</span>
                 </div>
             )}
-            theme={{
-                ...nivoTheme,
-                labels: { text: { ...nivoTheme.labels.text, fontWeight: 'bold', fontSize: '0.75rem' } },
-            }}
+            theme={nivoTheme}
         />
     );
 };

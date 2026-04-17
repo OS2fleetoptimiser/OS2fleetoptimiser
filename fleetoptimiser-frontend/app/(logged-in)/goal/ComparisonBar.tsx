@@ -55,11 +55,7 @@ export function CostComparisonBar({ currentValue, solutions, yAxis }: Props) {
             }}
             valueFormat={(val) => formatValue(Number(val))}
             labelTextColor="white"
-            theme={{
-                ...nivoTheme,
-                axis: { ...nivoTheme.axis, ticks: { text: { ...nivoTheme.axis.ticks.text, fontSize: 12, fill: '#555' } } },
-                labels: { text: { ...nivoTheme.labels.text, fontWeight: 'bold', fontSize: '0.75rem' } },
-            }}
+            theme={nivoTheme}
             tooltip={({ value, indexValue }) => (
                 <div className="bg-[#222] text-white p-2 rounded-lg text-xs">
                     <span className="font-bold">{indexValue}</span>

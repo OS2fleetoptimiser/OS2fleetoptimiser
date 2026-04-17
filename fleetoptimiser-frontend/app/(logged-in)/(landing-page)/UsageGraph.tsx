@@ -66,11 +66,7 @@ const UsageBarChart = ({ data, showKeys = true }: { data: BarData[]; showKeys?: 
                 onClick={({ data }) => {
                     window.location.href = `/dashboard/timeactivity?startdate=${formatted}&locations=${data.location_id}`;
                 }}
-                theme={{
-                    ...nivoTheme,
-                    axis: { ...nivoTheme.axis, ticks: { text: { ...nivoTheme.axis.ticks.text, fontSize: 12, fill: '#555' } } },
-                    labels: { text: { ...nivoTheme.labels.text, fontWeight: 'bold', fontSize: '0.75rem' } },
-                }}
+                theme={nivoTheme}
                 enableLabel={true}
                 role="button"
                 onMouseEnter={(_data, event) => (event.currentTarget.style.cursor = 'pointer')}
