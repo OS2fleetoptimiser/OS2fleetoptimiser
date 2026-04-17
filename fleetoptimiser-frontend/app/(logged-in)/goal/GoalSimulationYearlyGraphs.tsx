@@ -10,11 +10,13 @@ const GoalSimulationYearlyGraphs = ({ solutions }: { solutions: goalSolution[] }
         <>
             <Card>
                 <CardContent>
-                    <PageTitle level="section" title="Årlig omkostning i kr." />
-                    <ToolTip>
-                        Oversigt over total omkostninger for de forslået løsninger. Der vises de samlede omkostning inkl. drivmiddelforbrug beregnet ud fra de
-                        allokerede ture og køretøjets forbrug. Det er beregnet vha. POGI miljøværktøj beregningsmetode.
-                    </ToolTip>
+                    <div className="flex items-center gap-1">
+                        <PageTitle level="section" title="Årlig omkostning i kr." />
+                        <ToolTip>
+                            Oversigt over total omkostninger for de forslået løsninger. Der vises de samlede omkostning inkl. drivmiddelforbrug beregnet ud fra de
+                            allokerede ture og køretøjets forbrug. Det er beregnet vha. POGI miljøværktøj beregningsmetode.
+                        </ToolTip>
+                    </div>
                     <div className="h-80">
                         <CostChart
                             data={[
@@ -36,11 +38,13 @@ const GoalSimulationYearlyGraphs = ({ solutions }: { solutions: goalSolution[] }
             </Card>
             <Card>
                 <CardContent>
-                    <PageTitle level="section" title="Årlig udledning ton CO2e" />
-                    <ToolTip>
-                        Oversigt over CO2e-udledningen for de forslået løsninger. Udledningen er summeret fra den valgte datoperiode til årsværk. De allokerede
-                        ture til de forskellige køretøjer, ligger til grund for udregningen, der bruger metoden fra POGIs miljøværktøj.
-                    </ToolTip>
+                    <div className="flex items-center gap-1">
+                        <PageTitle level="section" title="Årlig udledning ton CO2e" />
+                        <ToolTip>
+                            Oversigt over CO2e-udledningen for de forslået løsninger. Udledningen er summeret fra den valgte datoperiode til årsværk. De allokerede
+                            ture til de forskellige køretøjer, ligger til grund for udregningen, der bruger metoden fra POGIs miljøværktøj.
+                        </ToolTip>
+                    </div>
                     <div className="h-80">
                         <EmissionChart
                             data={[

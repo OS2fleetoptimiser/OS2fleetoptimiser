@@ -51,7 +51,7 @@ const TestVehicleModal = () => {
             <Modal open={open} onClose={handleClose} className="m-10 overflow-scroll lg:mx-96">
                 <div className="bg-white p-4">
                     <div className="flex justify-between border-b pb-2 mb-2">
-                        <h1 className="text-2xl">
+                        <h1 className="text-2xl inline-flex items-center gap-1">
                             Vælg Testkøretøjer
                             <ToolTip>
                                 Hvis du vil teste mod specifikke køretøjer, kan du vælge dem her. Hvis du ikke vælger nogen, har algoritmen

@@ -1,5 +1,5 @@
-import { Card, Chip, Tooltip, Typography } from '@mui/material';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { Card, Chip, Typography } from '@mui/material';
+import ToolTip from '@/components/ToolTip';
 
 interface MetricCardProps {
     title: string;
@@ -16,11 +16,7 @@ export const MetricCard = ({ title, keyfigure, good, caption, tooltipText, chang
         <Card sx={{ p: 2, flex: 1 }}>
             <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 {title}
-                {tooltipText && (
-                    <Tooltip title={tooltipText} placement="right">
-                        <InfoOutlinedIcon sx={{ fontSize: 14, color: 'text.secondary', cursor: 'help' }} />
-                    </Tooltip>
-                )}
+                {tooltipText && <ToolTip>{tooltipText}</ToolTip>}
             </Typography>
             <div className="flex items-center gap-2">
                 <Typography variant="h5" sx={{ fontWeight: 600 }}>
