@@ -52,7 +52,7 @@ const initialCars: Simulation = {
     end_date: dayjs().format('YYYY-MM-DD'),
     location_id: 0,
     location_ids: [],
-    forvaltninger: [],
+    forvaltninger: {},
     locationForvaltning: [],
     intelligent_allocation: false,
     limit_km: false,
@@ -157,7 +157,7 @@ export const simulationSlice = createSlice({
         },
         removeCarById: (state, action: PayloadAction<number>) => {
             const index = state.selectedVehicles.findIndex((car) => car.id === action.payload);
-            if (index != -1) {
+            if (index !== -1) {
                 state.selectedVehicles.splice(index, 1);
             }
             const reducedCars = reduceDuplicateVehicles(state.selectedVehicles);
@@ -218,7 +218,7 @@ export const simulationSlice = createSlice({
         },
         // Fleet simulation settings reducers
         setSimulationVehicle: (state, action: PayloadAction<{ id: number; simulation_count: number }>) => {
-            const vehicle = state.fleetSimulationSettings.simulation_vehicles.findIndex((v) => v.id == action.payload.id);
+            const vehicle = state.fleetSimulationSettings.simulation_vehicles.findIndex((v) => v.id === action.payload.id);
             if (vehicle !== -1) {
                 if (action.payload.simulation_count === 0) {
                     state.fleetSimulationSettings.simulation_vehicles.splice(vehicle, 1);
@@ -226,7 +226,7 @@ export const simulationSlice = createSlice({
                     state.fleetSimulationSettings.simulation_vehicles[vehicle].simulation_count = action.payload.simulation_count;
                 }
             } else {
-                if (action.payload.simulation_count != 0) state.fleetSimulationSettings.simulation_vehicles.push(action.payload);
+                if (action.payload.simulation_count !== 0) state.fleetSimulationSettings.simulation_vehicles.push(action.payload);
             }
         },
         setSimulationVehicles: (state, action: PayloadAction<{ id: number; simulation_count: number }[]>) => {
@@ -259,7 +259,9 @@ export const simulationSlice = createSlice({
                 const simulationVehiclesIndex = state.fleetSimulationSettings.simulation_vehicles.findIndex(
                     (vehicle) => vehicle.id === state.fleetSimulationSettings.extraVehicles[existing].id
                 );
-                state.fleetSimulationSettings.simulation_vehicles.splice(simulationVehiclesIndex, 1);
+                if (simulationVehiclesIndex !== -1) {
+                    state.fleetSimulationSettings.simulation_vehicles.splice(simulationVehiclesIndex, 1);
+                }
                 state.fleetSimulationSettings.extraVehicles.splice(existing, 1);
             }
         },
@@ -315,7 +317,7 @@ export const simulationSlice = createSlice({
             }
         },
         removeTestVehicle: (state, action: PayloadAction<number>) => {
-            state.goalSimulationSettings.testVehicles = state.goalSimulationSettings.testVehicles.filter((i) => i != action.payload);
+            state.goalSimulationSettings.testVehicles = state.goalSimulationSettings.testVehicles.filter((i) => i !== action.payload);
         },
         removeTestVehicleMeta: (state, action: PayloadAction<Vehicle>) => {
             const existing = state.goalSimulationSettings.testVehiclesMeta.findIndex((v) => v.id === action.payload.id);
