@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+import { Box, Card, Typography } from '@mui/material';
 import { ResponsiveLine, LineSeries, LineCustomSvgLayerProps, LineCustomSvgLayer } from '@nivo/line';
 import { nivoTheme } from '@/theme/nivoTheme';
 import { brand, gray } from '@/theme/themePrimitives';
@@ -322,21 +323,29 @@ const RoundTripChart = (props: rtchartinput) => {
         })),
     });
 
+    const tripStart = formatTimeFromISO(segmentData[0].start_time);
+    const tripEnd = formatTimeFromISO(segmentData[segmentData.length - 1].end_time);
+
     return (
-        <div style={{ height: '400px', width: '100%' }}>
-            <div className="flex justify-center">
-                <div>
-                    <h3 className="">Rundturens kørsels - og parkeringssegmenter</h3>
-                    <h4 className="">
-                        {formatTimeFromISO(segmentData[0].start_time)} - {formatTimeFromISO(segmentData[segmentData.length - 1].end_time)}
-                    </h4>
-                    <h4 className="">{currentVehicle}</h4>
+        <Card sx={{ p: 3 }}>
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                Rundturens kørsels - og parkeringssegmenter
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 3, display: 'block' }}>
+                Grafen viser den valgte rundtur og dens specifikke kørsels - og parkeringssegmenter. De lyse områder viser hvornår køretøjet har været i bevægelse, mens de mørke områder viser hvornår køretøjet har været parkeret. Den akkumulerede kørte distance vises i den grå linje.
+            </Typography>
+            <Box className="flex w-fit divide-x divide-gray-300 py-3 mb-4 rounded-lg" sx={{ bgcolor: '#fcfcfc' }}>
+                <div className="px-5">
+                    <div className="text-xs text-gray-500">Køretøj</div>
+                    <div className="text-lg font-semibold">{currentVehicle}</div>
                 </div>
-                <div className="items-center flex">
-                    <p className="text-explanation text-xs ml-4 block w-96">Grafen viser den valgte rundtur og dens specifikke kørsels - og parkeringssegmenter. De lyse områder viser hvornår køretøjet har været i bevægelse, mens de mørke områder viser hvornår køretøjet har været parkeret. Der vises den akkumulerede kørte distance i den grå linje.</p>
+                <div className="px-5">
+                    <div className="text-xs text-gray-500">Tidspunkt</div>
+                    <div className="text-lg font-semibold">{tripStart} til {tripEnd}</div>
                 </div>
-            </div>
-            <ResponsiveLine
+            </Box>
+            <div className="h-[500px]">
+                <ResponsiveLine
                 tooltip={(d) => ToolTipGen(d as unknown as ToolTipWrap)}
                 layers={[
                     'grid',
@@ -415,7 +424,8 @@ const RoundTripChart = (props: rtchartinput) => {
                     },
                 ]}
             />
-        </div>
+            </div>
+        </Card>
     );
 };
 

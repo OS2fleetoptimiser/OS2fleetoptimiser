@@ -223,9 +223,7 @@ const TripSegmentsDashboard = ({ availableshifts, end, start, departments, locat
                     </Typography>
                 ))}
             {selectedTripSegments && (
-                <div className="h-[500px] mb-4">
-                    <RoundTripChart currentVehicle={currentVehicle} segmentData={selectedTripSegments.trip_segments} />
-                </div>
+                <RoundTripChart currentVehicle={currentVehicle} segmentData={selectedTripSegments.trip_segments} />
             )}
         </div>
     );
