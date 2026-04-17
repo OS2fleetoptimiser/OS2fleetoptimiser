@@ -95,7 +95,7 @@ function useSimulateGoal(initialDataId?: string) {
         const sendStopSignal = async (id: any) => {
             try {
                 const response = await AxiosBase.delete(`/goal-simulation/simulation/${id}`);
-                console.error('simulation deleted', response);
+                console.log('simulation deleted', response);
             } catch (error) {
                 console.error('Error deleting simulation', error);
             }
