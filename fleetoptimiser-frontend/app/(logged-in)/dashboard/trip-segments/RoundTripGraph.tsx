@@ -6,6 +6,8 @@ import { brand, gray } from '@/theme/themePrimitives';
 import { line } from 'd3-shape';
 import { generateParkingSegments, generateDrivingSegments, generateAccumulatedDriving, formatTimeFromISO } from './SegmentUtility';
 
+const toSecondPrecision = (iso: string) => iso.slice(0, 19);
+
 interface FillDataInput extends LineCustomSvgLayerProps<LineSeries> {
     series: FillDataset[];
 }
@@ -260,7 +262,7 @@ const RoundTripChart = (props: rtchartinput) => {
             data: [
                 {
                     // tilføj drivingSegment så det kan vises på den ny tooltip
-                    x: drivingSegments[i].start_time,
+                    x: toSecondPrecision(drivingSegments[i].start_time),
                     y: 0,
                     accumulated_distance: drivingSegments[i].accumulated_distance,
                     driving_time: drivingSegments[i].driving_time,
@@ -270,7 +272,7 @@ const RoundTripChart = (props: rtchartinput) => {
                     ender: false,
                 },
                 {
-                    x: drivingSegments[i].end_time,
+                    x: toSecondPrecision(drivingSegments[i].end_time),
                     y: 0,
                     accumulated_distance: drivingSegments[i].accumulated_distance,
                     driving_time: drivingSegments[i].driving_time,
@@ -288,7 +290,7 @@ const RoundTripChart = (props: rtchartinput) => {
                 color: brand[500],
                 data: [
                     {
-                        x: parkingSegments[i].start_time,
+                        x: toSecondPrecision(parkingSegments[i].start_time),
                         y: 0,
                         accumulated_distance: parkingSegments[i].accumulated_distance,
                         parking_time: parkingSegments[i].parking_time,
@@ -297,7 +299,7 @@ const RoundTripChart = (props: rtchartinput) => {
                         ender: false,
                     },
                     {
-                        x: parkingSegments[i].end_time,
+                        x: toSecondPrecision(parkingSegments[i].end_time),
                         y: 0,
                         accumulated_distance: parkingSegments[i].accumulated_distance,
                         parking_time: parkingSegments[i].parking_time,
@@ -314,7 +316,7 @@ const RoundTripChart = (props: rtchartinput) => {
         id: 'Akkumuleret distance',
         color: gray[400],
         data: accumulatedDistance.map((distance) => ({
-            x: distance.time,
+            x: toSecondPrecision(distance.time),
             y: distance.accumulated_distance,
             accumulated_distance: distance.accumulated_distance,
         })),
