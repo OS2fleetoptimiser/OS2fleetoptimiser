@@ -11,7 +11,7 @@ export const FleetChangeChip = (fleetChange: number) => {
   return (
     <Chip
       label={Math.abs(fleetChange)}
-      color={fleetChange === 0 ? 'default' : fleetChange > 0 ? 'success' : 'error'}
+      color={fleetChange === 0 ? 'default' : fleetChange > 0 ? 'error' : 'success'}
       icon={
         fleetChange === 0 ? undefined : fleetChange > 0 ? (
           <ArrowDownwardIcon sx={{ fontSize: 14, transform: 'rotate(180deg)' }} />

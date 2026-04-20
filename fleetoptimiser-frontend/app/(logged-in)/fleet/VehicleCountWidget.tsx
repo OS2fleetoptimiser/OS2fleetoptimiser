@@ -33,7 +33,7 @@ export const VehicleCountWidget = ({ manualSimulation }: { manualSimulation: boo
                 <Typography
                     variant="caption"
                     sx={{ fontWeight: 600 }}
-                    color={delta > 0 ? 'success.main' : delta < 0 ? 'error.main' : 'text.primary'}
+                    color={delta > 0 ? 'error.main' : delta < 0 ? 'success.main' : 'text.primary'}
                 >
                     {delta > 0 ? '+' : ''}{delta}
                 </Typography>
