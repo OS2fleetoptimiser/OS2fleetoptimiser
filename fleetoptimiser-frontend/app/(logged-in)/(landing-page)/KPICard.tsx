@@ -1,5 +1,5 @@
 import LinkIcon from '@mui/icons-material/Link';
-import { Card, CardContent } from '@mui/material';
+import { Box, Card, CardContent, Typography } from '@mui/material';
 import Link from 'next/link';
 
 export default function KPICard({
@@ -20,17 +20,30 @@ export default function KPICard({
     return (
         <Card className="relative flex-1 min-w-0">
             <CardContent className="flex flex-col">
-                <span className="absolute top-2 right-4 text-xs text-gray-400">
-                    <Link className="text-gray-400 hover:text-blue-500 no-underline hover:underline flex items-center" href={path}>
-                        <LinkIcon className="text-base text-gray-400 mr-1 transform -rotate-45" />
-                        {goToText}
-                    </Link>
-                </span>
+                <Box
+                    component={Link}
+                    href={path}
+                    sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 16,
+                        display: 'flex',
+                        alignItems: 'center',
+                        textDecoration: 'none',
+                        color: 'text.secondary',
+                        '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+                    }}
+                >
+                    <LinkIcon sx={{ fontSize: 16, mr: 0.5, transform: 'rotate(-45deg)' }} />
+                    <Typography variant="caption">{goToText}</Typography>
+                </Box>
                 <div className="absolute top-2 left-3">
                     <Link href={path}>{additionalIcon}</Link>
                 </div>
-                <span className="mt-8 text-2xl font-bold">{`${value.toFixed(0)}${percentage ? '%' : ''}`}</span>
-                <span className="text-sm text-gray-500">{label}</span>
+                <Typography variant="h5" sx={{ fontWeight: 700, mt: 4 }}>
+                    {`${value.toFixed(0)}${percentage ? '%' : ''}`}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">{label}</Typography>
             </CardContent>
         </Card>
     );
