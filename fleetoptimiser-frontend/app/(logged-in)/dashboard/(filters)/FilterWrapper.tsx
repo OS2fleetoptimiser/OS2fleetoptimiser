@@ -4,7 +4,7 @@ import {FilterHeaderProps} from "@/app/(logged-in)/dashboard/(filters)/FilterHea
 import FilterHeader, {getUniqueValues} from "@/app/(logged-in)/dashboard/(filters)/FilterHeader";
 import useGetVehicles from "@/components/hooks/useGetVehicles";
 import useGetDropDownData from "@/components/hooks/useGetDropDownData";
-import {CircularProgress} from "@mui/material";
+import {Skeleton} from "@mui/material";
 import { Vehicle } from "@/components/hooks/useGetVehicles";
 
 
@@ -39,8 +39,9 @@ export const FilterHeaderWrapper = (props: FilterHeaderProps) => {
                   />
           }
           {
-              (!locationsDB.data || !vehiclesDB.data) &&
-              <CircularProgress/>
+              (!locationsDB.data || !vehiclesDB.data) && (
+                  <Skeleton variant="rounded" height={80} sx={{ mb: 2 }} />
+              )
           }
     </>
   );

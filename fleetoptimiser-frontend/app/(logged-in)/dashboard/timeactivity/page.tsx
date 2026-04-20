@@ -6,7 +6,7 @@ import AddFilter from '@/components/AddFilter';
 import { Filters } from '../(filters)/FilterHeader';
 import {FilterHeaderWrapper} from "@/app/(logged-in)/dashboard/(filters)/FilterWrapper";
 import useGetSettings from "@/components/hooks/useGetSettings";
-import {CircularProgress} from "@mui/material";
+import {Skeleton} from "@mui/material";
 import PageTitle from '@/components/PageTitle';
 
 
@@ -19,9 +19,14 @@ export default function DrivingActivity({ searchParams: searchParamsPromise }: P
     const enabled = searchParams.locations || searchParams.vehicles || searchParams.departments || searchParams.forvaltninger;
   const { data: settings, isPending: isLoading, error } = useGetSettings();
 
-  if (isLoading) return <div className="p-10 flex justify-center">
-                        <CircularProgress />
-                    </div>
+  if (isLoading)
+    return (
+        <>
+            <PageTitle title="Tidsaktivitet" />
+            <Skeleton variant="rounded" height={80} sx={{ mb: 2 }} />
+            <Skeleton variant="rounded" height={400} />
+        </>
+    );
   if (error) return<p>Fejl</p>;
 
   const availableShifts = settings?.shift_settings

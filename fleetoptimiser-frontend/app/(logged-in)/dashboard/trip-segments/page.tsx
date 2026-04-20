@@ -5,7 +5,7 @@ import { Filters } from '../(filters)/FilterHeader';
 import AddFilter from "@/components/AddFilter";
 import {FilterHeaderWrapper} from "@/app/(logged-in)/dashboard/(filters)/FilterWrapper";
 import useGetSettings from "@/components/hooks/useGetSettings";
-import {CircularProgress} from "@mui/material";
+import {Skeleton} from "@mui/material";
 import PageTitle from '@/components/PageTitle';
 
 
@@ -17,9 +17,17 @@ export default function TripSegments({ searchParams: searchParamsPromise }: Prop
     const searchParams = use(searchParamsPromise);
       const { data: settings, isPending: isLoading, error } = useGetSettings();
 
-    if (isLoading) return <div className="p-10 flex justify-center">
-                        <CircularProgress />
-                    </div>
+    if (isLoading)
+        return (
+            <>
+                <PageTitle
+                    title="Turoverblik"
+                    subtitle="Viser afsluttede rundture startet og sluttet på samme lokation. Kun kvalificerede rundture ud fra de indtastede parametre vises, hvilket kan betyde, at ikke alle kilometer fra Køretøjsaktivitet fremgår."
+                />
+                <Skeleton variant="rounded" height={80} sx={{ mb: 2 }} />
+                <Skeleton variant="rounded" height={400} />
+            </>
+        );
     if (error) return<p>Fejl</p>;
 
     const availableShifts = settings?.shift_settings

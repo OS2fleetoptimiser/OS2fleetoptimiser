@@ -8,7 +8,7 @@ import AddFilter from '@/components/AddFilter';
 import { Filters } from '../(filters)/FilterHeader';
 import { FilterHeaderWrapper } from '@/app/(logged-in)/dashboard/(filters)/FilterWrapper';
 import useGetSettings from '@/components/hooks/useGetSettings';
-import { CircularProgress } from '@mui/material';
+import { Skeleton } from '@mui/material';
 import PageTitle from '@/components/PageTitle';
 
 type Props = {
@@ -21,9 +21,15 @@ export default function DrivingDashboard({ searchParams: searchParamsPromise }: 
 
     if (isLoading)
         return (
-            <div className="p-10 flex justify-center">
-                <CircularProgress />
-            </div>
+            <>
+                <PageTitle title="Kørsel" />
+                <Skeleton variant="rounded" height={80} sx={{ mb: 2 }} />
+                <div className="space-y-4">
+                    <Skeleton variant="rounded" height={400} />
+                    <Skeleton variant="rounded" height={400} />
+                    <Skeleton variant="rounded" height={400} />
+                </div>
+            </>
         );
     if (error) return <p>Fejl</p>;
 
