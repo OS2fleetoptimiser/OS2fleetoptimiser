@@ -13,8 +13,6 @@ type FleetSimulationProps = {
 
 export const FleetSimulation = ({ simulation, setTab }: FleetSimulationProps) => {
     const locations = useAppSelector((state) => state.simulation.location_ids);
-    // to be able to display the actual address
-    const locationAddresses = useAppSelector((state) => state.simulation.locationIdAddresses);
     const startDate = useAppSelector((state) => state.simulation.start_date);
     const endDate = useAppSelector((state) => state.simulation.end_date);
     const locshifts = useAppSelector((state) =>
@@ -28,13 +26,7 @@ export const FleetSimulation = ({ simulation, setTab }: FleetSimulationProps) =>
     return (
         <div>
             <div className="grid grid-cols-3 gap-4 mb-4 max-w-[75%]">
-                <LocationsWidget
-                    locations={
-                        locationAddresses
-                            ? locationAddresses.filter((location) => locations.includes(location.id)).map((location) => location.address)
-                            : locations.map((loc) => `Lokation ID: ${loc}`)
-                    }
-                />
+                <LocationsWidget count={locations.length} />
                 <DatesWidget startDate={startDate} endDate={endDate} manualSimulation={true} />
                 <VehicleCountWidget manualSimulation={true} />
             </div>
