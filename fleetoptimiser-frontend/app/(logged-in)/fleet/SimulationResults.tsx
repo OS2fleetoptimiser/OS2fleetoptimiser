@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Button, CircularProgress, Divider, Tab, Tabs } from '@mui/material';
+import { Box, Button, CircularProgress, ToggleButton } from '@mui/material';
+import { SegmentedControl } from '@/components/SegmentedControl';
 import NoSimulationResults from '@/app/(logged-in)/fleet/NoResults';
 import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
 import { SimResultHeader } from '@/app/(logged-in)/fleet/SimResultHeader';
@@ -39,53 +40,43 @@ export const SimulationResultsPage = ({
                 </div>
             )}
             <div className="w-auto rounded-lg m-auto">
-                <Tabs
-                    value={tabValue}
-                    onChange={(e, v) => setTabValue(v)}
-                    aria-label="resultstabs"
-                    variant="standard"
-                    sx={{
-                        minHeight: 36,
-                        '& .MuiTab-root': {
-                            minHeight: 36,
-                            fontSize: '0.8125rem',
-                        },
-                    }}
-                >
-                    <Tab label="Oversigt" value={0} />
-                    <Tab
-                        label="Køretøjsdetaljer"
-                        disabled={!simulationResults}
-                        value={1}
-                    />
-                    <Tab
-                        label="Ruter"
-                        disabled={!simulationResults}
-                        value={2}
-                    />
-                </Tabs>
-                <Divider />
-                {simulationId && (
-                    <div className="flex justify-end my-4">
-                        <Button
-                            href={downloadLink}
-                            startIcon={<DownloadIcon />}
-                            variant="outlined"
-                            size="small"
-                            download
-                        >
-                            Download
-                        </Button>
-                    </div>
+                {simulationResults ? (
+                    <>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, my: simulationId ? 1 : 0 }}>
+                            <SegmentedControl
+                                value={tabValue}
+                                exclusive
+                                size="small"
+                                onChange={(e, v) => v !== null && setTabValue(v)}
+                                aria-label="resultstabs"
+                            >
+                                <ToggleButton value={0}>Oversigt</ToggleButton>
+                                <ToggleButton value={1}>Køretøjsdetaljer</ToggleButton>
+                                <ToggleButton value={2}>Ruter</ToggleButton>
+                            </SegmentedControl>
+                            {simulationId && (
+                                <Button
+                                    href={downloadLink}
+                                    startIcon={<DownloadIcon />}
+                                    variant="outlined"
+                                    size="small"
+                                    download
+                                >
+                                    Download
+                                </Button>
+                            )}
+                        </Box>
+                        {tabValue === 0 && <ResultsOverviewTab simulationResults={simulationResults} />}
+                        {tabValue === 1 && <VehicleResults simulationResults={simulationResults} />}
+                        {tabValue === 2 && <div className="mt-4"><DrivingBookTable data={simulationResults.drivingBook} /></div>}
+                    </>
+                ) : (
+                    !isLoading && (
+                        <div className="mt-8">
+                            <NoSimulationResults />
+                        </div>
+                    )
                 )}
-                {tabValue === 0 && simulationResults && <ResultsOverviewTab simulationResults={simulationResults} />}
-                {tabValue === 0 && !simulationResults && !isLoading && (
-                    <div className="mt-8">
-                        <NoSimulationResults />
-                    </div>
-                )}
-                {tabValue === 1 && simulationResults && <VehicleResults simulationResults={simulationResults} />}
-                {tabValue === 2 && simulationResults && <div className="mt-4"><DrivingBookTable data={simulationResults.drivingBook} /></div>}
             </div>
         </div>
     );
