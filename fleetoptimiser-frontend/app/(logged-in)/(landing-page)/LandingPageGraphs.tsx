@@ -42,12 +42,12 @@ export default function LandingPageGraphs({ usageData, activityData }: { usageDa
                             {sortedUsageData.length > 0 ? <UsageGraph data={sortedUsageData} showKeys={showKeys}/> : <NoData/>}
                             <div key="buttongroup" className="flex flex-row items-center space-x-4">
                                 <Link href={'/dashboard/availability'}>
-                                    <Button size="small" variant="outlined" className="text-gray-700 border-gray-700">
+                                    <Button size="small" variant="outlined">
                                         Ledighedsgraf
                                     </Button>
                                 </Link>
                                 <Link href={'/dashboard/timeactivity'}>
-                                    <Button size="small" variant="outlined" className="text-gray-700 border-gray-700">
+                                    <Button size="small" variant="outlined">
                                         Tidsaktivitet
                                     </Button>
                                 </Link>
@@ -61,12 +61,12 @@ export default function LandingPageGraphs({ usageData, activityData }: { usageDa
                             {sortedActivityData.length > 0 ? <ActivityHeatmap data={sortedActivityData} showKeys={showKeys}/> : <NoData/>}
                             <div key="buttongroup" className="flex flex-row items-center space-x-4">
                                 <Link href={'/dashboard/activity'}>
-                                    <Button size="small" variant="outlined" className="text-gray-700 border-gray-700">
+                                    <Button size="small" variant="outlined">
                                         Køretøjsaktivitet
                                     </Button>
                                 </Link>
                                 <Link href={'/dashboard/driving'}>
-                                    <Button size="small" variant="outlined" className="text-gray-700 border-gray-700">
+                                    <Button size="small" variant="outlined">
                                         Kørselsgrafer
                                     </Button>
                                 </Link>

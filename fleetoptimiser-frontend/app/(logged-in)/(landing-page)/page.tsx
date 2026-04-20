@@ -55,7 +55,7 @@ export default function Home() {
                             </Button>
                         </Link>
                         <Link href={'/simulation-history'}>
-                            <Button size="small" className="text-gray-700 border-gray-700" variant="outlined">
+                            <Button size="small" variant="outlined">
                                 Simuleringshistorik
                             </Button>
                         </Link>
