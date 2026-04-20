@@ -3,17 +3,18 @@
 import { useState } from 'react';
 import { useGetFleetSimulationHistory, useGetGoalSimulationHistory } from '@/components/hooks/useGetSimulationHistory';
 import {
+    Divider,
     Skeleton,
+    Tab,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
-    ToggleButton,
+    Tabs,
     Typography,
 } from '@mui/material';
-import { SegmentedControl } from '@/components/SegmentedControl';
 import PageTitle from '@/components/PageTitle';
 import dayjs from 'dayjs';
 import TuneIcon from '@mui/icons-material/Tune';
@@ -114,22 +115,25 @@ export default function Page() {
                 title="Simuleringshistorik"
                 subtitle="Oversigt over tidligere simuleringer kørt på systemet."
             />
-            <SegmentedControl
+            <Tabs
                 value={tab}
-                exclusive
-                size="small"
-                onChange={(_, v) => v !== null && setTab(v)}
+                onChange={(_, v) => setTab(v)}
                 aria-label="Simuleringstype"
             >
-                <ToggleButton value={0}>
-                    <TuneIcon fontSize="small" sx={{ mr: 0.75 }} />
-                    Manuel simulering
-                </ToggleButton>
-                <ToggleButton value={1}>
-                    <AutoFixHighIcon fontSize="small" sx={{ mr: 0.75 }} />
-                    Automatisk simulering
-                </ToggleButton>
-            </SegmentedControl>
+                <Tab
+                    value={0}
+                    label="Manuel simulering"
+                    icon={<TuneIcon />}
+                    iconPosition="start"
+                />
+                <Tab
+                    value={1}
+                    label="Automatisk simulering"
+                    icon={<AutoFixHighIcon />}
+                    iconPosition="start"
+                />
+            </Tabs>
+            <Divider />
             <div className="mt-4">
                 {tab === 0 && (
                     <HistoryTable
