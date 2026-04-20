@@ -1,4 +1,4 @@
-import { Button, CircularProgress, TextField } from '@mui/material';
+import { Button, Skeleton, TextField } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
@@ -24,7 +24,12 @@ export const TestVehiclesPage = ({ onCreateClick }: { onCreateClick?: () => void
     return (
         <>
             {cars.isError && <ApiError retryFunction={cars.refetch}>Køretøjerne kunne ikke hentes.</ApiError>}
-            {cars.isPending && <CircularProgress />}
+            {cars.isPending && (
+                <div className="space-y-2">
+                    <Skeleton variant="rounded" height={40} />
+                    <Skeleton variant="rounded" height={320} />
+                </div>
+            )}
             {cars.data && (
                 <>
                     <div className="flex items-center gap-2 mb-2">

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Button, CircularProgress, ToggleButton } from '@mui/material';
+import { Box, Button, CircularProgress, ToggleButton, Typography } from '@mui/material';
 import { SegmentedControl } from '@/components/SegmentedControl';
 import NoSimulationResults from '@/app/(logged-in)/fleet/NoResults';
 import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
@@ -32,13 +32,6 @@ export const SimulationResultsPage = ({
         : '';
     return (
         <div>
-            {isLoading && (
-                <div className="w-full h-full z-10 top-0 left-0 fixed bg-[#FFFFFF75]">
-                    <div className="top-[40%] left-[50%] absolute transform -translate-x-1/2 -translate-y-1/2">
-                        <CircularProgress />
-                    </div>
-                </div>
-            )}
             <div className="w-auto rounded-lg m-auto">
                 {simulationResults ? (
                     <>
@@ -70,12 +63,17 @@ export const SimulationResultsPage = ({
                         {tabValue === 1 && <VehicleResults simulationResults={simulationResults} />}
                         {tabValue === 2 && <div className="mt-4"><DrivingBookTable data={simulationResults.drivingBook} /></div>}
                     </>
+                ) : isLoading ? (
+                    <div className="flex flex-col items-center gap-3 mt-16">
+                        <CircularProgress />
+                        <Typography variant="body2" color="text.secondary">
+                            Simulerer...
+                        </Typography>
+                    </div>
                 ) : (
-                    !isLoading && (
-                        <div className="mt-8">
-                            <NoSimulationResults />
-                        </div>
-                    )
+                    <div className="mt-8">
+                        <NoSimulationResults />
+                    </div>
                 )}
             </div>
         </div>

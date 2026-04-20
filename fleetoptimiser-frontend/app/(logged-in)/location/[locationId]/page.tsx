@@ -8,7 +8,7 @@ import {
     patchLocation, ExtendedLocationInformation, createLocation
 } from "@/components/hooks/useGetLocationPrecision";
 import { LocationHeader } from "@/app/(logged-in)/location/LocationHeader";
-import {Alert, Button, CircularProgress, Paper, Snackbar, Typography} from "@mui/material";
+import {Alert, Button, Paper, Skeleton, Snackbar, Typography} from "@mui/material";
 import dynamic from "next/dynamic";
 import { use, useState } from "react";
 import { ParkingSpotList } from "@/app/(logged-in)/location/ParkingSpotList";
@@ -156,7 +156,12 @@ export default function Page({ params }: { params: Promise<{ locationId?: string
                     </div>
                 }
                 {
-                    isLoading && isEditMode && <CircularProgress/>
+                    isLoading && isEditMode && (
+                        <div className="space-y-4">
+                            <Skeleton variant="rounded" height={80} />
+                            <Skeleton variant="rounded" height={320} />
+                        </div>
+                    )
                 }
                 {
                     testPrecision.query.data && isTesting(testPrecision.query.data?.status) && testPrecision.running && (

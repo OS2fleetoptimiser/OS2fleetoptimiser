@@ -1,7 +1,7 @@
 import ApiError from '@/components/ApiError';
 import API from '@/components/AxiosBase';
 import ToolTip from '@/components/ToolTip';
-import { Button, CircularProgress, Dialog, DialogContent, DialogTitle, TextField, Typography, Paper } from '@mui/material';
+import { Button, Dialog, DialogContent, DialogTitle, Skeleton, TextField, Typography, Paper } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import { useQuery } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
@@ -111,7 +111,10 @@ const DeleteRoundTrips = ({ open, onClose }: DeleteRoundTripsModalProps) => {
                 ) : getStatistics.isError ? (
                     <ApiError retryFunction={getStatistics.refetch}>Meta Data kunne ikke hentes</ApiError>
                 ) : getSimSettings.isPending || getStatistics.isPending ? (
-                    <CircularProgress />
+                    <div className="space-y-4">
+                        <Skeleton variant="rounded" height={72} />
+                        <Skeleton variant="rounded" height={40} />
+                    </div>
                 ) : (
                     <div className="space-y-4">
                         <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { fetchVehiclesByLocation, useGetForvaltninger, useGetLocations } from '@/components/hooks/useGetVehiclesByLocation';
 import LocationPicker, { SelectedLocation } from './LocationPicker';
-import { Card, CircularProgress, Skeleton } from '@mui/material';
+import { Card, Skeleton } from '@mui/material';
 import PageTitle from '@/components/PageTitle';
 import { fetchSimulationSettings, setCars, setEndDate, setLocationForvaltning, setStartDate } from '@/components/redux/SimulationSlice';
 import { useQueries } from '@tanstack/react-query';
@@ -88,7 +88,7 @@ export default function Home() {
                         <DateRangePicker range={range} onChange={handleDateChange} />
                     </div>
                     <div className="sm:w-64">
-                        {(forvaltningerLoading || locationsLoading) && <CircularProgress size={24} />}
+                        {(forvaltningerLoading || locationsLoading) && <Skeleton variant="rounded" height={40} />}
                         {onlyLocs && !forvaltningerLoading && (
                             <LocationPicker
                                 forvaltninger={forvaltninger}

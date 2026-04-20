@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Modal } from '@mui/material';
+import { Button, Modal, Skeleton } from '@mui/material';
 import { useState } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import TestVehicleTable from './TestVehicleTable';
@@ -61,7 +61,12 @@ const TestVehicleModal = () => {
                         <AiOutlineClose onClick={handleClose} size={30} className="cursor-pointer hover:text-blue-600" />
                     </div>
                     {cars.isError && <ApiError retryFunction={cars.refetch}>Testkøretøjerne kunne ikke hentes.</ApiError>}
-                    {cars.isPending && <CircularProgress />}
+                    {cars.isPending && (
+                        <div className="space-y-2">
+                            <Skeleton variant="rounded" height={40} />
+                            <Skeleton variant="rounded" height={320} />
+                        </div>
+                    )}
                     {cars.data && (
                         <>
                             <div className="flex justify-end">
