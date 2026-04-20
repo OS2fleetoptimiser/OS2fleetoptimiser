@@ -1,6 +1,6 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { Tabs, Tab } from '@mui/material';
+import { Divider, Tabs, Tab } from '@mui/material';
 import TuneIcon from '@mui/icons-material/Tune';
 import InsightsIcon from '@mui/icons-material/Insights';
 import { FleetSimulation } from '@/app/(logged-in)/fleet/FleetSimulation';
@@ -42,6 +42,7 @@ export default function FleetSimulationHandler({ simulationId }: { simulationId?
                     iconPosition="start"
                 />
             </Tabs>
+            <Divider />
             <div className="mt-4">
                 {value === 0 && <FleetSimulation simulation={simulation} setTab={setValue} />}
                 {value === 1 && (

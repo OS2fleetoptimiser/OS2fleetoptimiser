@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, CircularProgress, Tab, Tabs } from '@mui/material';
+import { Button, CircularProgress, Divider, Tab, Tabs } from '@mui/material';
 import NoSimulationResults from '@/app/(logged-in)/fleet/NoResults';
 import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
 import { SimResultHeader } from '@/app/(logged-in)/fleet/SimResultHeader';
@@ -77,6 +77,7 @@ export const SimulationResultsPage = ({
                         </Button>
                     )}
                 </div>
+                <Divider />
                 {tabValue === 0 && simulationResults && <ResultsOverviewTab simulationResults={simulationResults} />}
                 {tabValue === 0 && !simulationResults && !isLoading && (
                     <div className="mt-8">
