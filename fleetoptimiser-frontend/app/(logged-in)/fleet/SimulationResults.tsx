@@ -39,33 +39,34 @@ export const SimulationResultsPage = ({
                 </div>
             )}
             <div className="w-auto rounded-lg m-auto">
-                <div className="flex items-center justify-between">
-                    <Tabs
-                        value={tabValue}
-                        onChange={(e, v) => setTabValue(v)}
-                        aria-label="resultstabs"
-                        variant="standard"
-                        sx={{
+                <Tabs
+                    value={tabValue}
+                    onChange={(e, v) => setTabValue(v)}
+                    aria-label="resultstabs"
+                    variant="standard"
+                    sx={{
+                        minHeight: 36,
+                        '& .MuiTab-root': {
                             minHeight: 36,
-                            '& .MuiTab-root': {
-                                minHeight: 36,
-                                fontSize: '0.8125rem',
-                            },
-                        }}
-                    >
-                        <Tab label="Oversigt" value={0} />
-                        <Tab
-                            label="Køretøjsdetaljer"
-                            disabled={!simulationResults}
-                            value={1}
-                        />
-                        <Tab
-                            label="Ruter"
-                            disabled={!simulationResults}
-                            value={2}
-                        />
-                    </Tabs>
-                    {simulationId && (
+                            fontSize: '0.8125rem',
+                        },
+                    }}
+                >
+                    <Tab label="Oversigt" value={0} />
+                    <Tab
+                        label="Køretøjsdetaljer"
+                        disabled={!simulationResults}
+                        value={1}
+                    />
+                    <Tab
+                        label="Ruter"
+                        disabled={!simulationResults}
+                        value={2}
+                    />
+                </Tabs>
+                <Divider />
+                {simulationId && (
+                    <div className="flex justify-end my-4">
                         <Button
                             href={downloadLink}
                             startIcon={<DownloadIcon />}
@@ -75,9 +76,8 @@ export const SimulationResultsPage = ({
                         >
                             Download
                         </Button>
-                    )}
-                </div>
-                <Divider />
+                    </div>
+                )}
                 {tabValue === 0 && simulationResults && <ResultsOverviewTab simulationResults={simulationResults} />}
                 {tabValue === 0 && !simulationResults && !isLoading && (
                     <div className="mt-8">
