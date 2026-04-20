@@ -16,7 +16,7 @@ const AddFilter = () => {
         >
             <FilterListIcon sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.5 }} />
             <Typography variant="body2" color="text.secondary">
-                Vælg et filter for at se data
+                Vælg et filter: lokation, køretøj, forvaltning eller afdeling
             </Typography>
         </Box>
     );
