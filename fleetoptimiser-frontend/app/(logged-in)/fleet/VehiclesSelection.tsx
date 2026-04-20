@@ -1,7 +1,7 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import { daDK } from '@mui/x-data-grid/locales'
-import { Chip } from '@mui/material'
+import { Chip, Skeleton } from '@mui/material'
 import { ReducedVehicleGroup } from '@/app/(logged-in)/fleet/VehiclesWidget'
 import { InputVehicleCount } from './InputVehicleCount'
 import ToolTip from '@/components/ToolTip'
@@ -13,6 +13,10 @@ export const VehiclesSelectionTable = ({
     manualSimulation: boolean
     vehicles: ReducedVehicleGroup[]
 }) => {
+    const [ready, setReady] = useState(false)
+    useEffect(() => {
+        setReady(true)
+    }, [])
     const name = manualSimulation ? 'simulering' : 'optimering'
 
     const automaticToolText =
@@ -119,6 +123,10 @@ export const VehiclesSelectionTable = ({
 
         return cols
     }, [manualSimulation, name])
+
+    if (!ready) {
+        return <Skeleton variant="rectangular" height={400} sx={{ mt: 1 }} />
+    }
 
     return (
         <DataGrid
