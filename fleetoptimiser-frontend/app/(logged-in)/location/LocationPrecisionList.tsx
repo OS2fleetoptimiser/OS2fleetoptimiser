@@ -133,7 +133,15 @@ export const LocationPrecisionList = ({ data }: Props) => {
         paginationRowsPerPage: 'Rækker per side:',
         paginationDisplayedRows: ({ from, to, count }) => `${from}–${to} af ${count}`,
       }}
-      sx={{ cursor: 'pointer' }}
+      sx={{
+        cursor: 'pointer',
+        '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
+          outline: 'none',
+        },
+        '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
+          outline: 'none',
+        },
+      }}
     />
   );
 };
