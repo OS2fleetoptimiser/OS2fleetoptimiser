@@ -65,6 +65,7 @@ export const surfacesCustomizations: Components<Theme> = {
     styleOverrides: {
       root: ({ theme }) => ({
         gap: 16,
+        overflow: 'visible',
         transition: 'all 100ms ease',
         backgroundColor: (theme.vars || theme).palette.background.paper,
         backgroundImage: 'none',
