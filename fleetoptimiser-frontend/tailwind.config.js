@@ -18,12 +18,7 @@ module.exports = {
              screens: {
                 'tiny': '400px',
               },
-            fontFamily: { 'body': ["Inter Tight", "Montserrat", "Helvetica", "Arial", "sans-serif"] },
             colors: {
-                blaa: '#224bb4',
-                moerkeblaa: '#003d7a',
-                primary: '#4f7c64',
-                secondary: '#70ea33',
                 explanation: 'rgba(0,0,0,0.5)',
                 'red-25': '#dd333308',
                 'green-25': '#44ce7708',

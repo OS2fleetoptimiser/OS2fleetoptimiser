@@ -1,5 +1,4 @@
 import useSimulateGoal from '@/components/hooks/useSimulateGoal';
-import { useMemo } from 'react';
 import SearchAbortedMessage from '@/app/(logged-in)/goal/SearchAborted';
 import NoCarsSelectedMessage from '@/app/(logged-in)/goal/NoCarsSelected';
 import NoTripsError from '@/app/(logged-in)/fleet/NoTripsError';
@@ -7,25 +6,22 @@ import LoadingOverlay from '@/components/LoadingOverlay';
 import { SolutionComparisonBars } from '@/app/(logged-in)/goal/SolutionComparisonBars';
 import TipsAutomatic from '@/app/(logged-in)/goal/TipsBetterSolutionsModal';
 import NoSimulationResults from '@/app/(logged-in)/fleet/NoResults';
-import { convertGoalDataToSimulationResults } from '@/app/(logged-in)/goal/ConvertGoalData';
-import { SolutionsAccordion } from './SolutionsAccordion';
+import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
+import { SolutionPicker } from './SolutionPicker';
+import { SolutionComparisonTable } from './SolutionComparisonTable';
+import PageTitle from '@/components/PageTitle';
 
 type GoalResultsOverviewProps = {
     simulation: ReturnType<typeof useSimulateGoal>;
+    convertedGoalResults?: { solutions: SimulationResults[] };
 };
 
-export const GoalResultsOverview = ({ simulation }: GoalResultsOverviewProps) => {
-    const convertedGoalResults = useMemo(() => {
-        if (simulation.query.data?.status === 'SUCCESS' && simulation.query.data.result) {
-            return convertGoalDataToSimulationResults(simulation.query.data);
-        }
-        return undefined;
-    }, [simulation.query.data]);
-
-    const solutions = simulation?.query?.data?.result?.solutions;
+export const GoalResultsOverview = ({ simulation, convertedGoalResults }: GoalResultsOverviewProps) => {
     const displayTips =
-        solutions &&
-        (solutions.length < 5 || solutions[0].simulation_expense > solutions[0].current_expense || solutions[0].simulation_co2e > solutions[0].current_co2e);
+        convertedGoalResults &&
+        (convertedGoalResults.solutions.length < 5 ||
+         convertedGoalResults.solutions[0].simulationExpense > convertedGoalResults.solutions[0].currentExpense ||
+         convertedGoalResults.solutions[0].simulationEmission > convertedGoalResults.solutions[0].currentEmission);
 
     return (
         <div>
@@ -40,14 +36,18 @@ export const GoalResultsOverview = ({ simulation }: GoalResultsOverviewProps) =>
             )}
 
             {convertedGoalResults && convertedGoalResults.solutions.length > 0 && (
-                <div className="space-y-4">
-                    <SolutionComparisonBars solutions={convertedGoalResults.solutions} />
-                    <SolutionsAccordion solutions={convertedGoalResults.solutions} simulationId={simulation.query.data?.id} />
-                </div>
-            )}
-            {displayTips && (
-                <div className="mb-4">
-                    <TipsAutomatic />
+                <div>
+                    <PageTitle level="section" title="Sammenligning" />
+                    {displayTips && (
+                        <div className="mb-4">
+                            <TipsAutomatic />
+                        </div>
+                    )}
+                    <div className="space-y-6">
+                        <SolutionComparisonBars solutions={convertedGoalResults.solutions} />
+                        <SolutionComparisonTable solutions={convertedGoalResults.solutions} />
+                    </div>
+                    <SolutionPicker solutions={convertedGoalResults.solutions} simulationId={simulation.query.data?.id} />
                 </div>
             )}
             {!convertedGoalResults && !isSimulating(simulation.query.status) && !simulation.running && <NoSimulationResults />}

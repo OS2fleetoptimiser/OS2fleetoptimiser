@@ -30,7 +30,6 @@ export default function Availability({ searchParams: searchParamsPromise }: Prop
                 </div>
             )}
             {!enabled && <AddFilter />}
-
             {enabled && (timeFrame === undefined || timeFrame <= 8) && (
                 <AvailabilityChart
                     start={searchParams.startdate}
@@ -39,7 +38,7 @@ export default function Availability({ searchParams: searchParamsPromise }: Prop
                     forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
                     departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
                     vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
-                ></AvailabilityChart>
+                />
             )}
         </>
     );

@@ -1,7 +1,7 @@
 'use client';
 
 import useGetDrivingData from '@/components/hooks/useGetDrivingData';
-import { CircularProgress, TextField } from '@mui/material';
+import { Card, Divider, InputAdornment, Paper, Skeleton, TextField, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import ApiError from '@/components/ApiError';
 import { useState } from 'react';
@@ -56,48 +56,62 @@ function TimeActivityDashboard({ end, locations, forvaltninger, start, departmen
     const computedHeight = impliedBaseHeight + ((heatMapData.data?.length || 1) * impliedCellHeight);
     return (
         <div>
-            <>
-                <div className="flex items-center py-8">
-                    <TextField
-                        label="Grænseværdi"
-                        id="outlined-start-adornment"
-                        sx={{ m: 1, width: '25ch' }}
-                        className="ml-4 subtle w-40"
-                        type={'number'}
-                        value={colorThreshold}
-                        onChange={(e) => {
-                            const value = parseFloat(e.target.value);
-                            setColorThreshold(isNaN(value) || value < 0 || value > 100 ? colorThreshold : value);
-                        }}
-                    />
-                    <p className="text-explanation text-xs ml-4 block w-96">
-                        Tidsaktivitet viser den procentvise udnyttelse af køretøjerne i den valgte periode pr. dag. 100% indikerer at køretøjet har været aktiv
-                        i rundtur i hele perioden. Justér grænseværdien for at fremhæve lavere eller højere udnyttelse af køretøjerne.
-                    </p>
-                </div>
+            <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+                <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                    Grænseværdi
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                    Indstillingen nedenfor filtrerer data i grafen.
+                </Typography>
+                <TextField
+                    label="Grænseværdi"
+                    size="small"
+                    className="subtle w-44"
+                    type="number"
+                    value={colorThreshold}
+                    slotProps={{
+                        input: {
+                            endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                        }
+                    }}
+                    onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        setColorThreshold(isNaN(value) || value < 0 || value > 100 ? colorThreshold : value);
+                    }}
+                />
+            </Paper>
 
-                {heatMapData.isPending && (
-                    <div className="p-10 flex justify-center">
-                        <CircularProgress />
-                    </div>
-                )}
-                {heatMapData.data && (
+            {heatMapData.isError && (
+                <ApiError
+                    retryFunction={() => {
+                        if (heatMapData.isError) heatMapData.refetch();
+                    }}
+                >
+                    Der opstod en netværksfejl
+                </ApiError>
+            )}
+            {heatMapData.isPending && (
+                <Card sx={{ p: 2 }}>
+                    <Skeleton variant="text" width="30%" />
+                    <Skeleton variant="text" width="70%" sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" height={400} />
+                </Card>
+            )}
+            {heatMapData.data && (
+                <Card sx={{ p: 2 }}>
+                    <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                        Tidsaktivitet
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                        Tidsaktivitet viser den procentvise udnyttelse af køretøjerne i den valgte periode pr. dag. 100% indikerer at køretøjet har været aktiv i rundtur i hele perioden. Justér grænseværdien for at fremhæve lavere eller højere udnyttelse af køretøjerne.
+                    </Typography>
                     <div style={{height: `${computedHeight}px`}}>
                         <DownloadableGraph filename={`tidsaktivitet-${fileNameAppendix}.png`}>
                             <TimeActivityHeatMap data={heatMapData.data} threshold={colorThreshold} />
                         </DownloadableGraph>
                     </div>
-                )}
-                {heatMapData.isError && (
-                    <ApiError
-                        retryFunction={() => {
-                            if (heatMapData.isError) heatMapData.refetch();
-                        }}
-                    >
-                        Der opstod en netværksfejl
-                    </ApiError>
-                )}
-            </>
+                </Card>
+            )}
         </div>
     );
 }

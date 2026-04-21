@@ -1,6 +1,7 @@
 import { Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, TextField } from '@mui/material';
 import { useState } from 'react';
 import { Search } from '@mui/icons-material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import {Vehicle} from '@/components/hooks/useGetVehicles';
 
 export type props = {
@@ -39,8 +40,16 @@ export default function VehicleFilter({
     const [searchQuery, setSearchQuery] = useState('');
 
     return (
-        <div>
-            <Button onClick={handleClick}>Køretøjer ({selectedVehicles.length})</Button>
+        <>
+            <Button
+                variant="outlined"
+                size="small"
+                color={selectedVehicles.length > 0 ? 'secondary' : 'primary'}
+                onClick={handleClick}
+                endIcon={<KeyboardArrowDownIcon />}
+            >
+                Køretøjer ({selectedVehicles.length})
+            </Button>
             <Menu
                 id="basic-menu"
                 anchorEl={anchorEl}
@@ -108,7 +117,7 @@ export default function VehicleFilter({
                                         }
                                     } dense>
                                         <ListItemIcon>
-                                            <Checkbox edge="start" checked={!!selectedVehicles.find((id) => id === vehicle.id)} tabIndex={-1} disableRipple />
+                                            <Checkbox edge="start" checked={selectedVehicles.includes(vehicle.id)} tabIndex={-1} disableRipple />
                                         </ListItemIcon>
                                         <ListItemText primary={vehicle.name} />
                                     </ListItemButton>
@@ -117,6 +126,6 @@ export default function VehicleFilter({
                     </List>
                 </div>
             </Menu>
-        </div>
+        </>
     );
 }

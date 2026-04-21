@@ -1,8 +1,10 @@
 import { ResponsiveLine } from '@nivo/line';
 import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
 import dayjs from 'dayjs';
-import ToolTip from '@/components/ToolTip';
 import { drivingBook } from '@/components/hooks/useSimulateFleet';
+import { Card, Typography } from '@mui/material';
+import { nivoTheme } from '@/theme/nivoTheme';
+import { gray } from '@/theme/themePrimitives';
 
 export const getYTicks = (sums: number[], maxTicks: number = 5) => {
     const maxAntal = Math.max(...sums);
@@ -48,15 +50,15 @@ export const UnallocatedTripsLineChart = ({ simulationResults }: { simulationRes
     const yTicks = getYTicks(ySums); // need this to control count and float values
 
     return (
-        <div className="p-4 pt-2 bg-white rounded-md shadow-sm border border-gray-100 w-full h-full overflow-y-auto">
-            <div className="flex items-center">
-                <span className="text-sm font-semibold">Ikke kørte rundture pr. dag</span>
-                <ToolTip>
-                    Overblik over fordelingen af ukørte ture over den valgte datoperiode. Såfremt der er ture, der ikke er blevet kørt vil det vise sig som et
-                    udsving i nedenstående trendlinje. Der vises en linje for både den nuværende - og den valgte simulerede pulje.
-                </ToolTip>
-            </div>
-            <div style={{ height: '320px' }}>
+        <Card sx={{ p: 2 }}>
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                Ikke kørte rundture pr. dag
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                Overblik over fordelingen af ukørte ture over den valgte datoperiode. Såfremt der er ture, der ikke er blevet kørt, vil det vise sig som et
+                udsving i nedenstående trendlinje.
+            </Typography>
+            <div className="h-80">
                 <ResponsiveLine
                     data={data}
                     margin={{ top: 20, right: 30, bottom: 60, left: 60 }}
@@ -89,7 +91,7 @@ export const UnallocatedTripsLineChart = ({ simulationResults }: { simulationRes
                     pointBorderWidth={2}
                     enableArea={false}
                     useMesh={true}
-                    colors={['#9CA3AF']}
+                    colors={[gray[400]]}
                     tooltip={({ point }) => (
                         <div
                             style={{
@@ -105,11 +107,9 @@ export const UnallocatedTripsLineChart = ({ simulationResults }: { simulationRes
                             Ikke kørte ture: <span className="font-bold">{(point.data.yFormatted || point.data.y).toString()}</span>
                         </div>
                     )}
-                    theme={{
-                        grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
-                    }}
+                    theme={nivoTheme}
                 />
             </div>
-        </div>
+        </Card>
     );
 };

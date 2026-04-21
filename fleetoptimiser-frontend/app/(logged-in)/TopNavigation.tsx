@@ -106,16 +106,19 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
                 </div>
             }
         </div>
-        <nav className={`fixed top-0 left-0 w-76 h-screen z-[49] custom-nav overflow-auto pt-8 md:pt-0 md:flex flex-col transition-all duration-300 ease-in-out 
+        <nav style={{ borderRight: '1px solid var(--template-palette-divider)' }} className={`fixed top-0 left-0 w-76 h-screen z-[49] custom-nav overflow-auto pt-8 md:pt-0 md:flex flex-col transition-all duration-300 ease-in-out
         ${showNavBar ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full pointer-events-none md:opacity-100 md:translate-x-0 md:pointer-events-auto'}`}
         >
-            <div className="p-4 flex items-center mb-4 mt-2">
-                <Image alt="logo" src="/logo_shadows_transparent.png" width={47} height={35} unoptimized/>
-                <Typography variant="h3">
-                    <span className="ml-2">FleetOptimiser</span>
-                </Typography>
+            <div className="p-4 my-2">
+                <Link href="/" className="no-underline text-inherit inline-flex items-center">
+                    <Image alt="logo" src="/logo_shadows_transparent.png" width={32} height={24} unoptimized/>
+                    <Typography variant="subtitle1" sx={{ ml: 1, fontWeight: 600, color: 'text.primary' }}>
+                        FleetOptimiser
+                    </Typography>
+                </Link>
             </div>
-            <List>
+            <Divider />
+            <List sx={{ px: 1.5 }}>
                 <Link className="no-underline" href={'/'}>
                     <ListItem disablePadding>
                         <ListItemButton selected={isSelected('/')}>
@@ -238,7 +241,7 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
                     </ListItem>
                 </Link>
             </List>
-            <List className="mt-auto">
+            <List sx={{ px: 1.5 }} className="mt-auto">
                 <Divider />
                 <ListItem disablePadding>
                     <ListItemButton

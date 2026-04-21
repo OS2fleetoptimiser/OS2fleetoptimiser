@@ -10,9 +10,10 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import {AllowedStart} from "@/components/hooks/useGetLocationPrecision";
-import {Button, Chip, TextField} from "@mui/material";
+import {Alert, Button, Chip, TextField} from "@mui/material";
 import dayjs from "dayjs";
 import {useEffect, useState} from "react";
+import { gray } from '@/theme/themePrimitives';
 
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: typeof markerIcon2x === 'string' ? markerIcon2x : markerIcon2x.src,
@@ -76,10 +77,10 @@ const ParkingMap = ({
     return (
         <>
             <div className="flex items-center mb-4">
-                <TextField className="mr-4" id="filled-basic" label="Adresse" size="small" variant="filled" onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                <TextField className="mr-4" label="Adresse" size="small" variant="outlined" onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                     setAddress(event.target.value);
                   }} />
-                <Button variant="contained" color="secondary" onClick={
+                <Button variant="contained" onClick={
                     () => setSearchAddress(address)
                 }>Søg</Button>
                 {
@@ -88,46 +89,66 @@ const ParkingMap = ({
                 }
             </div>
             {parkingSpots &&
-            <MapContainer
-                center={(parkingSpots.latitude && parkingSpots.longitude) ? [parkingSpots.latitude, parkingSpots.longitude] : [55.66237749227234, 12.586059686301747]}
-                zoom={16}
-                style={{height: '80%', width: '100%', zIndex: 5}}
-            >
-
-                <RecenterAutomatically
-                    lat={data && data.lat ? data.lat : parkingSpots.latitude}
-                    lng={data && data.lon ? data.lon : parkingSpots.longitude}
-                />
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
-                {parkingSpots.latitude && parkingSpots.longitude &&
-                    <Marker position={[parkingSpots.latitude, parkingSpots.longitude]}>
-                        <Popup>
-                            <p>#1</p>
-                            <p>Koordinator: ({parkingSpots.latitude}, {parkingSpots.longitude})</p>
-                        </Popup>
-                    </Marker>}
-                {parkingSpots.additional_starts &&
-                    parkingSpots.additional_starts.map((spot, index) => (
-                        <Marker key={'marker' + index} position={[spot.latitude, spot.longitude]}>
+            <div style={{ position: 'relative' }}>
+                <MapContainer
+                    center={(parkingSpots.latitude && parkingSpots.longitude) ? [parkingSpots.latitude, parkingSpots.longitude] : [55.66237749227234, 12.586059686301747]}
+                    zoom={16}
+                    style={{height: 550, width: '100%', zIndex: 5}}
+                >
+                    <RecenterAutomatically
+                        lat={data && data.lat ? data.lat : parkingSpots.latitude}
+                        lng={data && data.lon ? data.lon : parkingSpots.longitude}
+                    />
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
+                    {parkingSpots.latitude && parkingSpots.longitude &&
+                        <Marker position={[parkingSpots.latitude, parkingSpots.longitude]}>
                             <Popup>
-                                <div>
-                                    <p>#{parkingSpots.latitude ? 2 + index : 1 + index}</p>
-                                    <p>Koordinator: ({spot.latitude}, {spot.longitude})</p>
-                                    <p>Tilføjet: {spot.addition_date?.split('T')[0]}</p>
+                                <div style={{ fontSize: 13, lineHeight: 1.6 }}>
+                                    <div style={{ fontWeight: 600, marginBottom: 4 }}>Parkeringspunkt #1</div>
+                                    <div style={{ color: gray[500] }}>
+                                        {parkingSpots.latitude.toFixed(5)}, {parkingSpots.longitude.toFixed(5)}
+                                    </div>
                                 </div>
                             </Popup>
-                        </Marker>
-                    ))
+                        </Marker>}
+                    {parkingSpots.additional_starts &&
+                        parkingSpots.additional_starts.map((spot, index) => (
+                            <Marker key={'marker' + index} position={[spot.latitude, spot.longitude]}>
+                                <Popup>
+                                    <div style={{ fontSize: 13, lineHeight: 1.6 }}>
+                                        <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                                            Parkeringspunkt #{parkingSpots.latitude ? 2 + index : 1 + index}
+                                        </div>
+                                        <div style={{ color: gray[500] }}>
+                                            {spot.latitude.toFixed(5)}, {spot.longitude.toFixed(5)}
+                                        </div>
+                                        {spot.addition_date && (
+                                            <div style={{ color: gray[400], fontSize: 12, marginTop: 2 }}>
+                                                Tilføjet {spot.addition_date.split('T')[0]}
+                                            </div>
+                                        )}
+                                    </div>
+                                </Popup>
+                            </Marker>
+                        ))
+                    }
+                    {clickEnabled && <LocationMarker/>}
+                </MapContainer>
+                {clickEnabled &&
+                    <Alert
+                        severity="info"
+                        sx={{ position: 'absolute', bottom: 16, left: 16, right: 16, zIndex: 1000 }}
+                        action={
+                            <Button color="inherit" size="small" onClick={() => setClickEnabled(false)}>
+                                Fortryd
+                            </Button>
+                        }
+                    >
+                        Klik på kortet for at tilføje et parkeringspunkt
+                    </Alert>
                 }
-                {clickEnabled && <LocationMarker/>}
-            </MapContainer>
-            }
-        {clickEnabled &&
-            <div>
-                <Chip className="my-2" label="Tilføjelse aktiv, klik på et punkt på kortet for at gemme"/>
-                <Button color="secondary" variant="contained" className="ml-10" onClick={() => setClickEnabled(false)}>Fortryd</Button>
             </div>
-        }
+            }
 
             </>
 

@@ -8,7 +8,7 @@ import {
     patchLocation, ExtendedLocationInformation, createLocation
 } from "@/components/hooks/useGetLocationPrecision";
 import { LocationHeader } from "@/app/(logged-in)/location/LocationHeader";
-import {Alert, Button, CircularProgress, Snackbar} from "@mui/material";
+import {Alert, Button, Paper, Skeleton, Snackbar, Typography} from "@mui/material";
 import dynamic from "next/dynamic";
 import { use, useState } from "react";
 import { ParkingSpotList } from "@/app/(logged-in)/location/ParkingSpotList";
@@ -111,50 +111,57 @@ export default function Page({ params }: { params: Promise<{ locationId?: string
                             testPrecision={testPrecision.query.data?.result?.precision}
                             title={isEditMode ? data?.address : givenTitle}
                             setGivenTitle={setGivenTitle}/>
-                        <div className="flex flex-1 mt-16">
-                            <div className="w-168 overflow-auto">
-                                <h3>Parkeringspunkter på lokationen</h3>
-                                <ParkingSpotList setNoChanges={setNoChanges} parkingSpots={parkingSpots} changeParkingSpots={changeParkingSpots} clickEnabled={clickEnabled} setClickEnabled={setClickEnabled}/>
-                                <div className="my-20 flex space-x-10 justify-center">
-                                    {
-                                        !testingEnabled &&
-                                        <Tooltip title="Præcisionstest er deaktiveret. Dit flådestyringssystem tillader ikke at hente kørselsdata flere gange.">
-                                            <span>
-                                                <Button variant="contained" color="success" disabled={true}>Test
-                                                præcision</Button>
-                                            </span>
-                                        </Tooltip>
-                                    }
+                        <Paper variant="outlined" sx={{ mt: 2, p: 2 }}>
+                            <div className="flex gap-4 items-start">
+                                <div className="flex-1 min-w-0 overflow-auto">
+                                    <Typography component="h2" variant="subtitle2" gutterBottom>Parkeringspunkter på lokationen</Typography>
+                                    <ParkingSpotList setNoChanges={setNoChanges} parkingSpots={parkingSpots} changeParkingSpots={changeParkingSpots} clickEnabled={clickEnabled} setClickEnabled={setClickEnabled}/>
+                                    <div className="mt-4 flex gap-2 justify-start">
+                                        {
+                                            !testingEnabled &&
+                                            <Tooltip title="Præcisionstest er deaktiveret. Dit flådestyringssystem tillader ikke at hente kørselsdata flere gange.">
+                                                <span>
+                                                    <Button variant="outlined" disabled={true}>Test præcision</Button>
+                                                </span>
+                                            </Tooltip>
+                                        }
 
-                                    {
-                                        testingEnabled &&
-                                        <Button variant="contained" color="success"
-                                             disabled={(!hasWritePrivilege) || (noChanges || parkingSpots?.latitude === null) || (data.car_count === null || data.car_count === 0)}
-                                             onClick={() => testPrecision.startPrecisionTest()}>
-                                            Test præcision
-                                        </Button>
-                                    }
-                                    <ConfirmSave
-                                        disabled={noChanges || parkingSpots?.latitude === null || !hasWritePrivilege}
-                                        buttonText={isEditMode ? "Bekræft ændringer" : "Opret Lokation"}
-                                        handleSave={handleSave}
+                                        {
+                                            testingEnabled &&
+                                            <Button variant="outlined"
+                                                 disabled={(!hasWritePrivilege) || (noChanges || parkingSpots?.latitude === null) || (data.car_count === null || data.car_count === 0)}
+                                                 onClick={() => testPrecision.startPrecisionTest()}>
+                                                Test præcision
+                                            </Button>
+                                        }
+                                        <ConfirmSave
+                                            disabled={noChanges || parkingSpots?.latitude === null || !hasWritePrivilege}
+                                            buttonText={isEditMode ? "Bekræft ændringer" : "Opret Lokation"}
+                                            handleSave={handleSave}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <Typography component="h2" variant="subtitle2" gutterBottom>Kort</Typography>
+                                    <ParkingMap
+                                        setNoChanges={setNoChanges}
+                                        parkingSpots={parkingSpots}
+                                        changeParkingSpots={changeParkingSpots}
+                                        clickEnabled={clickEnabled}
+                                        setClickEnabled={setClickEnabled}
                                     />
                                 </div>
                             </div>
-                            <div className="w-168 h-168 overflow-hidden">
-                                <ParkingMap
-                                    setNoChanges={setNoChanges}
-                                    parkingSpots={parkingSpots}
-                                    changeParkingSpots={changeParkingSpots}
-                                    clickEnabled={clickEnabled}
-                                    setClickEnabled={setClickEnabled}
-                                />
-                            </div>
-                        </div>
+                        </Paper>
                     </div>
                 }
                 {
-                    isLoading && isEditMode && <CircularProgress/>
+                    isLoading && isEditMode && (
+                        <div className="space-y-4">
+                            <Skeleton variant="rounded" height={80} />
+                            <Skeleton variant="rounded" height={320} />
+                        </div>
+                    )
                 }
                 {
                     testPrecision.query.data && isTesting(testPrecision.query.data?.status) && testPrecision.running && (

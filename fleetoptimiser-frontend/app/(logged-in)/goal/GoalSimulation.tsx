@@ -1,9 +1,8 @@
 import { LocationsWidget } from '@/app/(logged-in)/fleet/LocationsWidget';
 import { DatesWidget } from '@/app/(logged-in)/fleet/DatesWidget';
-import { SimulationSettingsWidget } from '@/app/(logged-in)/fleet/SimulationSettingsWidget';
-import { Alert, Button } from '@mui/material';
+import { VehicleCountWidget } from '@/app/(logged-in)/fleet/VehicleCountWidget';
+import { Alert } from '@mui/material';
 import { VehiclesWidget } from '@/app/(logged-in)/fleet/VehiclesWidget';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { useAppSelector } from '@/components/redux/hooks';
 import useSimulateGoal from '@/components/hooks/useSimulateGoal';
 import { compareShifts } from '@/app/(logged-in)/fleet/FleetSimulation';
@@ -16,8 +15,6 @@ type GoalSimulationProps = {
 
 export const GoalSimulation = ({ simulation, setTab }: GoalSimulationProps) => {
     const locations = useAppSelector((state) => state.simulation.location_ids);
-    // to be able to display the actual address
-    const locationAddresses = useAppSelector((state) => state.simulation.locationIdAddresses);
     const startDate = useAppSelector((state) => state.simulation.start_date);
     const endDate = useAppSelector((state) => state.simulation.end_date);
     const locshifts = useAppSelector((state) =>
@@ -30,35 +27,22 @@ export const GoalSimulation = ({ simulation, setTab }: GoalSimulationProps) => {
     };
     return (
         <div>
-            <LocationsWidget
-                locations={
-                    locationAddresses
-                        ? locationAddresses.filter((location) => locations.includes(location.id)).map((location) => location.address)
-                        : locations.map((loc) => `Lokation ID: ${loc}`) // fallback to displaying id
-                }
-            />
-            <DatesWidget startDate={startDate} endDate={endDate} manualSimulation={false} />
-            <div className="flex flex-row space-x-4">
-                <SimulationSettingsWidget manualSimulation={false} />
-                <ComparisonFleetModal />
+            <div className="grid grid-cols-3 gap-4 mb-4 max-w-[75%]">
+                <LocationsWidget count={locations.length} />
+                <DatesWidget startDate={startDate} endDate={endDate} manualSimulation={false} />
+                <VehicleCountWidget manualSimulation={false} />
             </div>
             {simulationDisabled && (
                 <Alert className="w-64 mt-2" variant="filled" severity="error">
                     Vagtlagene på lokationerne er ikke ens. Opdater dem for at simulere.
                 </Alert>
             )}
-            <VehiclesWidget manualSimulation={false} />
-            <div className="mt-2 w-full flex justify-end">
-                <Button
-                    onClick={startSimulationGoToResultTab}
-                    disabled={simulationDisabled}
-                    color="primary"
-                    variant="contained"
-                    endIcon={<ArrowForwardIosIcon />}
-                >
-                    Start optimering
-                </Button>
-            </div>
+            <VehiclesWidget
+                manualSimulation={false}
+                onStart={startSimulationGoToResultTab}
+                startDisabled={simulationDisabled}
+                extraActions={<ComparisonFleetModal />}
+            />
         </div>
     );
 };

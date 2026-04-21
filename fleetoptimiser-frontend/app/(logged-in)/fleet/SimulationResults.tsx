@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { CircularProgress, IconButton, Tab, Tabs } from '@mui/material';
+import { Box, Button, CircularProgress, ToggleButton, Typography } from '@mui/material';
+import { SegmentedControl } from '@/components/SegmentedControl';
 import NoSimulationResults from '@/app/(logged-in)/fleet/NoResults';
 import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
 import { SimResultHeader } from '@/app/(logged-in)/fleet/SimResultHeader';
@@ -31,92 +32,49 @@ export const SimulationResultsPage = ({
         : '';
     return (
         <div>
-            {isLoading && (
-                <div className="w-full h-full z-10 top-0 left-0 fixed bg-[#FFFFFF75]">
-                    <div className="top-[40%] left-[50%] absolute transform -translate-x-1/2 -translate-y-1/2">
+            <div className="w-auto rounded-lg m-auto">
+                {simulationResults ? (
+                    <>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, my: simulationId ? 1 : 0 }}>
+                            <SegmentedControl
+                                value={tabValue}
+                                exclusive
+                                size="small"
+                                onChange={(e, v) => v !== null && setTabValue(v)}
+                                aria-label="resultstabs"
+                            >
+                                <ToggleButton value={0}>Oversigt</ToggleButton>
+                                <ToggleButton value={1}>Køretøjsdetaljer</ToggleButton>
+                                <ToggleButton value={2}>Ruter</ToggleButton>
+                            </SegmentedControl>
+                            {simulationId && (
+                                <Button
+                                    href={downloadLink}
+                                    startIcon={<DownloadIcon />}
+                                    variant="outlined"
+                                    size="small"
+                                    download
+                                >
+                                    Download
+                                </Button>
+                            )}
+                        </Box>
+                        {tabValue === 0 && <ResultsOverviewTab simulationResults={simulationResults} />}
+                        {tabValue === 1 && <VehicleResults simulationResults={simulationResults} />}
+                        {tabValue === 2 && <div className="mt-4"><DrivingBookTable data={simulationResults.drivingBook} /></div>}
+                    </>
+                ) : isLoading ? (
+                    <div className="flex flex-col items-center gap-3 mt-16">
                         <CircularProgress />
+                        <Typography variant="body2" color="text.secondary">
+                            Simulerer...
+                        </Typography>
                     </div>
-                </div>
-            )}
-            <div className="w-auto rounded-md m-auto">
-                <div className="flex items-center gap-2">
-                    <Tabs
-                        value={tabValue}
-                        onChange={(e, v) => setTabValue(v)}
-                        aria-label="resultstabs"
-                        TabIndicatorProps={{
-                            hidden: true,
-                        }}
-                        sx={{
-                            '& .MuiTabs-flexContainer': {
-                                backgroundColor: '#f5f5f5',
-                                borderRadius: '5px',
-                                padding: '6px',
-                                width: 'fit-content',
-                                height: '35px',
-                            },
-                            '& .MuiTab-root': {
-                                borderRadius: '5px',
-                                backgroundColor: '#f5f5f5',
-                                color: 'gray',
-                                minWidth: 120,
-                                minHeight: 20,
-                                padding: '6px 6px',
-                                '&:hover': {
-                                    backgroundColor: '#e0e0e0',
-                                },
-                            },
-                            '& .MuiTab-root.Mui-selected': {
-                                backgroundColor: 'white',
-                                color: 'black',
-                                fontWeight: 'bold',
-                            },
-                        }}
-                    >
-                        <Tab
-                            label="Oversigt"
-                            value={0}
-                            sx={{
-                                '&.Mui-selected': {
-                                    backgroundColor: 'white',
-                                },
-                            }}
-                        />
-                        <Tab
-                            label="Køretøjsdetaljer"
-                            disabled={!simulationResults}
-                            value={1}
-                            sx={{
-                                '&.Mui-selected': {
-                                    backgroundColor: 'white',
-                                },
-                            }}
-                        />
-                        <Tab
-                            label="Ruter"
-                            disabled={!simulationResults}
-                            value={2}
-                            sx={{
-                                '&.Mui-selected': {
-                                    backgroundColor: 'white',
-                                },
-                            }}
-                        />
-                    </Tabs>
-                    {simulationId && (
-                        <IconButton href={downloadLink} disabled={!simulationId} className="border-none text-gray-700 hover:text-black" download>
-                            <DownloadIcon fontSize="small" />
-                        </IconButton>
-                    )}
-                </div>
-                {tabValue === 0 && simulationResults && <ResultsOverviewTab simulationResults={simulationResults} />}
-                {tabValue === 0 && !simulationResults && !isLoading && (
+                ) : (
                     <div className="mt-8">
                         <NoSimulationResults />
                     </div>
                 )}
-                {tabValue === 1 && simulationResults && <VehicleResults simulationResults={simulationResults} />}
-                {tabValue === 2 && simulationResults && <DrivingBookTable data={simulationResults.drivingBook} />}
             </div>
         </div>
     );
@@ -126,7 +84,7 @@ const ResultsOverviewTab = ({ simulationResults }: { simulationResults: Simulati
     return (
         <div className="mt-4 space-y-6">
             <SimResultHeader simulationResults={simulationResults} />
-            <div className="grid w-full grid-cols-1 xl:grid-cols-2 gap-6 h-auto xl:h-96">
+            <div className="grid w-full grid-cols-1 xl:grid-cols-2 gap-6">
                 <FleetChangesTable simulationResults={simulationResults} />
                 <UnallocatedTripsLineChart simulationResults={simulationResults} />
             </div>

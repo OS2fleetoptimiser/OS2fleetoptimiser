@@ -1,4 +1,6 @@
 import { ResponsiveBar } from '@nivo/bar';
+import { nivoTheme } from '@/theme/nivoTheme';
+import { brand, gray } from '@/theme/themePrimitives';
 
 type dataEntry = {
     solution: string;
@@ -15,7 +17,7 @@ const EmissionChart = ({ data }: { data: dataEntry[] }) => {
             padding={0.3}
             valueScale={{ type: 'linear' }}
             indexScale={{ type: 'band', round: true }}
-            colors={(bar) => (bar.data.solution === 'Mål' ? 'gray' : '#1565c0')}
+            colors={(bar) => (bar.data.solution === 'Mål' ? gray[400] : brand[400])}
             borderColor={{
                 from: 'color',
                 modifiers: [['darker', 1.6]],
@@ -42,6 +44,7 @@ const EmissionChart = ({ data }: { data: dataEntry[] }) => {
             labelSkipHeight={12}
             labelTextColor={'white'}
             valueFormat={(v) => v.toLocaleString()}
+            theme={nivoTheme}
             role="application"
         />
     );

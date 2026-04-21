@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from '@mui/material';
 import { VehicleUsageRow } from '@/app/(logged-in)/fleet/VehicleResults';
 
 type Order = 'asc' | 'desc';
@@ -54,22 +54,17 @@ export const VehicleUsageTable = ({ rows }: VehicleUsageTableProps) => {
         setOrder(isAsc ? 'desc' : 'asc');
         setOrderBy(property);
     };
-    function cutCharacters(str: string, cutAbove: number = 20) {
-        return str.length > cutAbove ? str.slice(0, cutAbove) + '...' : str;
-    }
-
     const sortedRows = useMemo(() => {
         return stableSort(rows, getComparator(order, orderBy));
     }, [rows, order, orderBy]);
-    const headerStyle = 'text-xs font-semibold text-gray- bg-gray-50 ';
-    const defaultStyle = 'py-2 border-b text-xs';
+
     return (
-        <TableContainer className="shadow-none border-none rounded-md" component={Paper}>
-            <Table stickyHeader>
+        <TableContainer sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+            <Table size="small">
                 <TableHead>
                     <TableRow>
                         {headCells.map((headCell) => (
-                            <TableCell className={headerStyle} key={headCell.id}>
+                            <TableCell key={headCell.id} sx={{ whiteSpace: 'nowrap' }}>
                                 <TableSortLabel
                                     active={orderBy === headCell.id}
                                     direction={orderBy === headCell.id ? order : 'asc'}
@@ -83,19 +78,17 @@ export const VehicleUsageTable = ({ rows }: VehicleUsageTableProps) => {
                 </TableHead>
                 <TableBody>
                     {sortedRows.map((row, idx) => (
-                        <TableRow hover key={idx}>
-                            <TableCell className={defaultStyle}>
-                                <span title={row.Koeretoej}>{cutCharacters(row.Koeretoej)}</span>
-                            </TableCell>
-                            <TableCell className={defaultStyle}>{row.Allokerede_km}</TableCell>
-                            <TableCell className={defaultStyle}>{row.Aarlig_km}</TableCell>
-                            <TableCell className={defaultStyle}>{row.WLTP}</TableCell>
-                            <TableCell className={defaultStyle}>{row.Udledning_allokeret.toFixed(2)}</TableCell>
-                            <TableCell className={defaultStyle}>{row.Aarlig_udledning.toFixed(2)}</TableCell>
-                            <TableCell className={defaultStyle}>{row.Aarlig_omkostning.toLocaleString()}</TableCell>
-                            <TableCell className={defaultStyle}>{row.Aarlig_driftsomkostning.toLocaleString()}</TableCell>
-                            <TableCell className={defaultStyle}>{row.Aarlig_samfundsoekonomisk.toLocaleString()}</TableCell>
-                            <TableCell className={defaultStyle}>{row.Samlet_aarlig_omkostning.toLocaleString()}</TableCell>
+                        <TableRow hover key={idx} sx={{ '& td': { whiteSpace: 'nowrap' } }}>
+                            <TableCell>{row.Koeretoej}</TableCell>
+                            <TableCell>{row.Allokerede_km}</TableCell>
+                            <TableCell>{row.Aarlig_km}</TableCell>
+                            <TableCell>{row.WLTP}</TableCell>
+                            <TableCell>{row.Udledning_allokeret.toFixed(2)}</TableCell>
+                            <TableCell>{row.Aarlig_udledning.toFixed(2)}</TableCell>
+                            <TableCell>{row.Aarlig_omkostning.toLocaleString()}</TableCell>
+                            <TableCell>{row.Aarlig_driftsomkostning.toLocaleString()}</TableCell>
+                            <TableCell>{row.Aarlig_samfundsoekonomisk.toLocaleString()}</TableCell>
+                            <TableCell>{row.Samlet_aarlig_omkostning.toLocaleString()}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

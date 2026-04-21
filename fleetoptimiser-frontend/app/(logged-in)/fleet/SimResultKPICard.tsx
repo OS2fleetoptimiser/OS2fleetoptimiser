@@ -1,24 +1,38 @@
+import { Card, Chip, Typography } from '@mui/material';
 import ToolTip from '@/components/ToolTip';
 
 interface MetricCardProps {
     title: string;
     keyfigure: string | number;
-    basefigure: string | number;
     good: boolean;
+    caption: string;
     tooltipText?: string;
+    changePercent?: number;
 }
 
-export const MetricCard = ({ title, keyfigure, basefigure, good, tooltipText }: MetricCardProps) => {
+export const MetricCard = ({ title, keyfigure, good, caption, tooltipText, changePercent }: MetricCardProps) => {
+    const sign = changePercent !== undefined && changePercent > 0 ? '+' : '';
     return (
-        <div className="rounded-md shadow-sm border border-gray-100 bg-white p-4 pt-2">
-            <div className="flex text-gray-500 text-sm items-center">
+        <Card sx={{ p: 2, flex: 1 }}>
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 {title}
                 {tooltipText && <ToolTip>{tooltipText}</ToolTip>}
+            </Typography>
+            <div className="flex items-center gap-2">
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                    {keyfigure}
+                </Typography>
+                {changePercent !== undefined && (
+                    <Chip
+                        label={`${sign}${changePercent.toFixed(0)}%`}
+                        size="small"
+                        color={changePercent === 0 ? 'default' : good ? 'success' : 'error'}
+                    />
+                )}
             </div>
-            <div className="flex items-baseline justify-between mt-2">
-                <span className={`text-xl font-bold ${good ? 'text-green-600' : 'text-red-600'}`}>{keyfigure}</span>
-                <span className="text-sm text-gray-500">/ {basefigure}</span>
-            </div>
-        </div>
+            <Typography variant="caption" color="text.secondary">
+                {caption}
+            </Typography>
+        </Card>
     );
 };

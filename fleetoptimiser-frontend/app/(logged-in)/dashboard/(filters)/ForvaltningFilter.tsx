@@ -1,6 +1,7 @@
 import { Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, TextField } from '@mui/material';
 import { useState } from 'react';
 import { Search } from '@mui/icons-material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 
 type props = {
@@ -37,8 +38,16 @@ export default function ForvaltningFilter({
     const [searchQuery, setSearchQuery] = useState('');
 
     return (
-        <div>
-            <Button onClick={handleClick}>Forvaltninger ({selectedForvaltninger.length})</Button>
+        <>
+            <Button
+                variant="outlined"
+                size="small"
+                color={selectedForvaltninger.length > 0 ? 'secondary' : 'primary'}
+                onClick={handleClick}
+                endIcon={<KeyboardArrowDownIcon />}
+            >
+                Forvaltninger ({selectedForvaltninger.length})
+            </Button>
             <Menu
                 id="basic-menu"
                 anchorEl={anchorEl}
@@ -120,6 +129,6 @@ export default function ForvaltningFilter({
                     </List>
                 </div>
             </Menu>
-        </div>
+        </>
     );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { ResponsiveLine } from '@nivo/line';
+import { nivoTheme } from '@/theme/nivoTheme';
 
 export type Entry = {
     x: string;
@@ -15,23 +16,15 @@ export type LineData = {
 
 type Props = {
     data: LineData[];
-    header: string;
+    header?: string;
     colorMapper: (s: string) => string;
 };
 
-const CombinedDailyDrivingGraph = ({ data, header, colorMapper }: Props) => {
+const CombinedDailyDrivingGraph = ({ data, colorMapper }: Props) => {
     const getAveragePerSeries = (series: LineData): number => series.data.reduce((sum, point) => sum + point.y, 0) / series.data.length;
 
     return (
-        <div>
-            <p className="text-lg font-semibold">{header}</p>
-            {data.map((series) => (
-                <p className="text-xs text-gray-700" key={series.id}>
-                    {series.id}: Gennemsnitlig kørsel pr. dag:{'       '}
-                    {Math.round(getAveragePerSeries(series)).toLocaleString()} km. (Antal biler: {series.uniqueCars})
-                </p>
-            ))}
-            <div className="h-96">
+        <div className="h-full">
                 <ResponsiveLine
                     data={data}
                     tooltip={({ point }) => {
@@ -76,9 +69,7 @@ const CombinedDailyDrivingGraph = ({ data, header, colorMapper }: Props) => {
                     }}
                     enablePointLabel={false}
                     pointSize={1}
-                    theme={{
-                        grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
-                    }}
+                    theme={nivoTheme}
                     pointBorderWidth={1}
                     pointBorderColor={{
                         from: 'color',
@@ -111,7 +102,6 @@ const CombinedDailyDrivingGraph = ({ data, header, colorMapper }: Props) => {
                         },
                     ]}
                 />
-            </div>
         </div>
     );
 };

@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 
+import { Box, Card, Typography } from '@mui/material';
 import { ResponsiveLine, LineSeries, LineCustomSvgLayerProps, LineCustomSvgLayer } from '@nivo/line';
+import { nivoTheme } from '@/theme/nivoTheme';
+import { brand, gray } from '@/theme/themePrimitives';
 import { line } from 'd3-shape';
 import { generateParkingSegments, generateDrivingSegments, generateAccumulatedDriving, formatTimeFromISO } from './SegmentUtility';
+
+const toSecondPrecision = (iso: string) => iso.slice(0, 19);
 
 interface FillDataInput extends LineCustomSvgLayerProps<LineSeries> {
     series: FillDataset[];
@@ -228,7 +233,7 @@ const ToolTipGen = (pointDec: ToolTipWrap): React.JSX.Element => {
             <div>
                 <strong>{point.serieId}</strong>
             </div>
-            <div style={{ color: '#A6A6A6', padding: '3px 0' }}>Akkumuleret distance: {Math.round(point.data.accumulated_distance * 100) / 100} km.</div>
+            <div style={{ color: gray[400], padding: '3px 0' }}>Akkumuleret distance: {Math.round(point.data.accumulated_distance * 100) / 100} km.</div>
         </div>
     );
 };
@@ -254,11 +259,11 @@ const RoundTripChart = (props: rtchartinput) => {
         // loop in order to alternate the segments for appearance advantages
         transformed.push({
             id: drivingSegments[i].name,
-            color: '#d1eff3', //'#7030A0',
+            color: brand[200],
             data: [
                 {
                     // tilføj drivingSegment så det kan vises på den ny tooltip
-                    x: drivingSegments[i].start_time,
+                    x: toSecondPrecision(drivingSegments[i].start_time),
                     y: 0,
                     accumulated_distance: drivingSegments[i].accumulated_distance,
                     driving_time: drivingSegments[i].driving_time,
@@ -268,7 +273,7 @@ const RoundTripChart = (props: rtchartinput) => {
                     ender: false,
                 },
                 {
-                    x: drivingSegments[i].end_time,
+                    x: toSecondPrecision(drivingSegments[i].end_time),
                     y: 0,
                     accumulated_distance: drivingSegments[i].accumulated_distance,
                     driving_time: drivingSegments[i].driving_time,
@@ -283,10 +288,10 @@ const RoundTripChart = (props: rtchartinput) => {
         if (i < parkingSegments.length) {
             transformed.push({
                 id: parkingSegments[i].name,
-                color: '#038696',
+                color: brand[500],
                 data: [
                     {
-                        x: parkingSegments[i].start_time,
+                        x: toSecondPrecision(parkingSegments[i].start_time),
                         y: 0,
                         accumulated_distance: parkingSegments[i].accumulated_distance,
                         parking_time: parkingSegments[i].parking_time,
@@ -295,7 +300,7 @@ const RoundTripChart = (props: rtchartinput) => {
                         ender: false,
                     },
                     {
-                        x: parkingSegments[i].end_time,
+                        x: toSecondPrecision(parkingSegments[i].end_time),
                         y: 0,
                         accumulated_distance: parkingSegments[i].accumulated_distance,
                         parking_time: parkingSegments[i].parking_time,
@@ -310,29 +315,37 @@ const RoundTripChart = (props: rtchartinput) => {
 
     transformed.push({
         id: 'Akkumuleret distance',
-        color: '#A6A6A6',
+        color: gray[400],
         data: accumulatedDistance.map((distance) => ({
-            x: distance.time,
+            x: toSecondPrecision(distance.time),
             y: distance.accumulated_distance,
             accumulated_distance: distance.accumulated_distance,
         })),
     });
 
+    const tripStart = formatTimeFromISO(segmentData[0].start_time);
+    const tripEnd = formatTimeFromISO(segmentData[segmentData.length - 1].end_time);
+
     return (
-        <div style={{ height: '400px', width: '100%' }}>
-            <div className="flex justify-center">
-                <div>
-                    <h3 className="">Rundturens kørsels - og parkeringssegmenter</h3>
-                    <h4 className="">
-                        {formatTimeFromISO(segmentData[0].start_time)} - {formatTimeFromISO(segmentData[segmentData.length - 1].end_time)}
-                    </h4>
-                    <h4 className="">{currentVehicle}</h4>
+        <Card sx={{ p: 3 }}>
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                Rundturens kørsels - og parkeringssegmenter
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 3, display: 'block' }}>
+                Grafen viser den valgte rundtur og dens specifikke kørsels - og parkeringssegmenter. De lyse områder viser hvornår køretøjet har været i bevægelse, mens de mørke områder viser hvornår køretøjet har været parkeret. Den akkumulerede kørte distance vises i den grå linje.
+            </Typography>
+            <Box className="flex w-fit divide-x divide-gray-300 py-3 mb-4 rounded-lg" sx={{ bgcolor: '#fcfcfc' }}>
+                <div className="px-5">
+                    <div className="text-xs text-gray-500">Køretøj</div>
+                    <div className="text-lg font-semibold">{currentVehicle}</div>
                 </div>
-                <div className="items-center flex">
-                    <p className="text-explanation text-xs ml-4 block w-96">Grafen viser den valgte rundtur og dens specifikke kørsels - og parkeringssegmenter. De lyse områder viser hvornår køretøjet har været i bevægelse, mens de mørke områder viser hvornår køretøjet har været parkeret. Der vises den akkumulerede kørte distance i den grå linje.</p>
+                <div className="px-5">
+                    <div className="text-xs text-gray-500">Tidspunkt</div>
+                    <div className="text-lg font-semibold">{tripStart} til {tripEnd}</div>
                 </div>
-            </div>
-            <ResponsiveLine
+            </Box>
+            <div className="h-[500px]">
+                <ResponsiveLine
                 tooltip={(d) => ToolTipGen(d as unknown as ToolTipWrap)}
                 layers={[
                     'grid',
@@ -373,6 +386,7 @@ const RoundTripChart = (props: rtchartinput) => {
                     legend: 'Akkumuleret distance (km)',
                     legendOffset: -40,
                 }}
+                theme={nivoTheme}
                 legends={[
                     {
                         anchor: 'right',
@@ -385,17 +399,17 @@ const RoundTripChart = (props: rtchartinput) => {
                             {
                                 id: 'A',
                                 label: 'Kørsel',
-                                color: '#d1eff3',
+                                color: brand[200],
                             },
                             {
                                 id: 'B',
                                 label: 'Parkering',
-                                color: '#038696',
+                                color: brand[500],
                             },
                             {
                                 id: 'C',
                                 label: 'Akkumuleret distance',
-                                color: '#A6A6A6',
+                                color: gray[400],
                             },
                         ],
                         effects: [
@@ -410,7 +424,8 @@ const RoundTripChart = (props: rtchartinput) => {
                     },
                 ]}
             />
-        </div>
+            </div>
+        </Card>
     );
 };
 

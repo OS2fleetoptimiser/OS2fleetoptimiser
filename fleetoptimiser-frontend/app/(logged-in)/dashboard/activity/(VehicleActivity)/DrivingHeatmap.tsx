@@ -1,5 +1,6 @@
 import { ComputedCell, ResponsiveHeatMapCanvas } from '@nivo/heatmap';
 import 'd3-scale-chromatic';
+import { nivoTheme, heatmapWarningGradient } from '@/theme/nivoTheme';
 import dayjs from 'dayjs';
 import { useMediaQuery } from 'react-responsive';
 
@@ -66,10 +67,11 @@ export const DrivingHeatmapKm = ({
                 }}
                 colors={{
                     type: 'sequential',
-                    colors: ['#b95f5f', '#ffffff'],
+                    colors: [...heatmapWarningGradient],
                     minValue: 0,
                     maxValue: maxHeatValue,
                 }}
+                theme={nivoTheme}
                 emptyColor="#b6b7b9"
                 legends={[
                     {

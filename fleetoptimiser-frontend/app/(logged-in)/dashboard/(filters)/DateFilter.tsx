@@ -4,6 +4,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { useState } from 'react';
 import utc from 'dayjs/plugin/utc';
 import { AiOutlineArrowDown } from 'react-icons/ai';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 dayjs.extend(utc);
 
@@ -25,8 +26,13 @@ export default function DateFilter({ end, setEnd, setStart, start }: props) {
     };
 
     return (
-        <div>
-            <Button onClick={handleClick}>
+        <>
+            <Button
+                variant="outlined"
+                size="small"
+                onClick={handleClick}
+                endIcon={<KeyboardArrowDownIcon />}
+            >
                 Periode: {start.format('DD-MM-YYYY')} - {end.format('DD-MM-YYYY')}
             </Button>
             <Menu
@@ -62,6 +68,6 @@ export default function DateFilter({ end, setEnd, setStart, start }: props) {
                     />
                 </div>
             </Menu>
-        </div>
+        </>
     );
 }

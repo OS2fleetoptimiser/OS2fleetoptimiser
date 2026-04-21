@@ -1,11 +1,9 @@
 'use client';
 
 import { ExtendedLocationInformation, ChangeLocationAddress } from "@/components/hooks/useGetLocationPrecision";
-import Typography from "@mui/material/Typography";
 import EditIcon from '@mui/icons-material/Edit';
-import {useState} from "react";
-import {Alert, Snackbar, TextField} from "@mui/material";
-import SaveIcon from "@mui/icons-material/Save";
+import {useEffect, useState} from "react";
+import {Alert, Button, Card, CardContent, IconButton, Snackbar, TextField, Typography} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import {useWritePrivilegeContext} from "@/app/providers/WritePrivilegeProvider";
 
@@ -25,8 +23,13 @@ export const LocationHeader = ({locationData, testPrecision, title, setGivenTitl
     if (title !== prevTitle) {
         setPrevTitle(title);
         setLocalTitle(title ?? '');
-        setGivenTitle(title ?? '');
     }
+
+    useEffect(() => {
+        if (title !== undefined) {
+            setGivenTitle(title);
+        }
+    }, [title, setGivenTitle]);
 
     const handleSaveName = () => {
         setEditTitle(false);
@@ -35,56 +38,81 @@ export const LocationHeader = ({locationData, testPrecision, title, setGivenTitl
             setOpenSnackBar(true);
         }
     }
-    // todo provide tips to improve precision
-    const successThreshold = 80
     return (
         <>
             {
                 locationData &&
                 <div>
-                    <div className="flex items-center mb-4 h-12 w-96">
-                        {
-                            !editTitle && <>
-                                <div className={title == 'Indtast adresse' ? "text-red-500" : ""}>{localTitle}</div>
-                                { hasWritePrivilege &&
-                                    <EditIcon onClick={() => setEditTitle(true)} className="ml-4 text-gray-500 cursor-pointer" fontSize="small"/>
-                                }
+                    <div className="flex items-center mb-4 gap-2 p-1">
+                        {!editTitle ? (
+                            <>
+                                <Typography
+                                    variant="body1"
+                                    sx={{ color: title === 'Indtast adresse' ? 'error.main' : 'text.primary', fontWeight: 500 }}
+                                >
+                                    {localTitle}
+                                </Typography>
+                                {hasWritePrivilege && (
+                                    <IconButton size="small" onClick={() => setEditTitle(true)}>
+                                        <EditIcon fontSize="small" />
+                                    </IconButton>
+                                )}
                             </>
-                        }
-                        {
-                            editTitle && <>
-                                <TextField defaultValue={title} variant="filled" size="small" label="Adresse"
-                                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                    setLocalTitle(event.target.value);
-                                    setGivenTitle(event.target.value);
-                                  }}
+                        ) : (
+                            <>
+                                <TextField
+                                    defaultValue={title}
+                                    size="small"
+                                    placeholder="Indtast adresse"
+                                    sx={{ minWidth: 350 }}
+                                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                        setLocalTitle(event.target.value);
+                                        setGivenTitle(event.target.value);
+                                    }}
+                                    autoFocus
                                 />
-
-                                <SaveIcon onClick={() => handleSaveName()} className="ml-4 text-gray-500 cursor-pointer" fontSize="small"/>
-                                <CloseIcon onClick={() => {
-                                    setEditTitle(false)
-                                }} className="ml-4 text-gray-500 cursor-pointer" fontSize="small"/>
+                                <Button variant="contained" size="small" onClick={handleSaveName}>
+                                    Gem
+                                </Button>
+                                <IconButton size="small" onClick={() => setEditTitle(false)}>
+                                    <CloseIcon fontSize="small" />
+                                </IconButton>
                             </>
-                        }
-
+                        )}
                     </div>
-                    <div className="flex my-8 items-center">
-                        <div className="bg-white custom-nav p-4 w-68">
-                            <Typography variant="h4" className="mb-4">Præcision</Typography>
-                            <Typography variant="h2" className={locationData.precision >= successThreshold ? "text-green-500 font-bold" : "text-red-500 font-bold"}>{Math.round(locationData.precision)}%</Typography>
-                        </div>
-                        <div className="bg-white custom-nav mx-12 p-4 w-68">
-                            <Typography variant="h4" className="mb-4">Testpræcision</Typography>
-                            <Typography variant="h2" className={testPrecision ? testPrecision * 100 >= successThreshold ? "text-green-500 font-bold" : "text-red-500 font-bold" : "font-bold" }>{testPrecision ? (Math.round(testPrecision * 100)) + '%' : 'Ingen data'}</Typography>
-                        </div>
-                        <div className="bg-white custom-nav p-4 w-68">
-                            <Typography variant="h4" className="mb-4">Total kilometer</Typography>
-                            <Typography variant="h2" className="font-bold">{Math.round(locationData.km).toLocaleString()}</Typography>
-                        </div>
-                        <div className="bg-white custom-nav p-4 ml-12 w-68">
-                            <Typography variant="h4" className="mb-4">Antal køretøjer</Typography>
-                            <Typography variant="h2" className="font-bold">{locationData.car_count}</Typography>
-                        </div>
+                    <div className="flex my-4 gap-2">
+                        <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
+                            <CardContent>
+                                <Typography component="h2" variant="subtitle2" gutterBottom>Præcision</Typography>
+                                <Typography variant="h4" component="p">
+                                    {Math.round(locationData.precision)}%
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                        <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
+                            <CardContent>
+                                <Typography component="h2" variant="subtitle2" gutterBottom>Testpræcision</Typography>
+                                <Typography variant="h4" component="p">
+                                    {testPrecision ? Math.round(testPrecision * 100) + '%' : 'Ingen data'}
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                        <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
+                            <CardContent>
+                                <Typography component="h2" variant="subtitle2" gutterBottom>Total kilometer</Typography>
+                                <Typography variant="h4" component="p">
+                                    {Math.round(locationData.km).toLocaleString()}
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                        <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
+                            <CardContent>
+                                <Typography component="h2" variant="subtitle2" gutterBottom>Antal køretøjer</Typography>
+                                <Typography variant="h4" component="p">
+                                    {locationData.car_count}
+                                </Typography>
+                            </CardContent>
+                        </Card>
                     </div>
                 {
                     openSnackBar && (

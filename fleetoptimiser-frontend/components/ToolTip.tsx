@@ -1,12 +1,12 @@
 'use client';
 
-import { InfoOutlined } from '@mui/icons-material';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { IconButton, Tooltip } from '@mui/material';
 
 const ToolTip = ({ children }: { children: string }) => (
     <Tooltip placement="right" title={children}>
-        <IconButton>
-            <InfoOutlined fontSize="small" />
+        <IconButton size="small" aria-label={children} sx={{ color: 'text.secondary' }}>
+            <InfoOutlinedIcon sx={{ fontSize: 18 }} />
         </IconButton>
     </Tooltip>
 );

@@ -1,6 +1,7 @@
 import { Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, TextField } from '@mui/material';
 import { useState } from 'react';
 import { Search } from '@mui/icons-material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 export type props = {
     selectedLocations: number[];
@@ -36,8 +37,16 @@ export default function DepartmentFilter({
     const [searchQuery, setSearchQuery] = useState('');
 
     return (
-        <div>
-            <Button onClick={handleClick}>Afdelinger ({selectedDepartments.length})</Button>
+        <>
+            <Button
+                variant="outlined"
+                size="small"
+                color={selectedDepartments.length > 0 ? 'secondary' : 'primary'}
+                onClick={handleClick}
+                endIcon={<KeyboardArrowDownIcon />}
+            >
+                Afdelinger ({selectedDepartments.length})
+            </Button>
             <Menu
                 id="basic-menu"
                 anchorEl={anchorEl}
@@ -120,6 +129,6 @@ export default function DepartmentFilter({
                     </List>
                 </div>
             </Menu>
-        </div>
+        </>
     );
 }

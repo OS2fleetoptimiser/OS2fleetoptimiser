@@ -20,7 +20,7 @@ import {
     setSimulationVehicles,
     setStartDate,
 } from '@/components/redux/SimulationSlice';
-import { CircularProgress } from '@mui/material';
+import { Skeleton } from '@mui/material';
 
 export default function Page({ params }: { params: Promise<{ simulationId: string }> }) {
     const { simulationId } = use(params);
@@ -71,10 +71,9 @@ export default function Page({ params }: { params: Promise<{ simulationId: strin
         <>
             {!vehiclesByLocation.isPending && <FleetSimulationHandler simulationId={simulationId} />}
             {vehiclesByLocation.isPending && (
-                <div className="w-full h-full z-10 top-0 left-0 fixed bg-[#FFFFFF75]">
-                    <div className="top-[40%] left-[50%] absolute transform -translate-x-1/2 -translate-y-1/2">
-                        <CircularProgress />
-                    </div>
+                <div className="space-y-4">
+                    <Skeleton variant="rounded" height={40} width={360} />
+                    <Skeleton variant="rounded" height={320} />
                 </div>
             )}
         </>

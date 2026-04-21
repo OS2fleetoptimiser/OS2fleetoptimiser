@@ -1,7 +1,7 @@
 'use client';
 
 import useGetDrivingData from '@/components/hooks/useGetDrivingData';
-import { CircularProgress, InputAdornment, TextField } from '@mui/material';
+import { Card, Divider, InputAdornment, Paper, Skeleton, TextField, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import ParkingTimeScatterPlot, { scatterplotProps } from './StopsParkingScatterPlot';
@@ -123,52 +123,73 @@ const TripSegmentsDashboard = ({ availableshifts, end, start, departments, locat
 
     return (
         <div>
-            <TextField
-                className="mx-4 subtle w-44 my-8"
-                label="Maks tur distance"
-                value={distanceLimit}
-                onBlur={(e) => {
-                    if (distanceLimit === undefined) setDistanceLimit(0);
-                }}
-                onChange={(e) => setDistanceLimit(isNaN(Number.parseFloat(e.target.value)) ? undefined : +e.target.value)}
-                slotProps={{
-                    input: {
-                        endAdornment: <InputAdornment position="end">km</InputAdornment>,
-                    }
-                }}
-            ></TextField>
-            <TextField
-                label="Minimum parkeringstid"
-                className="subtle w-44 my-8"
-                value={minParkingTime}
-                onBlur={(e) => {
-                    if (minParkingTime === undefined) setDistanceLimit(0);
-                }}
-                onChange={(e) => setMinParkingTime(isNaN(Number.parseFloat(e.target.value)) ? undefined : +e.target.value)}
-                slotProps={{
-                    input: {
-                        endAdornment: <InputAdornment position="end">min</InputAdornment>,
-                    }
-                }}
-            ></TextField>
-            <div className="w-96 inline-flex mb-8 mt-6">
-                <span className="text-explanation text-xs ml-4 w-96">Turoverblik viser en samling af kvalificeret godkendte rundture, som er under grænseværdien; maks tur distance og over grænseværdien; minimum parkeringstid. Der vises antal ture pr. køretøj, som fremhæves i de detaljeret grafer under. Klik på en enkelt rundtur for at se længden på rundturens kørsels - og parkeringssegmenter.</span>
-            </div>
+            <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+                <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                    Grænseværdier
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                    Indstillingerne nedenfor filtrerer data i alle grafer på denne side.
+                </Typography>
+                <div className="flex gap-4">
+                    <TextField
+                        size="small"
+                        className="subtle w-44"
+                        label="Maks tur distance"
+                        value={distanceLimit}
+                        onBlur={() => {
+                            if (distanceLimit === undefined) setDistanceLimit(0);
+                        }}
+                        onChange={(e) => setDistanceLimit(isNaN(Number.parseFloat(e.target.value)) ? undefined : +e.target.value)}
+                        slotProps={{
+                            input: {
+                                endAdornment: <InputAdornment position="end">km</InputAdornment>,
+                            }
+                        }}
+                    />
+                    <TextField
+                        size="small"
+                        label="Minimum parkeringstid"
+                        className="subtle w-44"
+                        value={minParkingTime}
+                        onBlur={() => {
+                            if (minParkingTime === undefined) setDistanceLimit(0);
+                        }}
+                        onChange={(e) => setMinParkingTime(isNaN(Number.parseFloat(e.target.value)) ? undefined : +e.target.value)}
+                        slotProps={{
+                            input: {
+                                endAdornment: <InputAdornment position="end">min</InputAdornment>,
+                            }
+                        }}
+                    />
+                </div>
+            </Paper>
             {drivingData.isError && <ApiError retryFunction={drivingData.refetch}>Der opstod en netværksfejl</ApiError>}
             {drivingData.isPending && (
-                <div className="p-10 flex justify-center">
-                    <CircularProgress />
-                </div>
+                <Card sx={{ p: 2 }}>
+                    <Skeleton variant="text" width="30%" />
+                    <Skeleton variant="text" width="70%" sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" height={500} />
+                </Card>
             )}
             {drivingData.data &&
                 (drivingData.data.barChart.length > 0 ? (
                     <>
-                        <div className="h-[500px] mb-4">
-                            <TripSegmentGraph focus={focus} setFocus={setFocus} data={drivingData.data.barChart}></TripSegmentGraph>
-                        </div>
-                        <div className="my-8 flex">
-                            <div className="w-1/2">
-                                <h3 className="text-center">Stop / Parkeringstid</h3>
+                        <Card sx={{ p: 2, mb: 2 }}>
+                            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                                Turoverblik
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                                Turoverblik viser en samling af kvalificeret godkendte rundture, som er under grænseværdien; maks tur distance og over grænseværdien; minimum parkeringstid. Der vises antal ture pr. køretøj, som fremhæves i de detaljeret grafer under. Klik på en enkelt rundtur for at se længden på rundturens kørsels - og parkeringssegmenter.
+                            </Typography>
+                            <div className="h-[500px]">
+                                <TripSegmentGraph focus={focus} setFocus={setFocus} data={drivingData.data.barChart}></TripSegmentGraph>
+                            </div>
+                        </Card>
+                        <div className="flex gap-4 my-4">
+                            <Card sx={{ p: 2, flex: 1 }}>
+                                <Typography variant="subtitle2" color="text.primary" sx={{ mb: 2 }}>
+                                    Stop / Parkeringstid
+                                </Typography>
                                 <div className="h-96">
                                     <ParkingTimeScatterPlot
                                         setSelected={setSelectedRoundTrip}
@@ -178,9 +199,11 @@ const TripSegmentsDashboard = ({ availableshifts, end, start, departments, locat
                                         data={drivingData.data.stopParkingPlot}
                                     ></ParkingTimeScatterPlot>
                                 </div>
-                            </div>
-                            <div className="w-1/2">
-                                <h3 className="text-center">Distance / Parkeringstid</h3>
+                            </Card>
+                            <Card sx={{ p: 2, flex: 1 }}>
+                                <Typography variant="subtitle2" color="text.primary" sx={{ mb: 2 }}>
+                                    Distance / Parkeringstid
+                                </Typography>
                                 <div className="h-96">
                                     <ParkingTimeScatterPlot
                                         setSelected={setSelectedRoundTrip}
@@ -190,18 +213,18 @@ const TripSegmentsDashboard = ({ availableshifts, end, start, departments, locat
                                         data={drivingData.data.distanceParkingPlot}
                                     ></ParkingTimeScatterPlot>
                                 </div>
-                            </div>
+                            </Card>
                         </div>
                     </>
                 ) : (
-                    <p className="m-4">
+                    <Typography variant="body2" color="text.secondary" sx={{ m: 2 }}>
                         Der er ingen data der matcher de valgte filtre. Du kan forsøge at sætte maks tur distancen op hvis der er kørt ture i den valgte
                         periode.
-                    </p>
+                    </Typography>
                 ))}
-            <div className="h-[500px] mb-4">
-                <RoundTripChart currentVehicle={currentVehicle} segmentData={selectedTripSegments?.trip_segments} />
-            </div>
+            {selectedTripSegments && (
+                <RoundTripChart currentVehicle={currentVehicle} segmentData={selectedTripSegments.trip_segments} />
+            )}
         </div>
     );
 };

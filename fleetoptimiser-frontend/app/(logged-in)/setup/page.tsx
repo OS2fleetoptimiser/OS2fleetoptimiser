@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { fetchVehiclesByLocation, useGetForvaltninger, useGetLocations } from '@/components/hooks/useGetVehiclesByLocation';
 import LocationPicker, { SelectedLocation } from './LocationPicker';
-import { CircularProgress } from '@mui/material';
+import { Card, Skeleton } from '@mui/material';
 import PageTitle from '@/components/PageTitle';
 import { fetchSimulationSettings, setCars, setEndDate, setLocationForvaltning, setStartDate } from '@/components/redux/SimulationSlice';
 import { useQueries } from '@tanstack/react-query';
@@ -77,26 +77,39 @@ export default function Home() {
 
     const isLoadingVehicles = vehicles.some((q) => q.isPending);
     return (
-        <div className="space-y-6 max-w-[1800px] mx-auto">
+        <div className="space-y-4">
             <PageTitle
                 title="Simuleringssetup"
                 subtitle="Udvælg lokationer, tidsperiode og køretøjer som grundlag for simuleringerne. Når opsætningen er fuldført, kan manuel og automatisk simulering tilgås."
             />
-            <DateRangePicker range={range} onChange={handleDateChange} />
-            {(forvaltningerLoading || locationsLoading) && <CircularProgress />}
-            {onlyLocs && !forvaltningerLoading && (
-                <LocationPicker
-                    forvaltninger={forvaltninger}
-                    locations={onlyLocs.locations}
-                    preSelectedLocations={locationForvaltning}
-                    onSelectionChange={handleLocationChange}
-                />
-            )}
-            {/*todo replace with component from landing page no connection*/}
-            {/*no onlyLocs implies no connection */}
+            <Card sx={{ p: 3 }}>
+                <div className="flex flex-col sm:flex-row gap-6">
+                    <div className="sm:w-64">
+                        <DateRangePicker range={range} onChange={handleDateChange} />
+                    </div>
+                    <div className="sm:w-64">
+                        {(forvaltningerLoading || locationsLoading) && <Skeleton variant="rounded" height={40} />}
+                        {onlyLocs && !forvaltningerLoading && (
+                            <LocationPicker
+                                forvaltninger={forvaltninger}
+                                locations={onlyLocs.locations}
+                                preSelectedLocations={locationForvaltning}
+                                onSelectionChange={handleLocationChange}
+                            />
+                        )}
+                    </div>
+                </div>
+            </Card>
             {!locationsLoading && !onlyLocs && <NoConnectionError />}
             {!isLoadingVehicles && allVehicles.length === 0 && locationForvaltning.length > 0 && <NoSelectableVehicles />}
             {vehicles.some((q) => q.isError) && <NoConnectionError />}
+            {isLoadingVehicles && locationForvaltning.length > 0 && (
+                <Card sx={{ p: 3 }}>
+                    <Skeleton variant="text" width={250} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="text" width={400} height={16} sx={{ mb: 3 }} />
+                    <Skeleton variant="rounded" height={400} />
+                </Card>
+            )}
             {allVehicles.length > 0 && (
                 <VehiclePicker
                     vehicles={allVehicles}

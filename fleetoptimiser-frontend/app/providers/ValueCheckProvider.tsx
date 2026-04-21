@@ -16,7 +16,7 @@ const ValueCheckProvider = () => {
         if (!selectedCars && requiresCarSelection.includes(currentPath)) {
             router.push('/');
         }
-    });
+    }, [selectedCars, currentPath, router]);
 
     return <></>;
 };

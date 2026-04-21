@@ -15,6 +15,7 @@
         "@mui/icons-material": "^7.3.7",
         "@mui/lab": "^7.0.1-beta.21",
         "@mui/material": "^7.3.7",
+        "@mui/x-data-grid": "^8.27.5",
         "@mui/x-date-pickers": "^8.27.0",
         "@nivo/bar": "^0.99.0",
         "@nivo/colors": "^0.99.0",

@@ -1,5 +1,7 @@
 import { getYTicks } from '@/app/(logged-in)/fleet/UnallocatedTripsLine';
 import { ResponsiveBar } from '@nivo/bar';
+import { nivoTheme } from '@/theme/nivoTheme';
+import { brand, gray } from '@/theme/themePrimitives';
 import { useMediaQuery } from 'react-responsive';
 
 type Solution = {
@@ -16,11 +18,11 @@ type Props = {
 export function CostComparisonBar({ currentValue, solutions, yAxis }: Props) {
     const showTicks = useMediaQuery({ minWidth: '850px' }); // ticks become overlapping below 850px
     const data = [
-        { id: 'Nuværende', value: currentValue, color: '#000000' },
+        { id: 'Nuværende', value: currentValue, color: gray[500] },
         ...solutions.map((sol) => ({
             id: sol.label,
             value: sol.value,
-            color: '#4b63a1',
+            color: brand[400],
         })),
     ];
 
@@ -53,13 +55,9 @@ export function CostComparisonBar({ currentValue, solutions, yAxis }: Props) {
             }}
             valueFormat={(val) => formatValue(Number(val))}
             labelTextColor="white"
-            theme={{
-                axis: { ticks: { text: { fontSize: 12, fill: '#555' } } },
-                grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
-                labels: { text: { fontWeight: 'bold', fontSize: '0.75rem' } },
-            }}
+            theme={nivoTheme}
             tooltip={({ value, indexValue }) => (
-                <div className="bg-[#222] text-white p-2 rounded-md text-xs">
+                <div className="bg-[#222] text-white p-2 rounded-lg text-xs">
                     <span className="font-bold">{indexValue}</span>
                     <br />
                     <span className="font-bold">

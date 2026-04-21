@@ -9,7 +9,7 @@ import VehicleFilter from './VehicleFilter';
 import ForvaltningFilter from './ForvaltningFilter';
 import DepartmentFilter from './DepartmentFilter';
 import ShiftFilter from './ShiftFilter';
-import { Button } from '@mui/material';
+import { Box, Button, Paper, Typography } from '@mui/material';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { shift } from '@/components/hooks/useGetSettings';
 import { Vehicle } from "@/components/hooks/useGetVehicles";
@@ -276,39 +276,64 @@ export default function FilterHeader({
     };
 
     return (
-        <div className="sticky bg-white top-1 z-10 mb-2 p-2 flex drop-shadow-md flex-wrap">
-            <DateFilter start={startDate} end={endDate} setEnd={setEndDate} setStart={setStartDate}></DateFilter>
-            {locationFilter && (
-                <LocationFilter
-                    setSelectedLocations={checkedLocation}
-                    selectableLocations={selectableLocations}
-                    selectedLocations={locations}
-                ></LocationFilter>
-            )}
-            {vehicleFilter &&
-                <VehicleFilter
-                    setSelectedVehicles={checkedVehicle}
-                    selectedVehicles={vehicles}
-                    selectableVehicles={selectableVehicles}
-                ></VehicleFilter>}
-            {forvaltningFilter && (
-                <ForvaltningFilter
-                    setSelectedForvaltninger={checkedForvaltning}
-                    selectedForvaltninger={forvaltninger}
-                    selectableForvaltninger={selectableForvaltninger}
-                ></ForvaltningFilter>
-            )}
-            {departmentFilter && (
-                <DepartmentFilter
-                    setSelectedDepartments={checkedDepartment}
-                    selectedDepartments={departments}
-                    selectableDepartments={selectableDepartments}/>
-            )}
-            {shiftFilter && <ShiftFilter selectedShifts={shifts} setSelectedShifts={setShifts} availableShifts={availableshifts}></ShiftFilter>}
-            <Button variant="contained" onClick={setFilters}>
-                Anvend filtre
-            </Button>
-            <Button onClick={clearFilters}>Ryd filtrer</Button>
-        </div>
+        <Paper
+            variant="outlined"
+            sx={{
+                position: 'sticky',
+                top: 4,
+                zIndex: 10,
+                mb: 2,
+                p: 1.5,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1,
+            }}
+        >
+            <Typography variant="subtitle2" color="text.primary">
+                Filtre
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                <DateFilter start={startDate} end={endDate} setEnd={setEndDate} setStart={setStartDate} />
+                {locationFilter && (
+                    <LocationFilter
+                        setSelectedLocations={checkedLocation}
+                        selectableLocations={selectableLocations}
+                        selectedLocations={locations}
+                    />
+                )}
+                {vehicleFilter && (
+                    <VehicleFilter
+                        setSelectedVehicles={checkedVehicle}
+                        selectedVehicles={vehicles}
+                        selectableVehicles={selectableVehicles}
+                    />
+                )}
+                {forvaltningFilter && (
+                    <ForvaltningFilter
+                        setSelectedForvaltninger={checkedForvaltning}
+                        selectedForvaltninger={forvaltninger}
+                        selectableForvaltninger={selectableForvaltninger}
+                    />
+                )}
+                {departmentFilter && (
+                    <DepartmentFilter
+                        setSelectedDepartments={checkedDepartment}
+                        selectedDepartments={departments}
+                        selectableDepartments={selectableDepartments}
+                    />
+                )}
+                {shiftFilter && (
+                    <ShiftFilter selectedShifts={shifts} setSelectedShifts={setShifts} availableShifts={availableshifts} />
+                )}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
+                    <Button variant="contained" size="small" onClick={setFilters}>
+                        Anvend filtre
+                    </Button>
+                    <Button variant="outlined" size="small" onClick={clearFilters}>
+                        Ryd filtre
+                    </Button>
+                </Box>
+            </Box>
+        </Paper>
     );
 }

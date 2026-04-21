@@ -1,4 +1,5 @@
 import { ResponsiveBar } from '@nivo/bar';
+import { nivoTheme } from '@/theme/nivoTheme';
 
 type key = {
     plate: string;
@@ -108,9 +109,7 @@ const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; k
                 from: 'color',
                 modifiers: [['darker', 1.6]],
             }}
-            theme={{
-                grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
-            }}
+            theme={nivoTheme}
             legends={[
                 {
                     dataFrom: 'keys',

@@ -39,8 +39,10 @@ const CreateVehicleHierarchy = ({ open, onClose }: CreateVehicleHierarchyProps) 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md">
             <DialogTitle className="border-b font-bold mb-2 pb-2">
-                Lav Køretøjshierarki
-                <ToolTip>Vælg hvordan du ønsker at dit hierarki af køretøjer skal deles op.</ToolTip>
+                <span className="inline-flex items-center gap-1">
+                    Lav Køretøjshierarki
+                    <ToolTip>Vælg hvordan du ønsker at dit hierarki af køretøjer skal deles op.</ToolTip>
+                </span>
             </DialogTitle>
             <DialogContent>
                 <div>

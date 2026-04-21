@@ -1,67 +1,77 @@
-import {Chip} from "@mui/material";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
-import TaskAltIcon from "@mui/icons-material/TaskAlt";
-import BlockIcon from "@mui/icons-material/Block";
-import MemoryIcon from "@mui/icons-material/Memory";
-import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import { Chip } from '@mui/material';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import BlockIcon from '@mui/icons-material/Block';
+import MemoryIcon from '@mui/icons-material/Memory';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 
 export const FleetChangeChip = (fleetChange: number) => {
-    return (
-        <Chip
-            label={Math.abs(fleetChange)}
-            className={
-                fleetChange === 0
-                    ? 'bg-white'
-                    : fleetChange > 0
-                    ? 'bg-red-25 text-red-600 font-semibold'
-                    : 'bg-green-25 text-green-600 font-semibold'
-            }
-            icon={
-                fleetChange === 0 ? undefined : fleetChange > 0 ? (
-                    <ArrowDownwardIcon className="text-red-600 text-sm transform rotate-180" />
-                ) : (
-                    <ArrowDownwardIcon className="text-green-600 text-sm" />
-                )
-            }
-        />
-    );
-}
+  return (
+    <Chip
+      label={Math.abs(fleetChange)}
+      color={fleetChange === 0 ? 'default' : fleetChange > 0 ? 'error' : 'success'}
+      icon={
+        fleetChange === 0 ? undefined : fleetChange > 0 ? (
+          <ArrowDownwardIcon sx={{ fontSize: 14, transform: 'rotate(180deg)' }} />
+        ) : (
+          <ArrowDownwardIcon sx={{ fontSize: 14 }} />
+        )
+      }
+    />
+  );
+};
 
 export const PlusMinusChip = (value: number, extraLabel?: string) => {
-    return (
-        <Chip
-            variant="filled"
-            label={`${Math.abs(value).toLocaleString()}${extraLabel ? ' ' + extraLabel : ''}`}
-            className={value === 0 ? 'bg-white' : value > 0 ? 'bg-green-25 text-green-600 font-semibold' : 'bg-red-25 text-red-600 font-semibold'}
-            icon={value === 0 ? undefined : value > 0 ? <AddIcon className="text-green-600 text-sm" /> : <RemoveIcon className="text-red-600 text-sm" />}
-        />
-    );
-}
+  return (
+    <Chip
+      label={`${Math.abs(value).toLocaleString()}${extraLabel ? ' ' + extraLabel : ''}`}
+      color={value === 0 ? 'default' : value > 0 ? 'success' : 'error'}
+      icon={
+        value === 0 ? undefined : value > 0 ? (
+          <AddIcon sx={{ fontSize: 14 }} />
+        ) : (
+          <RemoveIcon sx={{ fontSize: 14 }} />
+        )
+      }
+    />
+  );
+};
 
-export const UnallocatedChip = (value: number)=> {
-    return (
-        <Chip
-            className={value === 0 ? 'bg-green-25 text-green-600 font-semibold' : 'bg-red-25 text-red-600 font-semibold'}
-            label={value}
-            icon={value === 0 ? <TaskAltIcon className="text-sm text-green-600" /> : <BlockIcon className="text-sm text-red-600" />}
-        />
-    );
-}
+export const UnallocatedChip = (value: number) => {
+  return (
+    <Chip
+      label={value}
+      color={value === 0 ? 'success' : 'error'}
+      icon={
+        value === 0 ? (
+          <TaskAltIcon sx={{ fontSize: 14 }} />
+        ) : (
+          <BlockIcon sx={{ fontSize: 14 }} />
+        )
+      }
+    />
+  );
+};
 
 export const SimTypeChip = (simulationType: 'goal' | 'fleet') => {
-    return (
-        <>
-            {simulationType === 'goal' && (
-                <Chip
-                    icon={<MemoryIcon className="text-blue-500" />}
-                    className="bg-blue-25 font-semibold text-blue-500"
-                    variant="filled"
-                    label="Automatisk"
-                />
-            )}
-            {simulationType === 'fleet' && <Chip icon={<DirectionsCarIcon />} className="bg-gray-50 font-semibold" variant="filled" label="Manuel" />}
-        </>
-    );
-}
+  return (
+    <>
+      {simulationType === 'goal' && (
+        <Chip
+          icon={<MemoryIcon />}
+          color="info"
+          label="Automatisk"
+        />
+      )}
+      {simulationType === 'fleet' && (
+        <Chip
+          icon={<DirectionsCarIcon />}
+          color="default"
+          label="Manuel"
+        />
+      )}
+    </>
+  );
+};

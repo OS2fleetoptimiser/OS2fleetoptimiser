@@ -1,7 +1,7 @@
 'use client';
 
 import useGetDrivingData from '@/components/hooks/useGetDrivingData';
-import { CircularProgress } from '@mui/material';
+import { Box, Card, Skeleton, Typography } from '@mui/material';
 import { drivingData } from '@/components/hooks/useGetDrivingData';
 import { getInterval } from '../../../dashboard/ShiftNameTranslater';
 import AverageDrivingGraph from './AverageDrivingGraph';
@@ -92,29 +92,40 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
 
     return (
         <div>
-            <h1 className="mb-4 text-xl">Gennemsnitlig kørte kilometer for kørte dage i valgte periode</h1>
-            {drivingData.data && (
-                <div className="text-center shadow-md p-4 w-fit">
-                    <h4>Køretøjer der indgår i grafen</h4>
-                    <p>{drivingData.data.dataPoints.length}</p>
-                </div>
-            )}
             {drivingData.isError && <ApiError retryFunction={drivingData.refetch}>Der opstod en netværksfejl</ApiError>}
             {drivingData.isPending && (
-                <div className="p-10 flex justify-center">
-                    <CircularProgress />
-                </div>
+                <Card sx={{ p: 3 }}>
+                    <Skeleton variant="text" width="40%" />
+                    <Skeleton variant="text" width="70%" sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" width="40%" height={48} sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" height={384} />
+                </Card>
             )}
-            {drivingData.data &&
-                (drivingData.data.dataPoints.length > 0 ? (
-                    <div className="h-96">
-                        <DownloadableGraph filename={`gennemsnitlig_koersel-${fileNameAppendix}.png`}>
-                            <AverageDrivingGraph data={drivingData.data.dataPoints} keys={drivingData.data.keys} colorMapper={shiftColorMapper} />
-                        </DownloadableGraph>
-                    </div>
+            {drivingData.data && (
+                drivingData.data.dataPoints.length > 0 ? (
+                    <Card sx={{ p: 3 }}>
+                        <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                            Gennemsnitlig kørte kilometer
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ mb: 3, display: 'block' }}>
+                            Grafen viser det gennemsnitlige antal kørte kilometer pr. køretøj for kørte dage i den valgte periode.
+                        </Typography>
+                        <Box className="flex w-fit divide-x divide-gray-300 py-3 mb-4 rounded-lg" sx={{ bgcolor: '#fcfcfc' }}>
+                            <div className="px-5">
+                                <div className="text-xs text-gray-500">Køretøjer i grafen</div>
+                                <div className="text-lg font-semibold">{drivingData.data.dataPoints.length}</div>
+                            </div>
+                        </Box>
+                        <div className="h-96">
+                            <DownloadableGraph filename={`gennemsnitlig_koersel-${fileNameAppendix}.png`}>
+                                <AverageDrivingGraph data={drivingData.data.dataPoints} keys={drivingData.data.keys} colorMapper={shiftColorMapper} />
+                            </DownloadableGraph>
+                        </div>
+                    </Card>
                 ) : (
                     <p className="m-4">Der er ingen kørselsdata for de valgte filtre.</p>
-                ))}
+                )
+            )}
         </div>
     );
 };

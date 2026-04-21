@@ -1,28 +1,55 @@
-import CommuteIcon from '@mui/icons-material/Commute';
-import ExtraVehicleModal from '@/app/(logged-in)/fleet/ExtraVehiclesModal';
-import { useMemo } from 'react';
-import { VehiclesSelectionTable } from '@/app/(logged-in)/fleet/VehiclesSelection';
-import { useAppSelector } from '@/components/redux/hooks';
-import { duplicateVehicle, reduceDuplicateVehicles } from '@/components/DuplicateReducer';
-import { Vehicle } from '@/components/hooks/useGetVehicles';
+import { Button, Card, Dialog, DialogTitle, DialogContent, IconButton, Typography } from '@mui/material'
+import { SimulationSettingsWidget } from '@/app/(logged-in)/fleet/simulation-settings/SimulationSettingsDialog'
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import AddIcon from '@mui/icons-material/Add'
+import CloseIcon from '@mui/icons-material/Close'
+import { useMemo, useState } from 'react'
+import { TestVehiclesPage } from '@/app/(logged-in)/fleet/TestVehiclesPage'
+import { VehicleFormContent } from '@/app/(logged-in)/configuration/CreateOrUpdateVehicle'
+import { VehiclesSelectionTable } from '@/app/(logged-in)/fleet/VehiclesSelection'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import { useAppDispatch, useAppSelector } from '@/components/redux/hooks'
+import { clearExtraVehicles, clearTestVehicles } from '@/components/redux/SimulationSlice'
+import { duplicateVehicle, reduceDuplicateVehicles } from '@/components/DuplicateReducer'
+import { Vehicle } from '@/components/hooks/useGetVehicles'
+import useGetDropDownData from '@/components/hooks/useGetDropDownData'
 
 export type ReducedVehicleGroup = {
-    vehicle: Vehicle;
-    count: number;
-    groupIds: number[];
-    extra: boolean;
-};
+    vehicle: Vehicle
+    count: number
+    groupIds: number[]
+    extra: boolean
+}
 
-export const VehiclesWidget = ({ manualSimulation }: { manualSimulation: boolean }) => {
-    const currentGroups: duplicateVehicle[] = useAppSelector((state) => reduceDuplicateVehicles(state.simulation.selectedVehicles));
-    const extraGroups: duplicateVehicle[] = useAppSelector((state) => reduceDuplicateVehicles(state.simulation.fleetSimulationSettings.extraVehicles));
+type VehiclesWidgetProps = {
+    manualSimulation: boolean
+    onStart?: () => void
+    startDisabled?: boolean
+    extraActions?: React.ReactNode
+}
+
+type VehiclesDialogPage = 'list' | 'create'
+
+const pageTitles: Record<VehiclesDialogPage, string> = {
+    list: 'Tilføj køretøjer',
+    create: 'Opret nyt testkøretøj',
+}
+
+export const VehiclesWidget = ({ manualSimulation, onStart, startDisabled, extraActions }: VehiclesWidgetProps) => {
+    const [vehiclesOpen, setVehiclesOpen] = useState(false)
+    const [currentPage, setCurrentPage] = useState<VehiclesDialogPage>('list')
+    const dispatch = useAppDispatch()
+    const { data: dropDownData, isFetching } = useGetDropDownData()
+    const currentGroups: duplicateVehicle[] = useAppSelector((state) => reduceDuplicateVehicles(state.simulation.selectedVehicles))
+    const extraGroups: duplicateVehicle[] = useAppSelector((state) => reduceDuplicateVehicles(state.simulation.fleetSimulationSettings.extraVehicles))
     const fleet: ReducedVehicleGroup[] = useMemo(() => {
         return [
             ...currentGroups.map((group) => ({
                 vehicle: group.vehicle,
                 extra: false,
                 count: group.count,
-                groupIds: group.originalVehicles, // used to update goalsimulationsettings.fixed
+                groupIds: group.originalVehicles,
             })),
             ...extraGroups.map((group) => ({
                 vehicle: group.vehicle,
@@ -30,19 +57,89 @@ export const VehiclesWidget = ({ manualSimulation }: { manualSimulation: boolean
                 count: 0,
                 groupIds: [],
             })),
-        ];
-    }, [currentGroups, extraGroups]);
+        ]
+    }, [currentGroups, extraGroups])
+
+    const handleClose = () => {
+        setVehiclesOpen(false)
+        setCurrentPage('list')
+    }
 
     return (
-        <div className="mt-6 w-auto border border-gray-200 rounded-md shadow-sm p-2 px-4">
-            <div className="flex justify-between">
-                <div className="flex flex-row items-center space-x-2">
-                    <CommuteIcon className="text-blue-500" fontSize="small" />
-                    <span className="text-md font-bold">Vælg køretøjer i {manualSimulation ? 'simulering' : 'optimering'}</span>
-                </div>
-                <ExtraVehicleModal buttonAppearance={true} />
+        <Card sx={{ p: 3 }}>
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                Køretøjer i {manualSimulation ? 'simulering' : 'optimering'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                Juster antal køretøjer der skal indgå i {manualSimulation ? 'simuleringen' : 'optimeringen'}, eller tilføj testkøretøjer.
+            </Typography>
+            <div className="flex gap-2 justify-end mb-2">
+                {extraActions}
+                <SimulationSettingsWidget manualSimulation={manualSimulation} />
+                <Button size="small" onClick={() => setVehiclesOpen(true)} variant="outlined" color="inherit" startIcon={<AddIcon />}>
+                    Tilføj køretøjer
+                </Button>
             </div>
+            <Dialog open={vehiclesOpen} onClose={handleClose} maxWidth={currentPage === 'create' ? 'sm' : 'md'} fullWidth>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#fcfcfc' }}>
+                    <div className="flex items-center gap-1">
+                        {currentPage !== 'list' && (
+                            <IconButton onClick={() => setCurrentPage('list')} size="small" aria-label="tilbage">
+                                <ArrowBackIcon fontSize="small" />
+                            </IconButton>
+                        )}
+                        <Typography variant="h6" component="span">
+                            {pageTitles[currentPage]}
+                        </Typography>
+                    </div>
+                    <IconButton onClick={handleClose} size="small" aria-label="luk">
+                        <CloseIcon fontSize="small" />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent sx={{ bgcolor: '#fcfcfc', px: 3, pb: 3, pt: 3 }}>
+                    {currentPage === 'list' && (
+                        <TestVehiclesPage onCreateClick={() => setCurrentPage('create')} />
+                    )}
+                    {currentPage === 'create' && !isFetching && dropDownData && (
+                        <VehicleFormContent
+                            onClose={() => setCurrentPage('list')}
+                            submit={() => null}
+                            dropDownData={dropDownData}
+                            isUpdate={false}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
             <VehiclesSelectionTable manualSimulation={manualSimulation} vehicles={fleet} />
-        </div>
-    );
-};
+            {onStart && (
+                <div className="mt-3 flex justify-between items-center">
+                    {extraGroups.length > 0 ? (
+                        <Button
+                            size="small"
+                            onClick={() => {
+                                dispatch(clearExtraVehicles())
+                                dispatch(clearTestVehicles())
+                            }}
+                            variant="outlined"
+                            color="error"
+                            startIcon={<DeleteOutlineIcon />}
+                        >
+                            Fjern tilføjede
+                        </Button>
+                    ) : (
+                        <div />
+                    )}
+                    <Button
+                        onClick={onStart}
+                        disabled={startDisabled}
+                        color="primary"
+                        variant="contained"
+                        endIcon={<ArrowForwardIosIcon />}
+                    >
+                        Start {manualSimulation ? 'simulering' : 'optimering'}
+                    </Button>
+                </div>
+            )}
+        </Card>
+    )
+}

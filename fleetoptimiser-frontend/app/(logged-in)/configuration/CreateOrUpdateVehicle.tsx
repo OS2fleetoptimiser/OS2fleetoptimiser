@@ -3,7 +3,7 @@ import { validationSchema } from '@/app/(logged-in)/configuration/ValidationSche
 import API from '@/components/AxiosBase';
 import { DropDownData } from '@/components/hooks/useGetDropDownData';
 import { Vehicle, VehicleWithOutID } from '@/components/hooks/useGetVehicles';
-import { Alert, Button, Dialog, DialogContent, DialogTitle, MenuItem, Snackbar, TextField, DialogActions } from '@mui/material';
+import { Alert, Box, Button, Dialog, DialogContent, DialogTitle, IconButton, MenuItem, Paper, Snackbar, TextField, Typography } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useQueryClient } from '@tanstack/react-query';
@@ -11,15 +11,18 @@ import { isAxiosError } from 'axios';
 import dayjs from 'dayjs';
 import { FormikValues, useFormik } from 'formik';
 import { useState } from 'react';
-import Divider from '@mui/material/Divider';
+import CloseIcon from '@mui/icons-material/Close';
 
-interface VehicleModalProps {
+interface VehicleFormContentProps {
     onClose: () => void;
     submit: (values: FormikValues) => void;
-    open: boolean;
     dropDownData: DropDownData;
     initialValues?: Vehicle;
     isUpdate?: boolean;
+}
+
+interface VehicleModalProps extends VehicleFormContentProps {
+    open: boolean;
 }
 
 export const emptyVehicle: VehicleWithOutID = {
@@ -49,7 +52,13 @@ export const emptyVehicle: VehicleWithOutID = {
     test_vehicle: null,
 };
 
-export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValues: initialValuesProp, isUpdate }: VehicleModalProps) => {
+const SectionHeader = ({ title }: { title: string }) => (
+    <Box sx={{ px: 2.5, py: 1.5, bgcolor: 'action.hover', borderBottom: 1, borderColor: 'divider' }}>
+        <Typography variant="subtitle2" color="text.primary">{title}</Typography>
+    </Box>
+);
+
+export const VehicleFormContent = ({ onClose, submit, dropDownData, initialValues: initialValuesProp, isUpdate }: VehicleFormContentProps) => {
     const [selectedVehicleType, setSelectedVehicleType] = useState(initialValuesProp?.type?.id);
     const [selectedLeasingType, setSelectedLeasingType] = useState(initialValuesProp?.leasing_type?.id);
 
@@ -137,39 +146,35 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
 
     return (
         <>
-            <Dialog open={open}>
-                <DialogTitle textAlign="center">{isUpdate ? 'Opdater Køretøj' : 'Tilføj Testkøretøj'}</DialogTitle>
-                <DialogContent>
-                    {(!isUpdate || initialValues.test_vehicle) && (
-                        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
-                            <p className="text-sm text-gray-700">
-                                <strong>Testkøretøj:</strong> Et testkøretøj er ikke forbundet til dit flådestyringssystem og vil derfor ikke blive
-                                synkroniseret automatisk. Brug denne funktion til at tilføje køretøjer til testformål og til at simulere scenarier i
-                                FleetOptimiser.
-                            </p>
-                        </div>
+            {(!isUpdate || initialValues.test_vehicle) && (
+                <Alert severity="info" sx={{ mb: 3 }}>
+                    Et testkøretøj er ikke forbundet til dit flådestyringssystem og vil derfor ikke blive synkroniseret automatisk. Brug denne funktion til at tilføje køretøjer til testformål og til at simulere scenarier i FleetOptimiser.
+                </Alert>
+            )}
+            <form onSubmit={formik.handleSubmit}>
+                <div className="space-y-4">
+                    {isUpdate && !initialValues.test_vehicle && (
+                        <TextField
+                            fullWidth
+                            size="small"
+                            label="Nummerplade"
+                            type="text"
+                            id="plate"
+                            name="plate"
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            value={formik.values.plate ?? ''}
+                            error={formik.touched.plate && Boolean(formik.errors.plate)}
+                            helperText={formik.touched.plate && formik.errors.plate}
+                        />
                     )}
-                    <form onSubmit={formik.handleSubmit}>
-                        {isUpdate && !initialValues.test_vehicle && (
-                            <div className="flex p-2">
+
+                    <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                        <SectionHeader title="Stamdata" />
+                        <div className="p-4 space-y-3">
+                            <div className="grid grid-cols-2 gap-3">
                                 <TextField
-                                    className="w-1/2 subtle pr-4"
-                                    label="Nummerplade"
-                                    type="text"
-                                    id="plate"
-                                    name="plate"
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    value={formik.values.plate ?? ''}
-                                />
-                                {formik.touched.plate && formik.errors.plate ? <div>{formik.errors.plate}</div> : null}
-                            </div>
-                        )}
-                        <div className="p-2 space-y-4">
-                            <p className="font-bold text-sm">Stamdata</p>
-                            <div className="flex space-x-8">
-                                <TextField
-                                    className="w-1/2 subtle"
+                                    size="small"
                                     label="Mærke"
                                     type="text"
                                     id="make"
@@ -177,10 +182,11 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     value={formik.values.make ?? ''}
+                                    error={formik.touched.make && Boolean(formik.errors.make)}
+                                    helperText={formik.touched.make && formik.errors.make}
                                 />
-                                {formik.touched.make && formik.errors.make ? <div>{formik.errors.make}</div> : null}
                                 <TextField
-                                    className="w-1/2 subtle"
+                                    size="small"
                                     label="Model"
                                     type="text"
                                     id="model"
@@ -188,22 +194,22 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     value={formik.values.model ?? ''}
+                                    error={formik.touched.model && Boolean(formik.errors.model)}
+                                    helperText={formik.touched.model && formik.errors.model}
                                 />
-
-                                {formik.touched.model && formik.errors.model ? <div>{formik.errors.model}</div> : null}
                             </div>
-                            <div className="flex space-x-8">
+                            <div className="grid grid-cols-2 gap-3">
                                 <TextField
-                                    className="w-1/2 subtle"
+                                    size="small"
                                     id="type.id"
                                     name="type.id"
-                                    label="Køretøjs Type"
-                                    required={true}
+                                    label="Køretøjstype"
+                                    required
                                     select
                                     value={formik.values.type?.id || ''}
                                     onChange={(event) => {
                                         formik.handleChange(event);
-                                        setSelectedVehicleType(Number(event.target.value)); // Set selected vehicle to the value selected
+                                        setSelectedVehicleType(Number(event.target.value));
                                     }}
                                     onBlur={formik.handleBlur}
                                 >
@@ -213,14 +219,12 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                         </MenuItem>
                                     ))}
                                 </TextField>
-                                {formik.touched.type && formik.touched.type && formik.errors.type ? <div>{formik.errors.type}</div> : null}
-
                                 <TextField
-                                    className="w-1/2 subtle"
+                                    size="small"
                                     id="fuel.id"
                                     name="fuel.id"
                                     label="Drivmiddel"
-                                    required={true}
+                                    required
                                     select
                                     value={formik.values.fuel?.id || ''}
                                     onChange={formik.handleChange}
@@ -232,9 +236,29 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                         </MenuItem>
                                     ))}
                                 </TextField>
-                                {selectedVehicleType === 4 ? (
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <TextField
+                                    size="small"
+                                    label="Omkostning / år"
+                                    type="number"
+                                    id="omkostning_aar"
+                                    name="omkostning_aar"
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    value={formik.values.omkostning_aar ?? ''}
+                                    error={formik.touched.omkostning_aar && Boolean(formik.errors.omkostning_aar)}
+                                    helperText={formik.touched.omkostning_aar && formik.errors.omkostning_aar}
+                                    slotProps={{
+                                        input: {
+                                            inputMode: 'decimal',
+                                            inputProps: { min: 0, step: 0.1 },
+                                        }
+                                    }}
+                                />
+                                {selectedVehicleType === 4 && (
                                     <TextField
-                                        className="subtle"
+                                        size="small"
                                         name="wltp_fossil"
                                         label="WLTP (km/l)"
                                         type="number"
@@ -243,203 +267,156 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                         slotProps={{
                                             input: {
                                                 inputMode: 'decimal',
-                                                inputProps: {
-                                                    min: 0,
-                                                    step: 0.1,
-                                                },
+                                                inputProps: { min: 0, step: 0.1 },
                                             }
                                         }}
                                     />
-                                ) : selectedVehicleType === 3 ? (
+                                )}
+                                {selectedVehicleType === 3 && (
                                     <TextField
+                                        size="small"
                                         name="wltp_el"
                                         label="WLTP (Wh/km)"
-                                        className="subtle"
                                         type="number"
                                         value={formik.values.wltp_el || ''}
-                                        required={true}
+                                        required
                                         onChange={formik.handleChange}
                                         slotProps={{
                                             input: {
                                                 inputMode: 'decimal',
-                                                inputProps: {
-                                                    min: 0,
-                                                    step: 0.1,
-                                                },
+                                                inputProps: { min: 0, step: 0.1 },
                                             }
                                         }}
                                     />
-                                ) : null}
+                                )}
                             </div>
-                            <TextField
-                                className="w-1/2 subtle pr-4" // to align with make input
-                                label="Omkostning / år"
-                                type="number"
-                                id="omkostning_aar"
-                                name="omkostning_aar"
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                value={formik.values.omkostning_aar ?? ''}
-                                slotProps={{
-                                    input: {
-                                        inputMode: 'decimal',
-                                        inputProps: {
-                                            min: 0,
-                                            step: 0.1,
-                                        },
-                                    }
-                                }}
-                            />
-                            {formik.touched.omkostning_aar && formik.errors.omkostning_aar ? <div>{formik.errors.omkostning_aar}</div> : null}
-                            {(selectedVehicleType === 3 || (isUpdate && !initialValues.test_vehicle)) && <Divider className="my-4" />}
                         </div>
+                    </Paper>
 
-                        {selectedVehicleType === 3 && (
-                            <div>
-                                <div className="p-2 space-y-4">
-                                    <p className="font-bold text-sm">Detaljer for elkøretøjer</p>
-                                    <div className="flex space-x-8">
-                                        <TextField
-                                            className="w-1/3 subtle"
-                                            label="WLTP Nedskrivning (%)"
-                                            type="number"
-                                            id="capacity_decrease"
-                                            name="capacity_decrease"
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            value={formik.values.capacity_decrease ?? ''}
-                                            slotProps={{
-                                                input: {
-                                                    inputMode: 'decimal',
-                                                    inputProps: {
-                                                        min: 0,
-                                                        step: 0.1,
-                                                    },
-                                                }
-                                            }}
-                                        />
-                                        {formik.touched.capacity_decrease && formik.errors.capacity_decrease ? (
-                                            <div>{formik.errors.capacity_decrease}</div>
-                                        ) : null}
-                                        <TextField
-                                            className="w-1/3 subtle"
-                                            label="Rækkevidde"
-                                            type="number"
-                                            id="range"
-                                            name="range"
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            value={formik.values.range ?? ''}
-                                            slotProps={{
-                                                input: {
-                                                    inputMode: 'decimal',
-                                                    inputProps: {
-                                                        min: 0,
-                                                        step: 0.1,
-                                                    },
-                                                }
-                                            }}
-                                        />
-                                        {formik.touched.range && formik.errors.range ? <div>{formik.errors.range}</div> : null}
-                                        <TextField
-                                            className="w-1/3 subtle"
-                                            label="Hvile / Opladningstid"
-                                            type="number"
-                                            id="sleep"
-                                            name="sleep"
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            value={formik.values.sleep ?? ''}
-                                            slotProps={{
-                                                input: {
-                                                    inputMode: 'decimal',
-                                                    inputProps: {
-                                                        min: 0,
-                                                        step: 0.1,
-                                                    },
-                                                }
-                                            }}
-                                        />
-                                        {formik.touched.sleep && formik.errors.sleep ? <div>{formik.errors.sleep}</div> : null}
-                                    </div>
-                                </div>
-                                {isUpdate && !initialValues.test_vehicle && <Divider className="my-4" />}
+                    {selectedVehicleType === 3 && (
+                        <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                            <SectionHeader title="Detaljer for elkøretøjer" />
+                            <div className="grid grid-cols-3 gap-3 p-4">
+                                <TextField
+                                    size="small"
+                                    label="WLTP Nedskrivning (%)"
+                                    type="number"
+                                    id="capacity_decrease"
+                                    name="capacity_decrease"
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    value={formik.values.capacity_decrease ?? ''}
+                                    error={formik.touched.capacity_decrease && Boolean(formik.errors.capacity_decrease)}
+                                    helperText={formik.touched.capacity_decrease && formik.errors.capacity_decrease}
+                                    slotProps={{
+                                        input: {
+                                            inputMode: 'decimal',
+                                            inputProps: { min: 0, step: 0.1 },
+                                        }
+                                    }}
+                                />
+                                <TextField
+                                    size="small"
+                                    label="Rækkevidde"
+                                    type="number"
+                                    id="range"
+                                    name="range"
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    value={formik.values.range ?? ''}
+                                    error={formik.touched.range && Boolean(formik.errors.range)}
+                                    helperText={formik.touched.range && formik.errors.range}
+                                    slotProps={{
+                                        input: {
+                                            inputMode: 'decimal',
+                                            inputProps: { min: 0, step: 0.1 },
+                                        }
+                                    }}
+                                />
+                                <TextField
+                                    size="small"
+                                    label="Hvile / Opladningstid"
+                                    type="number"
+                                    id="sleep"
+                                    name="sleep"
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    value={formik.values.sleep ?? ''}
+                                    error={formik.touched.sleep && Boolean(formik.errors.sleep)}
+                                    helperText={formik.touched.sleep && formik.errors.sleep}
+                                    slotProps={{
+                                        input: {
+                                            inputMode: 'decimal',
+                                            inputProps: { min: 0, step: 0.1 },
+                                        }
+                                    }}
+                                />
                             </div>
-                        )}
+                        </Paper>
+                    )}
 
-                        {isUpdate && !initialValues.test_vehicle && (
-                            <div>
-                                <div className="p-2 space-y-4">
-                                    <p className="font-bold text-sm">Tilhørsforhold</p>
-                                    <div className="flex space-x-8">
-                                        <TextField
-                                            className="w-1/2 subtle"
-                                            label="Forvaltning"
-                                            type="text"
-                                            id="forvaltning"
-                                            name="forvaltning"
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            value={formik.values.forvaltning ?? ''}
-                                            onKeyDown={(e) => {
-                                                if (e.key === ',') {
-                                                    e.preventDefault();
-                                                }
-                                            }}
-                                        />
-                                        {formik.touched.forvaltning && formik.errors.forvaltning ? <div>{formik.errors.forvaltning}</div> : null}
-
-                                        <TextField
-                                            className="w-1/2 subtle"
-                                            label="Afdeling"
-                                            type="text"
-                                            id="department"
-                                            name="department"
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            value={formik.values.department ?? ''}
-                                            onKeyDown={(e) => {
-                                                if (e.key === ',') {
-                                                    e.preventDefault();
-                                                }
-                                            }}
-                                        />
-                                        {formik.touched.department && formik.errors.department ? <div>{formik.errors.department}</div> : null}
-                                    </div>
-                                    <div className="flex">
-                                        <TextField
-                                            className="w-full subtle"
-                                            id="location.id"
-                                            name="location.id"
-                                            label="Lokation"
-                                            select
-                                            value={formik.values.location?.id || ''}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                        >
-                                            {[...dropDownData.locations]
-                                                .sort((a, b) => a.address.localeCompare(b.address))
-                                                .map((location) => (
-                                                    <MenuItem key={location.id} value={location.id}>
-                                                        {location.address}
-                                                    </MenuItem>
-                                                ))}
-                                        </TextField>
-                                        {formik.touched.location && formik.touched.location && formik.errors.location ? (
-                                            <div>{formik.errors.location}</div>
-                                        ) : null}
-                                    </div>
-                                </div>
-                                <Divider className="my-4" />
-                            </div>
-                        )}
-
-                        {isUpdate && !initialValues.test_vehicle && (
-                            <div className="p-2 space-y-4">
-                                <p className="font-bold text-sm">Leasinginformation</p>
-                                <div className="flex space-x-8">
+                    {isUpdate && !initialValues.test_vehicle && (
+                        <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                            <SectionHeader title="Tilhørsforhold" />
+                            <div className="p-4 space-y-3">
+                                <div className="grid grid-cols-2 gap-3">
                                     <TextField
-                                        className="w-1/2 subtle"
+                                        size="small"
+                                        label="Forvaltning"
+                                        type="text"
+                                        id="forvaltning"
+                                        name="forvaltning"
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        value={formik.values.forvaltning ?? ''}
+                                        error={formik.touched.forvaltning && Boolean(formik.errors.forvaltning)}
+                                        helperText={formik.touched.forvaltning && formik.errors.forvaltning}
+                                        onKeyDown={(e) => { if (e.key === ',') e.preventDefault(); }}
+                                    />
+                                    <TextField
+                                        size="small"
+                                        label="Afdeling"
+                                        type="text"
+                                        id="department"
+                                        name="department"
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        value={formik.values.department ?? ''}
+                                        error={formik.touched.department && Boolean(formik.errors.department)}
+                                        helperText={formik.touched.department && formik.errors.department}
+                                        onKeyDown={(e) => { if (e.key === ',') e.preventDefault(); }}
+                                    />
+                                </div>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    id="location.id"
+                                    name="location.id"
+                                    label="Lokation"
+                                    select
+                                    value={formik.values.location?.id || ''}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                >
+                                    {[...dropDownData.locations]
+                                        .sort((a, b) => a.address.localeCompare(b.address))
+                                        .map((location) => (
+                                            <MenuItem key={location.id} value={location.id}>
+                                                {location.address}
+                                            </MenuItem>
+                                        ))}
+                                </TextField>
+                            </div>
+                        </Paper>
+                    )}
+
+                    {isUpdate && !initialValues.test_vehicle && (
+                        <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                            <SectionHeader title="Leasinginformation" />
+                            <div className="p-4 space-y-3">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <TextField
+                                        size="small"
                                         id="leasing_type.id"
                                         name="leasing_type.id"
                                         label="Leasing Type"
@@ -447,7 +424,7 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                         value={formik.values.leasing_type?.id || ''}
                                         onChange={(event) => {
                                             formik.handleChange(event);
-                                            setSelectedLeasingType(Number(event.target.value)); // Set selected vehicle to the value selected
+                                            setSelectedLeasingType(Number(event.target.value));
                                         }}
                                         onBlur={formik.handleBlur}
                                     >
@@ -457,42 +434,34 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                             </MenuItem>
                                         ))}
                                     </TextField>
-                                    {formik.touched.leasing_type && formik.errors.leasing_type ? <div>{formik.errors.leasing_type}</div> : null}
                                     <TextField
-                                        className="w-1/2 subtle"
-                                        label="Km pr år"
+                                        size="small"
+                                        label="Km pr. år"
                                         type="number"
                                         id="km_aar"
                                         name="km_aar"
                                         onChange={formik.handleChange}
                                         onBlur={formik.handleBlur}
                                         value={formik.values.km_aar ?? ''}
+                                        error={formik.touched.km_aar && Boolean(formik.errors.km_aar)}
+                                        helperText={formik.touched.km_aar && formik.errors.km_aar}
                                         slotProps={{
                                             input: {
                                                 inputMode: 'decimal',
-                                                inputProps: {
-                                                    min: 0,
-                                                    step: 0.1,
-                                                },
+                                                inputProps: { min: 0, step: 0.1 },
                                             }
                                         }}
                                     />
-                                    {formik.touched.km_aar && formik.errors.km_aar ? <div>{formik.errors.km_aar}</div> : null}
                                 </div>
-                                <div className="flex space-x-8">
+                                <div className="grid grid-cols-2 gap-3">
                                     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="da">
                                         <DatePicker
                                             defaultValue={formik.initialValues.start_leasing ? dayjs(formik.initialValues.start_leasing) : null}
                                             format="DD-MM-YYYY"
                                             label="Start Leasing"
                                             onChange={(date) => formik.setFieldValue('start_leasing', date ? dayjs(date).format('YYYY-MM-DD') : null)}
-                                            className={
-                                                formik.touched.start_leasing && formik.errors.start_leasing && !formik.values.start_leasing
-                                                    ? 'error subtle'
-                                                    : ' subtle'
-                                            }
+                                            slotProps={{ textField: { size: 'small' } }}
                                         />
-                                        {formik.touched.start_leasing && formik.errors.start_leasing ? <div>{formik.errors.start_leasing}</div> : null}
                                         <DatePicker
                                             defaultValue={formik.initialValues.end_leasing ? dayjs(formik.initialValues.end_leasing) : null}
                                             format="DD-MM-YYYY"
@@ -500,43 +469,59 @@ export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValue
                                             onChange={(date) => formik.setFieldValue('end_leasing', date ? dayjs(date).format('YYYY-MM-DD') : null)}
                                             slotProps={{
                                                 textField: {
+                                                    size: 'small',
                                                     required: selectedLeasingType === 1 || selectedLeasingType === 2,
                                                 },
                                             }}
-                                            className={
-                                                formik.touched.end_leasing && formik.errors.end_leasing && !formik.values.end_leasing
-                                                    ? 'error subtle'
-                                                    : 'subtle'
-                                            }
                                         />
-                                        {formik.touched.end_leasing && formik.errors.end_leasing ? <div>{formik.errors.end_leasing}</div> : null}
                                     </LocalizationProvider>
                                 </div>
                             </div>
-                        )}
-                        <DialogActions className="m-2 mt-4">
-                            <Button
-                                variant="outlined"
-                                onClick={handleOnClose}
-                            >
-                                Annuller
-                            </Button>
-                            <Button variant="contained" type="submit">
-                                {isUpdate ? 'Opdater' : 'Tilføj'}
-                            </Button>
-                        </DialogActions>
-                    </form>
-                </DialogContent>
+                        </Paper>
+                    )}
 
-                <Snackbar open={isSnackbarOpen} onClose={handleCloseSnackbar} autoHideDuration={snackbarDuration}>
-                    <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} style={{ marginBottom: '8px' }}>
-                        {snackbarMessages.map((message, index) => (
-                            <div key={index}>{message}</div>
-                        ))}
-                    </Alert>
-                </Snackbar>
-            </Dialog>
+                    <div className="flex gap-2 justify-end">
+                        <Button variant="outlined" size="small" onClick={handleOnClose}>
+                            Annuller
+                        </Button>
+                        <Button variant="contained" size="small" type="submit">
+                            {isUpdate ? 'Opdater' : 'Tilføj'}
+                        </Button>
+                    </div>
+                </div>
+            </form>
+            <Snackbar open={isSnackbarOpen} onClose={handleCloseSnackbar} autoHideDuration={snackbarDuration}>
+                <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} style={{ marginBottom: '8px' }}>
+                    {snackbarMessages.map((message, index) => (
+                        <div key={index}>{message}</div>
+                    ))}
+                </Alert>
+            </Snackbar>
         </>
+    );
+};
+
+export const VehicleModal = ({ open, onClose, submit, dropDownData, initialValues, isUpdate }: VehicleModalProps) => {
+    return (
+        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#fcfcfc' }}>
+                <Typography variant="h6" component="span">
+                    {isUpdate ? 'Opdater køretøj' : 'Opret nyt testkøretøj'}
+                </Typography>
+                <IconButton onClick={onClose} size="small" aria-label="luk">
+                    <CloseIcon fontSize="small" />
+                </IconButton>
+            </DialogTitle>
+            <DialogContent sx={{ bgcolor: '#fcfcfc', px: 3, pb: 3, pt: 3 }}>
+                <VehicleFormContent
+                    onClose={onClose}
+                    submit={submit}
+                    dropDownData={dropDownData}
+                    initialValues={initialValues}
+                    isUpdate={isUpdate}
+                />
+            </DialogContent>
+        </Dialog>
     );
 };
 

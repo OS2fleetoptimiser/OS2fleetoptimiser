@@ -1,5 +1,6 @@
 import { ResponsiveHeatMapCanvas } from '@nivo/heatmap';
 import { useMediaQuery } from 'react-responsive';
+import { nivoTheme, heatmapGradient } from '@/theme/nivoTheme';
 import { rgb } from 'd3-color';
 
 type HeatMapGroupWithMetaData = {
@@ -45,7 +46,7 @@ export default function TimeActivityHeatMap({ data, threshold }: { data: heatmap
                 axisLeft={null}
                 colors={{
                     type: 'sequential',
-                    colors: ['#4b63a1', '#ffffff'],
+                    colors: [...heatmapGradient],
                     minValue: 0,
                     maxValue: threshold / 100,
                 }}
@@ -60,6 +61,7 @@ export default function TimeActivityHeatMap({ data, threshold }: { data: heatmap
                         </div>
                     );
                 }}
+                theme={nivoTheme}
                 emptyColor="#555555"
                 enableLabels={true}
                 legends={[

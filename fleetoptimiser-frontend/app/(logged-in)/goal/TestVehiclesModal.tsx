@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Modal } from '@mui/material';
+import { Button, Modal, Skeleton } from '@mui/material';
 import { useState } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import TestVehicleTable from './TestVehicleTable';
@@ -51,7 +51,7 @@ const TestVehicleModal = () => {
             <Modal open={open} onClose={handleClose} className="m-10 overflow-scroll lg:mx-96">
                 <div className="bg-white p-4">
                     <div className="flex justify-between border-b pb-2 mb-2">
-                        <h1 className="text-2xl">
+                        <h1 className="text-2xl inline-flex items-center gap-1">
                             Vælg Testkøretøjer
                             <ToolTip>
                                 Hvis du vil teste mod specifikke køretøjer, kan du vælge dem her. Hvis du ikke vælger nogen, har algoritmen
@@ -61,7 +61,12 @@ const TestVehicleModal = () => {
                         <AiOutlineClose onClick={handleClose} size={30} className="cursor-pointer hover:text-blue-600" />
                     </div>
                     {cars.isError && <ApiError retryFunction={cars.refetch}>Testkøretøjerne kunne ikke hentes.</ApiError>}
-                    {cars.isPending && <CircularProgress />}
+                    {cars.isPending && (
+                        <div className="space-y-2">
+                            <Skeleton variant="rounded" height={40} />
+                            <Skeleton variant="rounded" height={320} />
+                        </div>
+                    )}
                     {cars.data && (
                         <>
                             <div className="flex justify-end">

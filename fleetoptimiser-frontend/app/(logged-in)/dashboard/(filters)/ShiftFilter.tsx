@@ -1,6 +1,7 @@
 import {shift} from '@/components/hooks/useGetSettings';
 import { Button, Checkbox, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu } from '@mui/material';
 import { useState } from 'react';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { getInterval } from '../ShiftNameTranslater';
 import LocationSettings from '@/app/(logged-in)/fleet/ShiftSettings';
 
@@ -38,8 +39,16 @@ export default function ShiftFilter({ selectedShifts, setSelectedShifts, availab
     };
 
     return (
-        <div>
-            <Button onClick={handleClick}>Vagtlag ({selectedShifts.length})</Button>
+        <>
+            <Button
+                variant="outlined"
+                size="small"
+                color={selectedShifts.length > 0 ? 'secondary' : 'primary'}
+                onClick={handleClick}
+                endIcon={<KeyboardArrowDownIcon />}
+            >
+                Vagtlag ({selectedShifts.length})
+            </Button>
             <Menu
                 id="basic-menu"
                 anchorEl={anchorEl}
@@ -90,6 +99,6 @@ export default function ShiftFilter({ selectedShifts, setSelectedShifts, availab
                     <LocationSettings buttonText="Indstil vagtlag" locationId={-1} />
                 </div>
             </Menu>
-        </div>
+        </>
     );
 }

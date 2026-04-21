@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { KeyLocationFigures } from "@/app/(logged-in)/location/KeyLocationFigures";
 import { LocationPrecisionList } from "@/app/(logged-in)/location/LocationPrecisionList";
 import { useGetLocationPrecision } from "@/components/hooks/useGetLocationPrecision";
-import { CircularProgress } from '@mui/material';
+import { Button, Card, CardContent, Skeleton } from '@mui/material';
 import PageTitle from '@/components/PageTitle';
 import TipsModal from "@/app/(logged-in)/location/TipsModal";
 import AddIcon from "@mui/icons-material/Add";
@@ -23,18 +23,33 @@ export default function Page() {
             {!isLoading &&
                 <div className="mb-20">
                     <KeyLocationFigures data={data}/>
+                    <div className="flex justify-end mt-4 mb-2">
+                        <Button
+                            component={Link}
+                            href="/location/new"
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                        >
+                            Tilføj ny lokation
+                        </Button>
+                    </div>
                     <LocationPrecisionList data={data}/>
-                    <Link href={'/location/new'} className="no-underline text-black">
-                        <div className="flex flex-row items-center mt-12 mt-4 h-14 hover:scale-101 duration-100 ease-in-out">
-                            <div className="w-68 flex items-center">
-                                Tilføj ny lokation <AddIcon className="ml-4"/>
-                            </div>
-                        </div>
-                    </Link>
 
                 </div>
             }
-            {isLoading && <CircularProgress/>}
+            {isLoading && (
+                <div className="mb-20">
+                    <Card variant="outlined" sx={{ my: 2, width: 'fit-content', minWidth: 500 }}>
+                        <CardContent>
+                            <Skeleton variant="text" width="40%" sx={{ mb: 1 }} />
+                            {[0, 1, 2].map((i) => (
+                                <Skeleton key={i} variant="text" height={32} sx={{ mb: 0.5 }} />
+                            ))}
+                        </CardContent>
+                    </Card>
+                    <Skeleton variant="rounded" height={400} sx={{ mt: 4 }} />
+                </div>
+            )}
         </>
     )
 }

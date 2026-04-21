@@ -5,7 +5,7 @@ import VehicleActivityDashboard from './(VehicleActivity)/VehicleActivityDashboa
 import AddFilter from '@/components/AddFilter';
 import { FilterHeaderWrapper } from '@/app/(logged-in)/dashboard/(filters)/FilterWrapper';
 import useGetSettings from '@/components/hooks/useGetSettings';
-import { CircularProgress } from '@mui/material';
+import { Skeleton } from '@mui/material';
 import PageTitle from '@/components/PageTitle';
 
 type Props = {
@@ -18,9 +18,11 @@ export default function DrivingActivity({ searchParams: searchParamsPromise }: P
 
     if (isLoading)
         return (
-            <div className="p-10 flex justify-center">
-                <CircularProgress />
-            </div>
+            <>
+                <PageTitle title="Køretøjsaktivitet" />
+                <Skeleton variant="rounded" height={80} sx={{ mb: 2 }} />
+                <Skeleton variant="rounded" height={400} />
+            </>
         );
     if (error) return <p>Fejl</p>;
 
@@ -39,27 +41,22 @@ export default function DrivingActivity({ searchParams: searchParamsPromise }: P
 
     return (
         <>
-            <PageTitle
-                title="Køretøjsaktivitet"
-                subtitle="Grafen opdeles på dagsbasis ved perioder under 31 dage, ugebasis under 90 dage og månedsbasis ved længere perioder."
-            />
+            <PageTitle title="Køretøjsaktivitet" />
             <FilterHeaderWrapper availableshifts={availableShifts}></FilterHeaderWrapper>
-            <div className="bg-white drop-shadow-md p-4 mb-4">
-                {!enabled && <AddFilter />}
-                {enabled && (
-                    <VehicleActivityDashboard
-                        start={searchParams.startdate}
-                        end={searchParams.enddate}
-                        locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
-                        forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
-                        departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
-                        vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
-                        availableshifts={availableShifts}
-                        shifts={typeof searchParams.shifts === 'string' ? [+searchParams.shifts] : searchParams.shifts?.map((shift) => +shift)}
-                        selectedShiftIndices={shiftIndices}
-                    ></VehicleActivityDashboard>
-                )}
-            </div>
+            {!enabled && <AddFilter />}
+            {enabled && (
+                <VehicleActivityDashboard
+                    start={searchParams.startdate}
+                    end={searchParams.enddate}
+                    locations={typeof searchParams.locations === 'string' ? [+searchParams.locations] : searchParams.locations?.map((loc) => +loc)}
+                    forvaltninger={typeof searchParams.forvaltninger === 'string' ? [searchParams.forvaltninger] : searchParams.forvaltninger}
+                    departments={typeof searchParams.departments === 'string' ? [searchParams.departments] : searchParams.departments}
+                    vehicles={typeof searchParams.vehicles === 'string' ? [+searchParams.vehicles] : searchParams.vehicles?.map((vehicle) => +vehicle)}
+                    availableshifts={availableShifts}
+                    shifts={typeof searchParams.shifts === 'string' ? [+searchParams.shifts] : searchParams.shifts?.map((shift) => +shift)}
+                    selectedShiftIndices={shiftIndices}
+                ></VehicleActivityDashboard>
+            )}
         </>
     );
 }

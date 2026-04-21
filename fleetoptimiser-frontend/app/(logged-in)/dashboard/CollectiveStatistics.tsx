@@ -1,9 +1,8 @@
 'use client';
 
 import { useGetSummedStatistics } from '@/components/hooks/useGetSummedStatistics';
-import { CircularProgress } from '@mui/material';
+import { Card, Skeleton, Typography } from '@mui/material';
 import dayjs from 'dayjs';
-import Typography from "@mui/material/Typography";
 
 type Props = {
     start?: string;
@@ -23,34 +22,51 @@ export const CollectiveStatistics = ({ start, end, forvaltninger, locations }: P
     return (
         <>
             {summedStatistics.isPending && (
-                <div className="p-10 flex justify-center">
-                    <CircularProgress />
+                <div className="flex gap-4 mb-4">
+                    {[0, 1, 2].map((i) => (
+                        <Card key={i} sx={{ p: 2, flex: 1 }}>
+                            <Skeleton variant="text" width="60%" />
+                            <Skeleton variant="text" sx={{ fontSize: '1.5rem' }} width="40%" />
+                            <Skeleton variant="text" width="50%" />
+                        </Card>
+                    ))}
                 </div>
             )}
             {summedStatistics.data && (
-                <div className="flex my-8 items-center">
-                    <div className="bg-white custom-nav p-4 w-68">
-                        <Typography variant="h4" className="mb-4">Total kørte kilometer</Typography>
-                        <Typography variant="h2" className="text-blue-500 font-bold">{summedStatistics.data.total_driven.toLocaleString()} km</Typography>
-                        <p className="pb-2 mt-2 text-sm text-gray-500">{`fra ${dayjs(summedStatistics.data.first_date).format('DD-MM-YYYY')} til ${dayjs(
-                            summedStatistics.data.last_date
-                        ).format('DD-MM-YYYY')}`}</p>
-
-                    </div>
-                    <div className="bg-white custom-nav mx-12 p-4 w-68">
-                        <Typography variant="h4" className="mb-4">Total ton CO2e udledning</Typography>
-                        <Typography variant="h2" className="text-blue-500 font-bold">{(+summedStatistics.data.total_emission.toPrecision(4)).toLocaleString()} Ton CO2e</Typography>
-                        <p className="pb-2 mt-2 text-sm text-gray-500">{`fra ${dayjs(summedStatistics.data.first_date).format('DD-MM-YYYY')} til ${dayjs(
-                            summedStatistics.data.last_date
-                        ).format('DD-MM-YYYY')}`}</p>
-                    </div>
-                    <div className="bg-white custom-nav p-4 w-68">
-                        <Typography variant="h4" className="mb-4">Andel kørt i Elbil</Typography>
-                        <Typography variant="h2" className="font-bold text-blue-500">{summedStatistics.data.share_carbon_neutral}%</Typography>
-                        <p className="pb-2 mt-2 text-sm text-gray-500">{`fra ${dayjs(summedStatistics.data.first_date).format('DD-MM-YYYY')} til ${dayjs(
-                            summedStatistics.data.last_date
-                        ).format('DD-MM-YYYY')}`}</p>
-                    </div>
+                <div className="flex gap-4 mb-4">
+                    <Card sx={{ p: 2, flex: 1 }}>
+                        <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                            Total kørte kilometer
+                        </Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                            {summedStatistics.data.total_driven.toLocaleString()} km
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                            {`${dayjs(summedStatistics.data.first_date).format('DD-MM-YYYY')} - ${dayjs(summedStatistics.data.last_date).format('DD-MM-YYYY')}`}
+                        </Typography>
+                    </Card>
+                    <Card sx={{ p: 2, flex: 1 }}>
+                        <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                            Total ton CO2e udledning
+                        </Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                            {(+summedStatistics.data.total_emission.toPrecision(4)).toLocaleString()} Ton CO2e
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                            {`${dayjs(summedStatistics.data.first_date).format('DD-MM-YYYY')} - ${dayjs(summedStatistics.data.last_date).format('DD-MM-YYYY')}`}
+                        </Typography>
+                    </Card>
+                    <Card sx={{ p: 2, flex: 1 }}>
+                        <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                            Andel kørt i elbil
+                        </Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                            {summedStatistics.data.share_carbon_neutral}%
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                            {`${dayjs(summedStatistics.data.first_date).format('DD-MM-YYYY')} - ${dayjs(summedStatistics.data.last_date).format('DD-MM-YYYY')}`}
+                        </Typography>
+                    </Card>
                 </div>
             )}
         </>

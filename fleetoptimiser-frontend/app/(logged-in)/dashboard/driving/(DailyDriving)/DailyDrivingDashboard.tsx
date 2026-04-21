@@ -2,7 +2,7 @@
 
 import ApiError from '@/components/ApiError';
 import useGetDrivingData from '@/components/hooks/useGetDrivingData';
-import { CircularProgress } from '@mui/material';
+import { Box, Card, Skeleton, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { getInterval } from '../../../dashboard/ShiftNameTranslater';
 import { filterProps } from '../../(filters)/FilterHeader';
@@ -122,22 +122,48 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
 
     return (
         <div>
-            <h1 className="mb-4 text-xl">Kørte kilometer pr. dag</h1>
             {dashboardData.isError && <ApiError retryFunction={dashboardData.refetch}>Der opstod en netværksfejl</ApiError>}
             {dashboardData.isPending && (
-                <div className="p-10 flex justify-center">
-                    <CircularProgress />
-                </div>
+                <Card sx={{ p: 3 }}>
+                    <Skeleton variant="text" width="40%" />
+                    <Skeleton variant="text" width="70%" sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" width="40%" height={48} sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" height={384} />
+                </Card>
             )}
             {dashboardData.data &&
                 (Object.keys(dashboardData.data).length > 0 ? (
-                    <DownloadableGraph filename={`daglig_koersel-${fileNameAppendix}.png`}>
-                        <CombinedDailyDrivingGraph
-                            header="Daglig kørsel i vagtlag"
-                            data={Object.keys(dashboardData.data).map((shiftKey) => dashboardData.data[shiftKey])}
-                            colorMapper={shiftColorMapper}
-                        />
-                    </DownloadableGraph>
+                    <Card sx={{ p: 3 }}>
+                        <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                            Kørte kilometer pr. dag
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ mb: 3, display: 'block' }}>
+                            Grafen viser det samlede antal kørte kilometer pr. dag i den valgte periode. Grafen opdeles på dagsbasis ved perioder under 31 dage, ugebasis under 90 dage og månedsbasis ved længere perioder.
+                        </Typography>
+                        <Box className="flex w-fit divide-x divide-gray-300 py-3 mb-4 rounded-lg" sx={{ bgcolor: '#fcfcfc' }}>
+                            {Object.keys(dashboardData.data).map((shiftKey) => {
+                                const series = dashboardData.data[shiftKey]
+                                const avg = series.data.length > 0
+                                    ? Math.round(series.data.reduce((sum, p) => sum + p.y, 0) / series.data.length)
+                                    : 0
+                                return (
+                                    <div key={shiftKey} className="px-5">
+                                        <div className="text-xs text-gray-500">{series.id}</div>
+                                        <div className="text-lg font-semibold">{avg.toLocaleString()} km/dag</div>
+                                        <div className="text-xs text-gray-400">{series.uniqueCars} køretøjer</div>
+                                    </div>
+                                )
+                            })}
+                        </Box>
+                        <div className="h-96">
+                            <DownloadableGraph filename={`daglig_koersel-${fileNameAppendix}.png`}>
+                                <CombinedDailyDrivingGraph
+                                    data={Object.keys(dashboardData.data).map((shiftKey) => dashboardData.data[shiftKey])}
+                                    colorMapper={shiftColorMapper}
+                                />
+                            </DownloadableGraph>
+                        </div>
+                    </Card>
                 ) : (
                     <p className="m-4">Der er ingen kørselsdata for de valgte filtre.</p>
                 ))}

@@ -27,9 +27,11 @@ import { useCallback, useMemo, useState } from 'react';
 import DisableVehicleDialog from './DisableVehicleDialog';
 import { useWritePrivilegeContext } from '@/app/providers/WritePrivilegeProvider';
 import ToolTip from '@/components/ToolTip';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import DoneIcon from '@mui/icons-material/Done';
 
-const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicle[]; dropDownData: DropDownData }) => {
+const VehicleConfigTable = ({ vehicleData, dropDownData, onDeleteRoundTrips }: { vehicleData: Vehicle[]; dropDownData: DropDownData; onDeleteRoundTrips: () => void }) => {
     const { hasWritePrivilege } = useWritePrivilegeContext();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState<MRT_Row<Vehicle> | null>(null);
@@ -132,11 +134,11 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
     };
 
     const getStatus = (vehicle: Vehicle) => {
-        if (vehicle.disabled) return <Chip variant="outlined" style={{ color: '#888', borderColor: '#888' }} label="Deaktiveret"></Chip>;
-        if (hasMissingData(vehicle)) return <Chip variant="outlined" color="error" label="Manglende metadata"></Chip>;
-        if (vehicle.test_vehicle) return <Chip variant="outlined" color="primary" label="Testkøretøj"></Chip>; // prioritising to show missing metadata on test vehicles
-        if (hasEndedLeasing(vehicle)) return <Chip style={{ color: '#ca8a04', borderColor: '#ca8a04' }} variant="outlined" label="Udløbet leasing"></Chip>;
-        return <Chip variant="outlined" color="success" label="OK" deleteIcon={<DoneIcon />} onDelete={() => 'render icon'}></Chip>;
+        if (vehicle.disabled) return <Chip variant="outlined" color="default" label="Deaktiveret" />;
+        if (hasMissingData(vehicle)) return <Chip variant="outlined" color="error" label="Manglende metadata" />;
+        if (vehicle.test_vehicle) return <Chip variant="outlined" color="primary" label="Testkøretøj" />;
+        if (hasEndedLeasing(vehicle)) return <Chip variant="outlined" color="warning" label="Udløbet leasing" />;
+        return <Chip variant="outlined" color="success" icon={<DoneIcon />} label="OK" />;
     };
 
     const columns = useMemo<MRT_ColumnDef<Vehicle>[]>(() => {
@@ -248,20 +250,29 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
         columns,
         data: vehicleData,
         muiTableHeadCellProps: {
-            className: 'bg-white',
+            sx: {
+                backgroundColor: 'background.default',
+                color: 'text.secondary',
+                fontWeight: 500,
+            },
         },
         muiTableBodyRowProps: {
-            className: 'bg-white hover:bg-gray-100 ',
+            sx: { backgroundColor: 'background.paper' },
         },
-        muiDetailPanelProps: {
-            className: 'bg-white',
+        muiTablePaperProps: {
+            variant: 'outlined',
+            elevation: 0,
         },
-        muiBottomToolbarProps: {
-            className: 'bg-white',
+        muiPaginationProps: {
+            SelectProps: {
+                sx: {
+                    '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                },
+            },
         },
-        muiTopToolbarProps: {
-            className: 'bg-white',
-        },
+        enableTopToolbar: true,
         enableDensityToggle: false,
         localization: MRT_Localization_DA,
         initialState: {
@@ -277,23 +288,23 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                 {hasWritePrivilege && (
                     <>
                         <Tooltip arrow placement="left" title="Rediger">
-                            <IconButton onClick={() => handleEditVehicle(row)}>
-                                <Edit />
+                            <IconButton size="medium" onClick={() => handleEditVehicle(row)}>
+                                <Edit fontSize="small" />
                             </IconButton>
                         </Tooltip>
                         <Tooltip arrow placement="right" title="Slet">
-                            <IconButton color="error" onClick={() => handleDeleteRow(row)}>
-                                <Delete />
+                            <IconButton size="medium" color="error" onClick={() => handleDeleteRow(row)}>
+                                <Delete fontSize="small" />
                             </IconButton>
                         </Tooltip>
                         <Tooltip arrow placement="right" title={row.original.disabled ? 'Aktiver køretøj' : 'Deaktiver køretøj'}>
-                            <IconButton color={row.original.disabled ? undefined : 'success'} onClick={() => handleDisableVehicle(row)}>
-                                {row.original.disabled ? <PowerOff /> : <Power />}
+                            <IconButton size="medium" color={row.original.disabled ? undefined : 'success'} onClick={() => handleDisableVehicle(row)}>
+                                {row.original.disabled ? <PowerOff fontSize="small" /> : <Power fontSize="small" />}
                             </IconButton>
                         </Tooltip>
                         <Tooltip arrow placement="right" title="Flyt Rundture">
-                            <IconButton onClick={() => handleMoveRoundTrips(row)}>
-                                <LocationOnIcon />
+                            <IconButton size="medium" onClick={() => handleMoveRoundTrips(row)}>
+                                <LocationOnIcon fontSize="small" />
                             </IconButton>
                         </Tooltip>
                     </>
@@ -301,17 +312,17 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                 {!hasWritePrivilege && (
                     <Tooltip title="Du har læserettigheder">
                         <span>
-                            <Edit color="info" />
-                            <Delete color="info" />
-                            {row.original.disabled ? <PowerOff color="info" /> : <Power color="info" />}
-                            <LocationOnIcon color="info" />
+                            <Edit fontSize="small" color="info" />
+                            <Delete fontSize="small" color="info" />
+                            {row.original.disabled ? <PowerOff fontSize="small" color="info" /> : <Power fontSize="small" color="info" />}
+                            <LocationOnIcon fontSize="small" color="info" />
                         </span>
                     </Tooltip>
                 )}
             </Box>
         ),
         renderDetailPanel: ({ row }) => (
-            <Box className="bg-gray-100 w-full grid m-auto">
+            <Box sx={{ backgroundColor: 'background.default' }} className="w-full grid m-auto">
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -342,8 +353,37 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                 </Table>
             </Box>
         ),
-        renderTopToolbarCustomActions: ({ table }) => (
-            <div className="flex gap-4">
+    });
+
+    return (
+        <>
+            <div className="flex justify-end mb-2">
+                <Tooltip title={hasWritePrivilege ? '' : 'Du har læserettigheder'}>
+                    <span>
+                        <Button
+                            disabled={!hasWritePrivilege}
+                            color="primary"
+                            onClick={() => setIsCreateVehicleModalOpen(true)}
+                            startIcon={<AddIcon />}
+                            variant="contained"
+                        >
+                            Tilføj nyt køretøj
+                        </Button>
+                    </span>
+                </Tooltip>
+            </div>
+            <MaterialReactTable table={table} />
+            <div className="flex gap-4 items-center mt-2">
+                <Button
+                    variant="outlined"
+                    startIcon={<DeleteIcon />}
+                    disabled={!hasWritePrivilege}
+                    color="error"
+                    onClick={onDeleteRoundTrips}
+                >
+                    Automatisk tursletning
+                </Button>
+                <div className="flex-grow" />
                 <Button
                     color="primary"
                     onClick={() => {
@@ -353,39 +393,26 @@ const VehicleConfigTable = ({ vehicleData, dropDownData }: { vehicleData: Vehicl
                     startIcon={<FileDownloadIcon />}
                     variant="contained"
                 >
-                    Eksporter Til .xlsx
+                    Eksporter til .xlsx
                 </Button>
                 <Tooltip title={hasWritePrivilege ? '' : 'Du har læserettigheder'}>
-                    <Button
-                        disabled={!hasWritePrivilege}
-                        color="primary"
-                        onClick={() => setIsImportModalOpen(true)}
-                        startIcon={<FileUploadIcon />}
-                        variant="contained"
-                    >
-                        Importer flådedata
-                    </Button>
+                    <span>
+                        <Button
+                            disabled={!hasWritePrivilege}
+                            color="primary"
+                            onClick={() => setIsImportModalOpen(true)}
+                            startIcon={<FileUploadIcon />}
+                            variant="contained"
+                        >
+                            Importer flådedata
+                        </Button>
+                    </span>
                 </Tooltip>
                 <ToolTip>
                     Importering af data, er kun for køretøjer, der er forbundet via. dit flådestyringssystem. Dvs. IDet skal stemme overens med et kendt
                     køretøj i dit flådesystem. Brug Tilføj nyt køretøj for at tilføje nye testkøretøjer.
                 </ToolTip>
             </div>
-        ),
-        renderBottomToolbarCustomActions: () => (
-            <div>
-                <Tooltip title={hasWritePrivilege ? '' : 'Du har læserettigheder'}>
-                    <Button disabled={!hasWritePrivilege} color="primary" onClick={() => setIsCreateVehicleModalOpen(true)} variant="contained">
-                        Tilføj nyt køretøj
-                    </Button>
-                </Tooltip>
-            </div>
-        ),
-    });
-
-    return (
-        <>
-            <MaterialReactTable table={table} />
             {isMoveRoundTripsOpen && (
                 <MoveRoundTripsDialog
                     isOpen={isMoveRoundTripsOpen}

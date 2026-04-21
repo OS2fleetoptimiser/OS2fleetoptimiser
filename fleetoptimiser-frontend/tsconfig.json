@@ -30,7 +30,6 @@
     }
   },
   "include": [
-    "theme.ts",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",

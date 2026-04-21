@@ -1,7 +1,7 @@
 'use client';
 
 import { useGetGroupedDrivingData } from '@/components/hooks/useGetDrivingData';
-import { Button, CircularProgress, InputAdornment, Tab, TextField } from '@mui/material';
+import { Button, Card, InputAdornment, Paper, Skeleton, Tab, TextField, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { useState } from 'react';
@@ -85,59 +85,71 @@ const VehicleActivityDashboard = ({
     const locationHeight = impliedBaseHeight + (heatMapData.data?.locationGroup.km?.length || 1) * impliedCellHeight;
     return (
         <div>
-            <div className="flex items-center py-8">
+            <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+                <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                    Grænseværdi
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                    Indstillingen nedenfor filtrerer data i grafen.
+                </Typography>
                 <TextField
                     label="Grænseværdi"
-                    id="outlined-start-adornment"
-                    sx={{ m: 1, width: '25ch' }}
-                    className="ml-4 subtle w-40"
+                    size="small"
+                    className="subtle w-44"
                     value={colorThreshold}
                     onChange={(e) => {
                         setColorThreshold(e.target.value.includes(',') ? e.target.value.replace(',', '.') : e.target.value);
                     }}
                     slotProps={{
                         input: {
-                            endAdornment: <InputAdornment position="end">{'km'}</InputAdornment>,
+                            endAdornment: <InputAdornment position="end">km</InputAdornment>,
                         }
                     }}
                 />
-                <p className="text-explanation text-xs ml-4 block w-96">
-                    Køretøjsaktivitet viser hvor mange kilometer der er kørt i den valgte periode, enten samlet på lokationen eller enkeltvis pr køretøj. Skift
-                    mellem lokationer - og køretøjer fanen. Justér grænseværdien for at fremhæve lavere eller højere antal kørte kilometer. Hvis et felt er gråt
-                    indikerer det, at køretøjet har en igangværende tur, men ikke har været aktiv - altså står den stille et andet sted end sin hjemmelokation.
-                </p>
+            </Paper>
+
+            <div className="flex justify-end mb-2">
                 <Button
-                    className="ml-auto h-8"
                     href={`${AxiosBase.getUri()}${queryString.concat(`&threshold=${colorThreshold}`).substring(1)}&download=true`}
                     startIcon={<DownloadingIcon />}
                     variant="contained"
+                    size="small"
                 >
-                    Eksporter til excel
+                    Eksporter til Excel
                 </Button>
             </div>
-            <TabContext value={tab}>
-                <div className="w-full border-b">
-                    <TabList onChange={(event, value) => setTab(value)}>
-                        <Tab label="Lokationer" value="locations" />
-                        <Tab label="Køretøjer" value="vehicles" />
-                    </TabList>
-                </div>
-                {heatMapData.isError && (
-                    <ApiError
-                        retryFunction={() => {
-                            if (heatMapData.isError) heatMapData.refetch();
-                        }}
-                    >
-                        Der opstod en netværksfejl
-                    </ApiError>
-                )}
-                {heatMapData.isPending && (
-                    <div className="p-10 flex justify-center">
-                        <CircularProgress />
-                    </div>
-                )}
-                {heatMapData.data && (
-                    <>
+
+            {heatMapData.isError && (
+                <ApiError
+                    retryFunction={() => {
+                        if (heatMapData.isError) heatMapData.refetch();
+                    }}
+                >
+                    Der opstod en netværksfejl
+                </ApiError>
+            )}
+            {heatMapData.isPending && (
+                <Card sx={{ p: 2 }}>
+                    <Skeleton variant="text" width="30%" />
+                    <Skeleton variant="text" width="70%" sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" height={400} />
+                </Card>
+            )}
+            {heatMapData.data && (
+                <Card sx={{ p: 2 }}>
+                    <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                        Køretøjsaktivitet
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                        Køretøjsaktivitet viser hvor mange kilometer der er kørt i den valgte periode, enten samlet på lokationen eller enkeltvis pr køretøj. Skift mellem lokationer - og køretøjer fanen. Justér grænseværdien for at fremhæve lavere eller højere antal kørte kilometer. Hvis et felt er gråt indikerer det, at køretøjet har en igangværende tur, men ikke har været aktiv - altså står den stille et andet sted end sin hjemmelokation.
+                    </Typography>
+                    <TabContext value={tab}>
+                        <div className="w-full border-b">
+                            <TabList onChange={(event, value) => setTab(value)}>
+                                <Tab label="Lokationer" value="locations" />
+                                <Tab label="Køretøjer" value="vehicles" />
+                            </TabList>
+                        </div>
                         <TabPanel value="locations">
                             <div style={{ height: `${locationHeight}px` }}>
                                 <DownloadableGraph filename={`loktaionsaktivitet-${fileNameAppendix}.png`}>
@@ -160,9 +172,9 @@ const VehicleActivityDashboard = ({
                                 </DownloadableGraph>
                             </div>
                         </TabPanel>
-                    </>
-                )}
-            </TabContext>
+                    </TabContext>
+                </Card>
+            )}
             {!heatMapData.data && !heatMapData.isPending && !heatMapData.isError && (
                 <p className="m-4">Simuleringen blev afbrudt / Der er ingen kørselsdata for de valgte filtre.</p>
             )}

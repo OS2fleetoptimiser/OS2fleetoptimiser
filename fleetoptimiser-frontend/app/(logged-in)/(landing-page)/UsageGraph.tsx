@@ -1,5 +1,8 @@
 import { ResponsiveBar } from '@nivo/bar';
+import { Typography } from '@mui/material';
 import { LocationUsage } from '@/components/hooks/useGetLandingPage';
+import { nivoTheme } from '@/theme/nivoTheme';
+import { brand } from '@/theme/themePrimitives';
 
 interface BarData extends LocationUsage {
     [key: string]: any;
@@ -12,14 +15,16 @@ const UsageBarChart = ({ data, showKeys = true }: { data: BarData[]; showKeys?: 
 
     return (
         <div style={{ height: 400 }}>
-            <h4 className="font-semibold mb-4 text-center text-gray-500">Laveste udnyttelsesgrad seneste måned</h4>
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 2 }}>
+                Laveste udnyttelsesgrad seneste måned
+            </Typography>
             <ResponsiveBar
                 data={data}
                 keys={['usage_ratio']}
                 indexBy="address"
                 margin={{ top: 10, right: 20, bottom: 100, left: 60 }}
                 padding={0.4}
-                colors="#4b63a1"
+                colors={brand[400]}
                 borderRadius={4}
                 axisBottom={{
                     tickSize: 5,
@@ -61,11 +66,7 @@ const UsageBarChart = ({ data, showKeys = true }: { data: BarData[]; showKeys?: 
                 onClick={({ data }) => {
                     window.location.href = `/dashboard/timeactivity?startdate=${formatted}&locations=${data.location_id}`;
                 }}
-                theme={{
-                    axis: { ticks: { text: { fontSize: 12, fill: '#555' } } },
-                    grid: { line: { stroke: '#ddd', strokeDasharray: '2 3' } },
-                    labels: { text: { fontWeight: 'bold', fontSize: '0.75rem' } },
-                }}
+                theme={nivoTheme}
                 enableLabel={true}
                 role="button"
                 onMouseEnter={(_data, event) => (event.currentTarget.style.cursor = 'pointer')}

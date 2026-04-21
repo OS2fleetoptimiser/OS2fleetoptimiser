@@ -1,68 +1,139 @@
 'use client';
 
+import { useMemo } from 'react';
 import UpdateIcon from '@mui/icons-material/Update';
-import {AllowedStart, ExtendedLocationInformation} from "@/components/hooks/useGetLocationPrecision";
-import Link from "next/link";
-import dayjs from "dayjs";
+import { AllowedStart, ExtendedLocationInformation } from '@/components/hooks/useGetLocationPrecision';
+import { useRouter } from 'next/navigation';
+import { useTheme } from '@mui/material/styles';
+import dayjs from 'dayjs';
 import { Tooltip } from '@mui/material';
+import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { daDK } from '@mui/x-data-grid/locales';
+import { PRECISION_THRESHOLD } from '@/app/(logged-in)/location/KeyLocationFigures';
 
 type Props = {
-    data?: ExtendedLocationInformation[]
+  data?: ExtendedLocationInformation[];
+};
+
+function isLocationRecentlyUpdated(location: AllowedStart, compareDate: Date) {
+  if (location.addition_date && new Date(location.addition_date) > compareDate) {
+    return true;
+  }
+  if (location.additional_starts && location.additional_starts.length > 0) {
+    return location.additional_starts.some((addition) => {
+      return addition.addition_date && new Date(addition.addition_date) > compareDate;
+    });
+  }
+  return false;
 }
 
 export const LocationPrecisionList = ({ data }: Props) => {
-    const compareDate = dayjs().subtract(1, 'month').toDate();
-    return (
-        <>
-            <div className="inline-flex flex-row items-center font-bold mt-12 mb-4 sticky top-0 bg-white z-10">
-                <div className="w-68">Adresse</div>
-                <div className="w-48 text-right">Antal køretøjer</div>
-                <div className="w-48 text-right">Antal parkeringspunkter</div>
-                <div className="w-48 text-right">Kilometer i rundtur</div>
-                <div className="w-48 text-right">Kilometer total</div>
-                <div className="w-48 text-right">Præcision</div>
-            </div>
-            {
-                data &&
-                data.sort((a, b) => a.address.localeCompare(b.address)).map(location =>
-                    {
-                        const recentlyUpdated = isLocationRecentlyUpdated(location, compareDate)
-                return (
-                    <Link key={'locationList' + location.id} className={recentlyUpdated ? "no-underline text-blue-500" : "no-underline text-black"}
-                        href={`/location/${location.id}`}>
-                    <div className="inline-flex flex-row items-center border-b h-14 hover:scale-101 duration-100 ease-in-out">
-                        <div className="w-68">{location.address}</div>
-                        <div className="w-48 text-right">{location.car_count}</div>
-                        <div
-                            className="w-48 flex items-center justify-end">
-                            {recentlyUpdated && <Tooltip title="Lokationen er opdateret indenfor den sidste måned med parkeringspunkter. Præcisionen kan derfor stadig ændre sig."><UpdateIcon className="mr-2" fontSize="small"/></Tooltip>}
-                            {1 + (location.additional_starts ? location.additional_starts?.length : 0)}</div>
-                        <div className="w-48 text-right">{Math.round(location.roundtrip_km).toLocaleString()} km</div>
-                        <div className="w-48 text-right">{Math.round(location.km).toLocaleString()} km</div>
-                        <div
-                            className={location.precision >= 80 ? "w-48 text-green-500 text-right font-bold" : location.precision === 0 ? "w-48 text-right font-bold" : "w-48 text-red-500 text-right font-bold"}>{Math.round(location.precision)}%
-                        </div>
-                    </div>
-                    </Link>
-                        )
-                    }
+  const router = useRouter();
+  const theme = useTheme();
+  const compareDate = useMemo(() => dayjs().subtract(1, 'month').toDate(), []);
 
-                )
-            }
-        </>
-    )
-}
+  const columns: GridColDef[] = useMemo(
+    () => [
+      {
+        field: 'address',
+        headerName: 'Adresse',
+        flex: 1.5,
+        minWidth: 150,
+      },
+      {
+        field: 'car_count',
+        headerName: 'Antal køretøjer',
+        type: 'number',
+        flex: 1,
+        minWidth: 120,
+      },
+      {
+        field: 'parking_spots',
+        headerName: 'Antal parkeringspunkter',
+        type: 'number',
+        flex: 1,
+        minWidth: 120,
+        valueGetter: (_value: unknown, row: ExtendedLocationInformation) =>
+          1 + (row.additional_starts ? row.additional_starts.length : 0),
+        renderCell: (params: GridRenderCellParams) => {
+          const location = params.row as ExtendedLocationInformation;
+          const recentlyUpdated = isLocationRecentlyUpdated(location, compareDate);
+          return (
+            <span className="flex items-center justify-end w-full">
+              {recentlyUpdated && (
+                <Tooltip title="Lokationen er opdateret indenfor den sidste måned med parkeringspunkter. Præcisionen kan derfor stadig ændre sig.">
+                  <UpdateIcon className="mr-2" fontSize="small" />
+                </Tooltip>
+              )}
+              {params.value}
+            </span>
+          );
+        },
+      },
+      {
+        field: 'roundtrip_km',
+        headerName: 'Kilometer i rundtur',
+        type: 'number',
+        flex: 1,
+        minWidth: 120,
+        valueFormatter: (value: number) => `${Math.round(value).toLocaleString()} km`,
+      },
+      {
+        field: 'km',
+        headerName: 'Kilometer total',
+        type: 'number',
+        flex: 1,
+        minWidth: 120,
+        valueFormatter: (value: number) => `${Math.round(value).toLocaleString()} km`,
+      },
+      {
+        field: 'precision',
+        headerName: 'Præcision',
+        type: 'number',
+        flex: 1,
+        minWidth: 100,
+        renderCell: (params: GridRenderCellParams) => {
+          const value = params.value as number;
+          const aboveThreshold = value >= PRECISION_THRESHOLD;
+          return (
+            <span
+              style={{
+                fontWeight: 700,
+                color: aboveThreshold ? theme.palette.success.main : theme.palette.primary.main,
+                opacity: aboveThreshold ? 0.85 : Math.max(0.25, value / 100),
+              }}
+            >
+              {Math.round(value)}%
+            </span>
+          );
+        },
+      },
+    ],
+    [compareDate, theme]
+  );
 
-function isLocationRecentlyUpdated(location: AllowedStart, compareDate: Date) {
-    if (location.addition_date && new Date(location.addition_date) > compareDate) {
-        return true;
-    }
+  const rows = data ?? [];
 
-    if (location.additional_starts && location.additional_starts.length > 0) {
-        return location.additional_starts.some(addition => {
-            return addition.addition_date && new Date(addition.addition_date) > compareDate;
-        });
-    }
-
-    return false;
-}
+  return (
+    <DataGrid
+      rows={rows}
+      columns={columns}
+      getRowId={(row) => row.id ?? 0}
+      density="compact"
+      disableColumnResize
+      disableRowSelectionOnClick
+      onRowClick={(params) => router.push(`/location/${params.id}`)}
+      initialState={{
+        pagination: { paginationModel: { pageSize: 20 } },
+        sorting: { sortModel: [{ field: 'address', sort: 'asc' }] },
+      }}
+      pageSizeOptions={[10, 20, 50]}
+      localeText={{
+        ...daDK.components.MuiDataGrid.defaultProps.localeText,
+        paginationRowsPerPage: 'Rækker per side:',
+        paginationDisplayedRows: ({ from, to, count }) => `${from}–${to} af ${count}`,
+      }}
+      sx={{ cursor: 'pointer' }}
+    />
+  );
+};

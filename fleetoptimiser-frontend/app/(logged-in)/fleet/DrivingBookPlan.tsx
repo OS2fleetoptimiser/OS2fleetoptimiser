@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import {
-    Paper,
+    Card,
     Table,
     TableBody,
     TableCell,
@@ -11,10 +11,10 @@ import {
     TextField,
     InputAdornment,
     IconButton,
+    Typography,
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
-import ToolTip from '@/components/ToolTip';
 import { getComparator, stableSort } from '@/app/(logged-in)/fleet/VehicleResultsTable';
 import {drivingBook} from "@/components/hooks/useSimulateFleet";
 
@@ -44,7 +44,6 @@ export const DrivingBookTable = ({ data }: DrivingBookTableProps) => {
         setOrderBy(property);
     };
 
-    // global filtering: filter across all fields
     const filteredData = useMemo(() => {
         if (!filterText) return data;
         return data.filter((row) => Object.values(row).some((value) => String(value).toLowerCase().includes(filterText.toLowerCase())));
@@ -53,61 +52,46 @@ export const DrivingBookTable = ({ data }: DrivingBookTableProps) => {
     const sortedData = useMemo(() => {
         return stableSort(filteredData, getComparator(order, orderBy));
     }, [filteredData, order, orderBy]);
-    const headerStyle = 'text-sm font-semibold text-gray-600 bg-gray-50';
-    const defaultStyle = 'py-2 border-b text-sm';
 
     return (
-        <div className="mt-4 p-4 border border-gray-100 rounded-md shadow-sm">
-            <span className="font-bold text-sm">Køreplan for simulering</span>
-            <ToolTip>
-                Se hvordan køreplanen ser ud, med den simulerede flåde overfor hvordan turene er kørt i virkligheden (nuværende). Filtrér eller sorter direkte
-                på kolonnerne. Ikke allokerede ture vil have &quot;Ikke allokeret&quot; i kolonne &quot;Simuleret køretøj&quot;. Hver opmærksom på at samme
-                køretøj kan optræde flere gange, hvis de har samme attributter men forskellig leasing-dato eller omkostning.
-            </ToolTip>
-            <div className="mb-2">
-                <TextField
-                    placeholder="Filtrér i køreplanen"
-                    variant="standard"
-                    size="small"
-                    className="my-1 bg-[#F5F5F5] rounded-md px-1"
-                    value={filterText}
-                    onChange={(e) => setFilterText(e.target.value)}
-                    slotProps={{
-                        input: {
-                            disableUnderline: true,
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon fontSize="small" />
-                                </InputAdornment>
-                            ),
-                            endAdornment: filterText && (
-                                <InputAdornment position="end">
-                                    <IconButton onClick={() => setFilterText('')}>
-                                        <ClearIcon fontSize="small" />
-                                    </IconButton>
-                                </InputAdornment>
-                            ),
-                            sx: {
-                                height: 36,
-                                fontSize: 14,
-                                paddingX: 1,
-                            },
-                        },
-
-                        htmlInput: {
-                            style: {
-                                padding: 0,
-                                fontSize: 14,
-                            },
-                        }
-                    }} />
-            </div>
-            <TableContainer className="shadow-none rounded-md border-none overflow-auto max-h-[calc(100vh-370px)]" component={Paper}>
-                <Table stickyHeader>
+        <Card sx={{ p: 2 }}>
+            <Typography variant="subtitle2" color="text.primary" sx={{ mb: 0.5 }}>
+                Køreplan for simulering
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                Se hvordan køreplanen ser ud, med den simulerede flåde overfor hvordan turene er kørt i virkeligheden (nuværende).
+                Ikke allokerede ture vil have "Ikke allokeret" i kolonne "Simuleret køretøj". Samme køretøj kan optræde flere gange,
+                hvis de har samme attributter men forskellig leasing-dato eller omkostning.
+            </Typography>
+            <TextField
+                size="small"
+                placeholder="Filtrér i køreplanen..."
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                sx={{ mb: 1.5 }}
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon fontSize="small" color="action" />
+                            </InputAdornment>
+                        ),
+                        endAdornment: filterText ? (
+                            <InputAdornment position="end">
+                                <IconButton size="small" onClick={() => setFilterText('')}>
+                                    <ClearIcon fontSize="small" />
+                                </IconButton>
+                            </InputAdornment>
+                        ) : null,
+                    },
+                }}
+            />
+            <TableContainer sx={{ maxHeight: 'calc(100vh - 420px)', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <Table size="small" stickyHeader>
                     <TableHead>
                         <TableRow>
                             {headCells.map((headCell) => (
-                                <TableCell className={headerStyle} key={headCell.id}>
+                                <TableCell key={headCell.id}>
                                     <TableSortLabel
                                         active={orderBy === headCell.id}
                                         direction={orderBy === headCell.id ? order : 'asc'}
@@ -122,16 +106,16 @@ export const DrivingBookTable = ({ data }: DrivingBookTableProps) => {
                     <TableBody>
                         {sortedData.map((row, index) => (
                             <TableRow hover key={index}>
-                                <TableCell className={defaultStyle}>{row.start_time}</TableCell>
-                                <TableCell className={defaultStyle}>{row.end_time}</TableCell>
-                                <TableCell className={defaultStyle}>{row.distance.toLocaleString()}</TableCell>
-                                <TableCell className={defaultStyle}>{row.current_vehicle_name}</TableCell>
-                                <TableCell className={defaultStyle}>{row.simulation_vehicle_name}</TableCell>
+                                <TableCell>{row.start_time}</TableCell>
+                                <TableCell>{row.end_time}</TableCell>
+                                <TableCell>{row.distance.toLocaleString()}</TableCell>
+                                <TableCell>{row.current_vehicle_name}</TableCell>
+                                <TableCell>{row.simulation_vehicle_name}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </TableContainer>
-        </div>
+        </Card>
     );
 };
