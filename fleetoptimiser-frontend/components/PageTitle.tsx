@@ -1,8 +1,9 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import ToolTip from '@/components/ToolTip';
 
 type PageTitleProps =
-  | { title: string; subtitle?: string; level?: 'page' }
+  | { title: string; subtitle?: string; info?: string; level?: 'page' }
   | { title: string; level: 'section' };
 
 export default function PageTitle(props: PageTitleProps) {
@@ -20,13 +21,16 @@ export default function PageTitle(props: PageTitleProps) {
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography
-        component="h2"
-        variant="h4"
-        sx={{ fontWeight: 600, color: 'text.primary' }}
-      >
-        {props.title}
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Typography
+          component="h2"
+          variant="h4"
+          sx={{ fontWeight: 600, color: 'text.primary' }}
+        >
+          {props.title}
+        </Typography>
+        {props.info && <ToolTip>{props.info}</ToolTip>}
+      </Box>
       {props.subtitle && (
         <Typography
           variant="body2"

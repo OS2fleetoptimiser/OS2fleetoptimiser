@@ -6,7 +6,7 @@ import { listItemIconClasses } from '@mui/material/ListItemIcon';
 import { chipClasses } from '@mui/material/Chip';
 import { iconButtonClasses } from '@mui/material/IconButton';
 import { outlinedInputClasses } from '@mui/material/OutlinedInput';
-import { brand, gray, red, green } from '../themePrimitives';
+import { brand, gray, red, green, orange } from '../themePrimitives';
 
 /* eslint-disable import/prefer-default-export */
 export const dataDisplayCustomizations: Components<Theme> = {
@@ -157,6 +157,21 @@ export const dataDisplayCustomizations: Components<Theme> = {
               },
               [`& .${chipClasses.icon}`]: {
                 color: red[500],
+              },
+            },
+          },
+          {
+            props: {
+              color: 'warning',
+            },
+            style: {
+              borderColor: orange[200],
+              backgroundColor: orange[50],
+              [`& .${chipClasses.label}`]: {
+                color: orange[500],
+              },
+              [`& .${chipClasses.icon}`]: {
+                color: orange[500],
               },
             },
           },
