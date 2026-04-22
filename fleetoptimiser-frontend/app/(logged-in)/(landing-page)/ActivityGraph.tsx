@@ -1,6 +1,7 @@
 import { ResponsiveHeatMap } from '@nivo/heatmap';
 import { Typography } from '@mui/material';
 import { nivoTheme, heatmapWarningGradient } from '@/theme/nivoTheme';
+import ChartTooltip from '@/components/ChartTooltip';
 
 interface ActivityHeatmapProps {
     data: {
@@ -112,24 +113,16 @@ const ActivityHeatmap = ({ data, showKeys = true }: ActivityHeatmapProps & { sho
                 animate={true}
                 motionConfig="gentle"
                 hoverTarget="cell"
-                tooltip={({ cell }) => {
-                    return (
-                        <div
-                            style={{
-                                background: '#222',
-                                color: 'white',
-                                padding: '6px 9px',
-                                borderRadius: 4,
-                                fontSize: '12px',
-                            }}
-                        >
-                            Gennemsnitslig kørsel pr. køretøj: <span className="font-bold">{cell.value ? `${cell.value.toFixed(1)} km` : "0 km"}</span> <br />
-                            År-uge: {cell.data.x} <br />
-                            Lokation: {cell.serieId} <br />
-                            Gå til køretøjsaktivitet
-                        </div>
-                    );
-                }}
+                tooltip={({ cell }) => (
+                    <ChartTooltip
+                        title={`Lokation: ${cell.serieId}`}
+                        accentColor={cell.color}
+                        rows={[
+                            { label: 'År-uge', value: String(cell.data.x) },
+                            { label: 'Gnms. kørsel pr. køretøj', value: cell.value ? `${cell.value.toFixed(1)} km` : '0 km' },
+                        ]}
+                    />
+                )}
                 onClick={(cell) => {
                     const locationId = addressToIdMap[cell.serieId];
                     window.location.href = `/dashboard/activity?startdate=${cell.data.start_date}&enddate=${cell.data.end_date}&locations=${locationId}`;

@@ -6,6 +6,7 @@ import { nivoTheme } from '@/theme/nivoTheme';
 import { brand, gray } from '@/theme/themePrimitives';
 import { line } from 'd3-shape';
 import { generateParkingSegments, generateDrivingSegments, generateAccumulatedDriving, formatTimeFromISO } from './SegmentUtility';
+import ChartTooltip from '@/components/ChartTooltip';
 
 const toSecondPrecision = (iso: string) => iso.slice(0, 19);
 
@@ -229,12 +230,11 @@ const ToolTipGen = (pointDec: ToolTipWrap): React.JSX.Element => {
         return <div />;
     }
     return (
-        <div className="bg-white p-3 border border-gray-300 ">
-            <div>
-                <strong>{point.serieId}</strong>
-            </div>
-            <div style={{ color: gray[400], padding: '3px 0' }}>Akkumuleret distance: {Math.round(point.data.accumulated_distance * 100) / 100} km.</div>
-        </div>
+        <ChartTooltip
+            title={point.serieId}
+            accentColor={point.serieColor}
+            rows={[{ label: 'Akkumuleret distance', value: `${Math.round(point.data.accumulated_distance * 100) / 100} km` }]}
+        />
     );
 };
 

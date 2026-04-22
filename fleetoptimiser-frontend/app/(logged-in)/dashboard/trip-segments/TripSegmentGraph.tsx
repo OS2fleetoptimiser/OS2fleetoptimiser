@@ -3,6 +3,7 @@ import { generateFromPalette } from '@/components/ColorGenerator';
 import { ResponsiveBar } from '@nivo/bar';
 import { nivoTheme } from '@/theme/nivoTheme';
 import { getYTicks } from "@/app/(logged-in)/fleet/UnallocatedTripsLine";
+import ChartTooltip from '@/components/ChartTooltip';
 
 export type trip = {
     id: number;
@@ -69,11 +70,12 @@ const TripSegmentGraph = ({ data, setFocus, focus }: { data: ogData; setFocus: (
             indexBy="vehicle"
             margin={{ top: 20, right: 40, bottom: 80, left: 60 }}
             padding={0.3}
-            tooltip={({ data }) => (
-                <div className="bg-white p-2 shadow-md">
-                    <p>{`Køretøj: ${data.vehicle} ${data.department}`}</p>
-                    <p>{`Ture: ${data.Ture}`}</p>
-                </div>
+            tooltip={({ data, color }) => (
+                <ChartTooltip
+                    title={`${data.vehicle}${data.department ? ` · ${data.department}` : ''}`}
+                    accentColor={color}
+                    rows={[{ label: 'Ture', value: data.Ture }]}
+                />
             )}
             valueScale={{ type: 'linear' }}
             indexScale={{ type: 'band', round: true }}

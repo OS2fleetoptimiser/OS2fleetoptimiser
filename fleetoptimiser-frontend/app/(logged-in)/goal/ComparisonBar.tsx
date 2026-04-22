@@ -3,6 +3,7 @@ import { ResponsiveBar } from '@nivo/bar';
 import { nivoTheme } from '@/theme/nivoTheme';
 import { brand, gray } from '@/theme/themePrimitives';
 import { useMediaQuery } from 'react-responsive';
+import ChartTooltip from '@/components/ChartTooltip';
 
 type Solution = {
     label: string;
@@ -56,14 +57,12 @@ export function CostComparisonBar({ currentValue, solutions, yAxis }: Props) {
             valueFormat={(val) => formatValue(Number(val))}
             labelTextColor="white"
             theme={nivoTheme}
-            tooltip={({ value, indexValue }) => (
-                <div className="bg-[#222] text-white p-2 rounded-lg text-xs">
-                    <span className="font-bold">{indexValue}</span>
-                    <br />
-                    <span className="font-bold">
-                        {formatValue(Number(value))} {yAxis}
-                    </span>
-                </div>
+            tooltip={({ value, indexValue, color }) => (
+                <ChartTooltip
+                    title={String(indexValue)}
+                    accentColor={color}
+                    rows={[{ label: yAxis, value: formatValue(Number(value)) }]}
+                />
             )}
         />
     );

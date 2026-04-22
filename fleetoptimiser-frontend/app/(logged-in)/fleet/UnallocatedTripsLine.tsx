@@ -5,6 +5,7 @@ import { drivingBook } from '@/components/hooks/useSimulateFleet';
 import { Card, Typography } from '@mui/material';
 import { nivoTheme } from '@/theme/nivoTheme';
 import { gray } from '@/theme/themePrimitives';
+import ChartTooltip from '@/components/ChartTooltip';
 
 export const getYTicks = (sums: number[], maxTicks: number = 5) => {
     const maxAntal = Math.max(...sums);
@@ -93,19 +94,11 @@ export const UnallocatedTripsLineChart = ({ simulationResults }: { simulationRes
                     useMesh={true}
                     colors={[gray[400]]}
                     tooltip={({ point }) => (
-                        <div
-                            style={{
-                                background: '#222',
-                                color: 'white',
-                                padding: '6px 9px',
-                                borderRadius: 4,
-                                fontSize: '12px',
-                            }}
-                        >
-                            Dato: <span className="font-bold">{dayjs(point.data.x).format('DD/MM/YYYY')}</span>
-                            <br />
-                            Ikke kørte ture: <span className="font-bold">{(point.data.yFormatted || point.data.y).toString()}</span>
-                        </div>
+                        <ChartTooltip
+                            title={`Dato: ${dayjs(point.data.x).format('DD/MM/YYYY')}`}
+                            accentColor={point.seriesColor}
+                            rows={[{ label: 'Ikke kørte ture', value: (point.data.yFormatted || point.data.y).toString() }]}
+                        />
                     )}
                     theme={nivoTheme}
                 />

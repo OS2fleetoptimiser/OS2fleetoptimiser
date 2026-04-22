@@ -2,6 +2,7 @@ import { ResponsiveHeatMapCanvas } from '@nivo/heatmap';
 import { useMediaQuery } from 'react-responsive';
 import { nivoTheme, heatmapGradient } from '@/theme/nivoTheme';
 import { rgb } from 'd3-color';
+import ChartTooltip from '@/components/ChartTooltip';
 
 type HeatMapGroupWithMetaData = {
     x: string;
@@ -50,17 +51,16 @@ export default function TimeActivityHeatMap({ data, threshold }: { data: heatmap
                     minValue: 0,
                     maxValue: threshold / 100,
                 }}
-                tooltip={({ cell }) => {
-                    return (
-                        <div className="bg-gray-900 text-white p-2 rounded text-xs">
-                            <span className="font-bold">{cell.value ? `${(cell.value * 100).toFixed(0)}%` : `0%`}</span>
-                            <br />
-                            Dato: {cell.data.x}
-                            <br />
-                            Køretøj: {cell.serieId}
-                        </div>
-                    );
-                }}
+                tooltip={({ cell }) => (
+                    <ChartTooltip
+                        title={`Køretøj: ${cell.serieId}`}
+                        accentColor={cell.color}
+                        rows={[
+                            { label: 'Dato', value: String(cell.data.x) },
+                            { label: 'Udnyttelse', value: cell.value ? `${(cell.value * 100).toFixed(0)}%` : '0%' },
+                        ]}
+                    />
+                )}
                 theme={nivoTheme}
                 emptyColor="#555555"
                 enableLabels={true}

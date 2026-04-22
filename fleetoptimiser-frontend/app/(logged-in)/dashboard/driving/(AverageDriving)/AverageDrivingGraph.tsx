@@ -1,5 +1,6 @@
 import { ResponsiveBar } from '@nivo/bar';
 import { nivoTheme } from '@/theme/nivoTheme';
+import ChartTooltip from '@/components/ChartTooltip';
 
 type key = {
     plate: string;
@@ -46,13 +47,15 @@ const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; k
             colors={getColors}
             valueScale={{ type: 'linear' }}
             indexScale={{ type: 'band', round: true }}
-            tooltip={(data) => {
+            tooltip={(d) => {
+                const plate = d.data.plate ?? 'Ingen reg.nr.';
+                const department = d.data.department ?? '';
                 return (
-                    <div className="bg-gray-900 text-white p-2 rounded text-xs">
-                        <p>{data.id}</p>
-                        <p>{`Køretøj: ${data.data.plate ?? 'Ingen reg.nr.'} ${data.data.department ?? ''}`}</p>
-                        <p>{`Gmns kørsel: ${data.value.toFixed(1)}`}</p>
-                    </div>
+                    <ChartTooltip
+                        title={`${plate}${department ? ` · ${department}` : ''}`}
+                        accentColor={d.color}
+                        rows={[{ label: `Gnms. kørsel (${d.id})`, value: `${d.value.toFixed(1)} km` }]}
+                    />
                 );
             }}
             valueFormat={(value) => (+value.toFixed(2)).toLocaleString() + ' km'}

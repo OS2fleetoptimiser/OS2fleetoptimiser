@@ -1,6 +1,7 @@
 import { getYTicks } from '@/app/(logged-in)/fleet/UnallocatedTripsLine';
 import { ResponsiveBar } from '@nivo/bar';
 import { nivoTheme, vehicleTypeColors } from '@/theme/nivoTheme';
+import ChartTooltip from '@/components/ChartTooltip';
 
 export type entry = {
     label: string;
@@ -81,12 +82,12 @@ export const VehicleTripDistributionBar = ({ data }: props) => {
                     ],
                 },
             ]}
-            tooltip={({ id, value, data }) => (
-                <div className="bg-[#222] text-white p-2 rounded-lg text-xs">
-                    Turlængde: <span className="font-bold">{data.label}</span>
-                    <br />
-                    {id}: <span className="font-bold">{value} ture</span>
-                </div>
+            tooltip={({ id, value, data, color }) => (
+                <ChartTooltip
+                    title={`Turlængde: ${data.label}`}
+                    accentColor={color}
+                    rows={[{ label: String(id), value: `${value} ture` }]}
+                />
             )}
             theme={nivoTheme}
         />

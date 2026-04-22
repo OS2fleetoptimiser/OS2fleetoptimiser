@@ -3,6 +3,7 @@ import { Typography } from '@mui/material';
 import { LocationUsage } from '@/components/hooks/useGetLandingPage';
 import { nivoTheme } from '@/theme/nivoTheme';
 import { brand } from '@/theme/themePrimitives';
+import ChartTooltip from '@/components/ChartTooltip';
 
 interface BarData extends LocationUsage {
     [key: string]: any;
@@ -47,21 +48,12 @@ const UsageBarChart = ({ data, showKeys = true }: { data: BarData[]; showKeys?: 
                 labelTextColor="white"
                 labelSkipWidth={16}
                 labelSkipHeight={16}
-                tooltip={({ indexValue, value }) => (
-                    <div
-                        style={{
-                            background: '#222',
-                            color: 'white',
-                            padding: '6px 9px',
-                            borderRadius: 4,
-                            fontSize: '12px',
-                        }}
-                    >
-                        Udnyttelsesgrad af køretøjer: <span className="font-bold">{(value * 100).toFixed(1)}%</span>
-                        <br></br>
-                        Lokation: {indexValue} <br />
-                        <span>Gå til tidsaktivitetsdashboard</span>
-                    </div>
+                tooltip={({ indexValue, value, color }) => (
+                    <ChartTooltip
+                        title={`Lokation: ${indexValue}`}
+                        accentColor={color}
+                        rows={[{ label: 'Udnyttelsesgrad af køretøjer', value: `${(value * 100).toFixed(1)}%` }]}
+                    />
                 )}
                 onClick={({ data }) => {
                     window.location.href = `/dashboard/timeactivity?startdate=${formatted}&locations=${data.location_id}`;

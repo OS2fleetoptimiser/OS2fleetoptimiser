@@ -1,6 +1,7 @@
 import { ResponsiveBar } from '@nivo/bar';
 import { nivoTheme } from '@/theme/nivoTheme';
 import { brand, gray } from '@/theme/themePrimitives';
+import ChartTooltip from '@/components/ChartTooltip';
 
 type dataEntry = {
     solution: string;
@@ -44,6 +45,13 @@ const EmissionChart = ({ data }: { data: dataEntry[] }) => {
             labelSkipHeight={12}
             labelTextColor={'white'}
             valueFormat={(v) => v.toLocaleString()}
+            tooltip={({ value, indexValue, color }) => (
+                <ChartTooltip
+                    title={String(indexValue)}
+                    accentColor={color}
+                    rows={[{ label: 'CO2e', value: `${value.toLocaleString()} ton/år` }]}
+                />
+            )}
             theme={nivoTheme}
             role="application"
         />
