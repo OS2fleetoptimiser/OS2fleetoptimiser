@@ -159,19 +159,19 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
                                 <ListItemText className="text-black" primary="Manuel simulering" />
                             </ListItemButton>
                         </ListItem>
-                        <ListItem disablePadding>
-                            {disableGoalLink ? (
-                                <Tooltip title="Automatisk simulering er deaktiveret, hvis ingen eller over 100 køretøjer er valgt.">
-                                    <span>
-                                        <ListItemButton onClick={() => router.push('/goal')} disabled={disableGoalLink} selected={isSelected('/goal')}>
-                                            <ListItemIcon className="ml-4">
-                                                <MemoryIcon />
-                                            </ListItemIcon>
-                                            <ListItemText className="text-black" primary="Automatisk simulering" />
-                                        </ListItemButton>
-                                    </span>
-                                </Tooltip>
-                            ) : (
+                        {disableGoalLink ? (
+                            <Tooltip title="Automatisk simulering er deaktiveret, hvis ingen eller over 100 køretøjer er valgt.">
+                                <ListItem disablePadding>
+                                    <ListItemButton onClick={() => router.push('/goal')} disabled={disableGoalLink} selected={isSelected('/goal')}>
+                                        <ListItemIcon className="ml-4">
+                                            <MemoryIcon />
+                                        </ListItemIcon>
+                                        <ListItemText className="text-black" primary="Automatisk simulering" />
+                                    </ListItemButton>
+                                </ListItem>
+                            </Tooltip>
+                        ) : (
+                            <ListItem disablePadding>
                                 <ListItemButton
                                     onClick={async () => {
                                         await dispatch(prepareGoalSimulation());
@@ -184,8 +184,8 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
                                     </ListItemIcon>
                                     <ListItemText className="text-black" primary="Automatisk simulering" />
                                 </ListItemButton>
-                            )}
-                        </ListItem>
+                            </ListItem>
+                        )}
                         <Link className="no-underline" href="/simulation-history">
                             <ListItem disablePadding>
                                 <ListItemButton selected={isSelected('/simulation-history')}>
