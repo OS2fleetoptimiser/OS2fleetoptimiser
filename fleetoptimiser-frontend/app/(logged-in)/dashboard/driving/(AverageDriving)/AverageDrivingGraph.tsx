@@ -54,7 +54,7 @@ const AverageDrivingGraph = ({ data, keys, colorMapper }: { data: dataPoint[]; k
                     <ChartTooltip
                         title={`${plate}${department ? ` · ${department}` : ''}`}
                         accentColor={d.color}
-                        rows={[{ label: `Gnms. kørsel (${d.id})`, value: `${d.value.toFixed(1)} km` }]}
+                        rows={[{ label: `Gns. kørsel (${d.id})`, value: `${d.value.toFixed(1)} km` }]}
                     />
                 );
             }}

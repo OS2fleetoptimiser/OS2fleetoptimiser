@@ -119,7 +119,7 @@ const ActivityHeatmap = ({ data, showKeys = true }: ActivityHeatmapProps & { sho
                         accentColor={cell.color}
                         rows={[
                             { label: 'År-uge', value: String(cell.data.x) },
-                            { label: 'Gnms. kørsel pr. køretøj', value: cell.value ? `${cell.value.toFixed(1)} km` : '0 km' },
+                            { label: 'Gns. kørsel pr. køretøj', value: cell.value ? `${cell.value.toFixed(1)} km` : '0 km' },
                         ]}
                     />
                 )}
