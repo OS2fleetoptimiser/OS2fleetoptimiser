@@ -1,7 +1,6 @@
 import { ResponsiveLineCanvas } from '@nivo/line';
 import { getYTicks } from '@/app/(logged-in)/fleet/UnallocatedTripsLine';
-import { nivoTheme } from '@/theme/nivoTheme';
-import { brand } from '@/theme/themePrimitives';
+import { chartPalette, nivoTheme } from '@/theme/nivoTheme';
 import React from 'react';
 import ChartTooltip from '@/components/ChartTooltip';
 
@@ -51,7 +50,7 @@ export const AvailabilityGraph = ({ data, totalVehicles }: AvailabilityData) => 
                 tickRotation: 45,
                 format: (x: Date) => x.toLocaleString(),
             }}
-            colors={brand[400]}
+            colors={chartPalette.blue500}
             isInteractive={true}
             pointSize={0}
             theme={nivoTheme}

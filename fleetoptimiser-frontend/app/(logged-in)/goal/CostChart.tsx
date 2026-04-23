@@ -1,6 +1,6 @@
 import { ResponsiveBar } from '@nivo/bar';
-import { nivoTheme } from '@/theme/nivoTheme';
-import { brand, gray } from '@/theme/themePrimitives';
+import { chartLabelLight, chartPalette, nivoTheme } from '@/theme/nivoTheme';
+import { gray } from '@/theme/themePrimitives';
 import ChartTooltip from '@/components/ChartTooltip';
 
 type dataEntry = {
@@ -18,7 +18,7 @@ const CostChart = ({ data }: { data: dataEntry[] }) => {
             padding={0.3}
             valueScale={{ type: 'linear' }}
             indexScale={{ type: 'band', round: true }}
-            colors={(bar) => (bar.data.solution === 'Mål' ? gray[400] : brand[400])}
+            colors={(bar) => (bar.data.solution === 'Mål' ? gray[400] : chartPalette.blue500)}
             borderColor={{
                 from: 'color',
                 modifiers: [['darker', 1.6]],
@@ -48,7 +48,7 @@ const CostChart = ({ data }: { data: dataEntry[] }) => {
             }}
             labelSkipWidth={12}
             labelSkipHeight={12}
-            labelTextColor={'white'}
+            labelTextColor={chartLabelLight}
             valueFormat={(v) => v.toLocaleString()}
             tooltip={({ value, indexValue, color }) => (
                 <ChartTooltip

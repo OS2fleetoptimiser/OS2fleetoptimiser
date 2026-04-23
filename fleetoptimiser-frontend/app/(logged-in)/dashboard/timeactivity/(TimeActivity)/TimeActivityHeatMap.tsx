@@ -1,7 +1,6 @@
 import { ResponsiveHeatMapCanvas } from '@nivo/heatmap';
 import { useMediaQuery } from 'react-responsive';
-import { nivoTheme, heatmapGradient } from '@/theme/nivoTheme';
-import { rgb } from 'd3-color';
+import { nivoTheme, heatmapGradient, chartPalette, chartLabelDark, chartLabelLight } from '@/theme/nivoTheme';
 import ChartTooltip from '@/components/ChartTooltip';
 
 type HeatMapGroupWithMetaData = {
@@ -17,11 +16,7 @@ export type heatmapData = {
 export default function TimeActivityHeatMap({ data, threshold }: { data: heatmapData; threshold: number }) {
     const showLabels = useMediaQuery({ minWidth: '1280px' }) && data[0].data.length < 30;
     // labels become cluttered if below 1280px or more than 29 days
-    const getContrastColor = (bgColor: string) => {
-        const c = rgb(bgColor);
-        const luminance = (299 * c.r + 587 * c.g + 114 * c.b) / 1000;
-        return luminance > 186 ? '#000000' : '#ffffff';
-    };
+    const lightTextMax = (threshold / 100) * 0.4;
     return (
         <div className="hover:cursor-pointer h-full">
             <ResponsiveHeatMapCanvas
@@ -30,7 +25,7 @@ export default function TimeActivityHeatMap({ data, threshold }: { data: heatmap
                 valueFormat={'>-.0%'}
                 label={showLabels ? (props) => props.formattedValue ?? '0%' : () => ''}
                 yInnerPadding={0.15}
-                labelTextColor={(cell) => getContrastColor(cell.color)}
+                labelTextColor={(cell) => (cell.value != null && cell.value < lightTextMax ? chartLabelLight : chartLabelDark)}
                 axisTop={{
                     tickSize: 5,
                     tickPadding: 5,
@@ -62,7 +57,7 @@ export default function TimeActivityHeatMap({ data, threshold }: { data: heatmap
                     />
                 )}
                 theme={nivoTheme}
-                emptyColor="#555555"
+                emptyColor={chartPalette.heatmapEmpty}
                 enableLabels={true}
                 legends={[
                     {

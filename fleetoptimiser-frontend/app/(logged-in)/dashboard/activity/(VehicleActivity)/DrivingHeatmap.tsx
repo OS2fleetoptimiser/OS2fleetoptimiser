@@ -1,6 +1,6 @@
 import { ComputedCell, ResponsiveHeatMapCanvas } from '@nivo/heatmap';
 import 'd3-scale-chromatic';
-import { nivoTheme, heatmapWarningGradient } from '@/theme/nivoTheme';
+import { nivoTheme, heatmapWarningGradient, chartPalette } from '@/theme/nivoTheme';
 import dayjs from 'dayjs';
 import { useMediaQuery } from 'react-responsive';
 import ChartTooltip from '@/components/ChartTooltip';
@@ -72,7 +72,7 @@ export const DrivingHeatmapKm = ({
                     maxValue: maxHeatValue,
                 }}
                 theme={nivoTheme}
-                emptyColor="#b6b7b9"
+                emptyColor={chartPalette.heatmapEmpty}
                 legends={[
                     {
                         anchor: 'top',

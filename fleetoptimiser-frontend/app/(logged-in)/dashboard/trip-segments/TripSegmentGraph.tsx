@@ -1,7 +1,7 @@
 import React from 'react';
 import { generateFromPalette } from '@/components/ColorGenerator';
 import { ResponsiveBar } from '@nivo/bar';
-import { nivoTheme } from '@/theme/nivoTheme';
+import { chartLabelDark, nivoTheme } from '@/theme/nivoTheme';
 import { getYTicks } from "@/app/(logged-in)/fleet/UnallocatedTripsLine";
 import ChartTooltip from '@/components/ChartTooltip';
 
@@ -131,10 +131,7 @@ const TripSegmentGraph = ({ data, setFocus, focus }: { data: ogData; setFocus: (
             }}
             labelSkipWidth={12}
             labelSkipHeight={12}
-            labelTextColor={{
-                from: 'color',
-                modifiers: [['darker', 1.6]],
-            }}
+            labelTextColor={chartLabelDark}
             theme={nivoTheme}
         />
     );

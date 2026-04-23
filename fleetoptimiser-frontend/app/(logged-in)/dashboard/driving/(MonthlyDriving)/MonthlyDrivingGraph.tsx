@@ -1,5 +1,5 @@
 import { ResponsiveBar } from '@nivo/bar';
-import { nivoTheme } from '@/theme/nivoTheme';
+import { getContrastTextColor, nivoTheme } from '@/theme/nivoTheme';
 import ChartTooltip from '@/components/ChartTooltip';
 
 type key = {
@@ -56,10 +56,7 @@ const MonthlyDrivingGraph = ({ data, colorMapper }: { data: dataPoint[]; colorMa
             }}
             labelSkipWidth={12}
             labelSkipHeight={12}
-            labelTextColor={{
-                from: 'color',
-                modifiers: [['darker', 1.6]],
-            }}
+            labelTextColor={(bar) => getContrastTextColor(bar.color)}
             theme={nivoTheme}
             legends={[
                 {
