@@ -1,8 +1,8 @@
 import { ResponsiveBar } from '@nivo/bar';
 import { Typography } from '@mui/material';
 import { LocationUsage } from '@/components/hooks/useGetLandingPage';
-import { nivoTheme } from '@/theme/nivoTheme';
-import { brand } from '@/theme/themePrimitives';
+import { chartLabelLight, chartPalette, nivoTheme } from '@/theme/nivoTheme';
+import ChartTooltip from '@/components/ChartTooltip';
 
 interface BarData extends LocationUsage {
     [key: string]: any;
@@ -24,7 +24,7 @@ const UsageBarChart = ({ data, showKeys = true }: { data: BarData[]; showKeys?: 
                 indexBy="address"
                 margin={{ top: 10, right: 20, bottom: 100, left: 60 }}
                 padding={0.4}
-                colors={brand[400]}
+                colors={chartPalette.blue500}
                 borderRadius={4}
                 axisBottom={{
                     tickSize: 5,
@@ -44,24 +44,15 @@ const UsageBarChart = ({ data, showKeys = true }: { data: BarData[]; showKeys?: 
                     format: (v) => `${(v * 100).toFixed(1)}%`,
                 }}
                 label={({ value }) => `${(value ? value * 100 : 0).toFixed(1)}%`}
-                labelTextColor="white"
+                labelTextColor={chartLabelLight}
                 labelSkipWidth={16}
                 labelSkipHeight={16}
-                tooltip={({ indexValue, value }) => (
-                    <div
-                        style={{
-                            background: '#222',
-                            color: 'white',
-                            padding: '6px 9px',
-                            borderRadius: 4,
-                            fontSize: '12px',
-                        }}
-                    >
-                        Udnyttelsesgrad af køretøjer: <span className="font-bold">{(value * 100).toFixed(1)}%</span>
-                        <br></br>
-                        Lokation: {indexValue} <br />
-                        <span>Gå til tidsaktivitetsdashboard</span>
-                    </div>
+                tooltip={({ indexValue, value, color }) => (
+                    <ChartTooltip
+                        title={`Lokation: ${indexValue}`}
+                        accentColor={color}
+                        rows={[{ label: 'Udnyttelsesgrad af køretøjer', value: `${(value * 100).toFixed(1)}%` }]}
+                    />
                 )}
                 onClick={({ data }) => {
                     window.location.href = `/dashboard/timeactivity?startdate=${formatted}&locations=${data.location_id}`;

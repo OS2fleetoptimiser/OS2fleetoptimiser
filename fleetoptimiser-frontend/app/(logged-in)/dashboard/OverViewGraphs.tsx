@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import React from 'react';
 import DateLineGraph from './DateLineGraph';
 import { DownloadableGraph } from '@/components/DownloadableGraph';
-import { brand } from '@/theme/themePrimitives';
+import { chartPalette } from '@/theme/nivoTheme';
 
 type Props = {
     startDate?: string;
@@ -78,7 +78,7 @@ export default function OverViewGraphs({ endDate, forvaltninger, locations, star
                     (emissionSeries.data.data.length > 0 ? (
                         <div className="h-80">
                             <DownloadableGraph filename={`overblik_udledning_${fileNameAppendix}.png`}>
-                                <DateLineGraph data={[emissionSeries.data]} yLabel={'Ton CO2e udledning'} color={brand[700]}></DateLineGraph>
+                                <DateLineGraph data={[emissionSeries.data]} yLabel={'Ton CO2e udledning'} color={chartPalette.blue700}></DateLineGraph>
                             </DownloadableGraph>
                         </div>
                     ) : (
@@ -100,7 +100,7 @@ export default function OverViewGraphs({ endDate, forvaltninger, locations, star
                     (shareSeries.data.data.length > 0 ? (
                         <div className="h-80">
                             <DownloadableGraph filename={`overblik_fossilfri_${fileNameAppendix}.png`}>
-                                <DateLineGraph data={[shareSeries.data]} yLabel={'Procentvis kørt i elbil'} color={brand[400]}></DateLineGraph>
+                                <DateLineGraph data={[shareSeries.data]} yLabel={'Procentvis kørt i elbil'} color={chartPalette.blue500}></DateLineGraph>
                             </DownloadableGraph>
                         </div>
                     ) : (
@@ -122,7 +122,7 @@ export default function OverViewGraphs({ endDate, forvaltninger, locations, star
                     (drivenSeries.data.data.length > 0 ? (
                         <div className="h-80">
                             <DownloadableGraph filename={`overblik_kørsel_${fileNameAppendix}.png`}>
-                                <DateLineGraph data={[drivenSeries.data]} yLabel={'Kørte kilometer'} color={brand[200]}></DateLineGraph>
+                                <DateLineGraph data={[drivenSeries.data]} yLabel={'Kørte kilometer'} color={chartPalette.blue200}></DateLineGraph>
                             </DownloadableGraph>
                         </div>
                     ) : (

@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { Vehicle } from '@/components/hooks/useGetVehicles';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { reduceDuplicateVehicles } from '@/components/DuplicateReducer';
 
 const propellantFormat = (vehicle: Vehicle) => {
     if (vehicle.wltp_el) {
@@ -13,6 +14,7 @@ const propellantFormat = (vehicle: Vehicle) => {
 };
 
 const ComparisonFleet = ({ vehicles }: { vehicles: Vehicle[] }) => {
+    const groups = reduceDuplicateVehicles(vehicles);
     return (
         <TableContainer sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
             <Table size="small">
@@ -25,13 +27,13 @@ const ComparisonFleet = ({ vehicles }: { vehicles: Vehicle[] }) => {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {vehicles.map((vehicle) => (
-                        <TableRow key={vehicle.id}>
-                            <TableCell>{vehicle.name}</TableCell>
-                            <TableCell align="right">{vehicle.omkostning_aar?.toLocaleString()}</TableCell>
-                            <TableCell align="right">{propellantFormat(vehicle)}</TableCell>
+                    {groups.map((group) => (
+                        <TableRow key={group.originalVehicles.join('-')}>
+                            <TableCell>{group.count > 1 ? `${group.count} × ${group.vehicle.name}` : group.vehicle.name}</TableCell>
+                            <TableCell align="right">{group.vehicle.omkostning_aar?.toLocaleString()}</TableCell>
+                            <TableCell align="right">{propellantFormat(group.vehicle)}</TableCell>
                             <TableCell align="right">
-                                {vehicle.end_leasing ? dayjs(vehicle.end_leasing).format('DD-MM-YYYY') : 'Ingen dato'}
+                                {group.vehicle.end_leasing ? dayjs(group.vehicle.end_leasing).format('DD-MM-YYYY') : 'Ingen dato'}
                             </TableCell>
                         </TableRow>
                     ))}

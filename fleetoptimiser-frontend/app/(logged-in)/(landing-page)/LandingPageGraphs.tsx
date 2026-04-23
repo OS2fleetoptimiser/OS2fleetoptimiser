@@ -39,7 +39,7 @@ export default function LandingPageGraphs({ usageData, activityData }: { usageDa
                 <div className="w-full md:w-1/2">
                     <Card variant="outlined">
                         <CardContent>
-                            {sortedUsageData.length > 0 ? <UsageGraph data={sortedUsageData} showKeys={showKeys}/> : <NoData/>}
+                            {sortedUsageData.length > 0 ? <UsageGraph data={sortedUsageData} showKeys={showKeys}/> : <div className="mb-4"><NoData/></div>}
                             <div key="buttongroup" className="flex flex-row items-center space-x-4">
                                 <Link href={'/dashboard/availability'}>
                                     <Button size="small" variant="outlined">
@@ -58,7 +58,7 @@ export default function LandingPageGraphs({ usageData, activityData }: { usageDa
                 <div className="w-full md:w-1/2 mt-16 md:mt-0">
                     <Card variant="outlined">
                         <CardContent>
-                            {sortedActivityData.length > 0 ? <ActivityHeatmap data={sortedActivityData} showKeys={showKeys}/> : <NoData/>}
+                            {sortedActivityData.length > 0 ? <ActivityHeatmap data={sortedActivityData} showKeys={showKeys}/> : <div className="mb-4"><NoData/></div>}
                             <div key="buttongroup" className="flex flex-row items-center space-x-4">
                                 <Link href={'/dashboard/activity'}>
                                     <Button size="small" variant="outlined">

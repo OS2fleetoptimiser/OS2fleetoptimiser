@@ -112,7 +112,7 @@ const VehicleActivityDashboard = ({
                 <Button
                     href={`${AxiosBase.getUri()}${queryString.concat(`&threshold=${colorThreshold}`).substring(1)}&download=true`}
                     startIcon={<DownloadingIcon />}
-                    variant="contained"
+                    variant="outlined"
                     size="small"
                 >
                     Eksporter til Excel

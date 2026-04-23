@@ -1,5 +1,6 @@
 import { ResponsiveBar } from '@nivo/bar';
-import { nivoTheme } from '@/theme/nivoTheme';
+import { getContrastTextColor, nivoTheme } from '@/theme/nivoTheme';
+import ChartTooltip from '@/components/ChartTooltip';
 
 type key = {
     monthYear: string;
@@ -30,15 +31,13 @@ const MonthlyDrivingGraph = ({ data, colorMapper }: { data: dataPoint[]; colorMa
             valueScale={{ type: 'linear' }}
             indexScale={{ type: 'band', round: true }}
             valueFormat={(value) => (+value.toFixed(2)).toLocaleString() + ' km'}
-            tooltip={(data) => {
-                return (
-                    <div className="bg-gray-900 text-white p-2 rounded text-xs">
-                        <p>{data.id}</p>
-                        <p>{`År-måned: ${data.data.monthYear}`}</p>
-                        <p>{`${data.value.toFixed(1)} km`}</p>
-                    </div>
-                );
-            }}
+            tooltip={(data) => (
+                <ChartTooltip
+                    title={`År-måned: ${data.data.monthYear}`}
+                    accentColor={data.color}
+                    rows={[{ label: String(data.id), value: `${data.value.toFixed(1)} km` }]}
+                />
+            )}
             axisBottom={{
                 tickSize: 5,
                 tickPadding: 5,
@@ -57,10 +56,7 @@ const MonthlyDrivingGraph = ({ data, colorMapper }: { data: dataPoint[]; colorMa
             }}
             labelSkipWidth={12}
             labelSkipHeight={12}
-            labelTextColor={{
-                from: 'color',
-                modifiers: [['darker', 1.6]],
-            }}
+            labelTextColor={(bar) => getContrastTextColor(bar.color)}
             theme={nivoTheme}
             legends={[
                 {

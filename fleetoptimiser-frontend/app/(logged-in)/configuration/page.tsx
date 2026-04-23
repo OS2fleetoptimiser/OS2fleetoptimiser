@@ -21,6 +21,7 @@ export default function Page() {
             <PageTitle
                 title="Køretøjer"
                 subtitle="Ret oplysninger om indregistrerede køretøjer og tilføj nye køretøjer til simuleringsværktøjerne. Kommatal skal skrives i engelsk format (punktum i stedet for komma)."
+                info="Importering af data er kun for køretøjer, der er forbundet via dit flådestyringssystem. Dvs. ID'et skal stemme overens med et kendt køretøj i dit flådesystem. Brug Tilføj nyt køretøj for at tilføje nye testkøretøjer."
             />
             {tableData.isError ? (
                 <ApiError retryFunction={tableData.refetch}>Bil data kunne ikke hentes</ApiError>

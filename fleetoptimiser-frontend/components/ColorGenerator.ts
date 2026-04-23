@@ -14,22 +14,18 @@ const hashCode = function (string: string) {
 };
 
 const distinctPalette = [
-    '#4E79A7',
-    '#F28E2B',
-    '#E15759',
-    '#76B7B2',
-    '#59A14F',
-    '#EDC948',
-    '#B07AA1',
-    '#FF9DA7',
-    '#9C755F',
-    '#BAB0AC',
-    '#5591C3',
-    '#D4742C',
-    '#8CD17D',
-    '#F1CE63',
-    '#A0CBE8',
-    '#FABFD2',
+    '#729ECE',
+    '#FF9E4A',
+    '#67BF5C',
+    '#ED665D',
+    '#AD8BC9',
+    '#A8786E',
+    '#ED97CA',
+    '#A2A2A2',
+    '#CDCC5D',
+    '#6DCCDA',
+    '#9CB3D6',
+    '#B4CDA2',
 ];
 
 const paletteCache = new Map<string, string>();

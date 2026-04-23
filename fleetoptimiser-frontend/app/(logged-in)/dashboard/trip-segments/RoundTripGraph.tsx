@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 
 import { Box, Card, Typography } from '@mui/material';
 import { ResponsiveLine, LineSeries, LineCustomSvgLayerProps, LineCustomSvgLayer } from '@nivo/line';
-import { nivoTheme } from '@/theme/nivoTheme';
-import { brand, gray } from '@/theme/themePrimitives';
+import { chartPalette, nivoTheme } from '@/theme/nivoTheme';
+import { gray } from '@/theme/themePrimitives';
 import { line } from 'd3-shape';
 import { generateParkingSegments, generateDrivingSegments, generateAccumulatedDriving, formatTimeFromISO } from './SegmentUtility';
+import ChartTooltip from '@/components/ChartTooltip';
 
 const toSecondPrecision = (iso: string) => iso.slice(0, 19);
 
@@ -179,19 +180,19 @@ const CustomLines = (props: CustomLineInput): React.JSX.Element => {
                         ) : null}
                         {hoveredLine === i ? (
                             <>
-                                <rect x={boxMargin} y={boxMargin} width={boxWidth} height={boxHeight} fill="white" stroke="grey" strokeWidth={1} />
+                                <rect x={boxMargin} y={boxMargin} width={boxWidth} height={boxHeight} fill="white" stroke={gray[300]} strokeWidth={1} />
                                 {serie.id.includes('Parkering') ? (
                                     <text x={boxMargin + textPadding} y={boxMargin + textPadding}>
                                         <tspan x={boxMargin + textPadding} className="font-bold" dy="0.5em" fill={serie.color}>
                                             {serie.id}
                                         </tspan>
-                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill="grey">
+                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill={gray[600]}>
                                             Parkeringstid: {parking_time}
                                         </tspan>
-                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill="grey">
+                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill={gray[600]}>
                                             Fra {from ? formatTimeFromISO(from) : 'Ukendt'} til {to ? formatTimeFromISO(to) : 'Ukendt'}
                                         </tspan>
-                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill="grey">
+                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill={gray[600]}>
                                             Akkumuleret distance: {Math.round(accumulated_distance * 100) / 100} km
                                         </tspan>
                                     </text>
@@ -200,16 +201,16 @@ const CustomLines = (props: CustomLineInput): React.JSX.Element => {
                                         <tspan x={boxMargin + textPadding} className="font-bold" dy="0.5em" fill={serie.color}>
                                             {serie.id}
                                         </tspan>
-                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill="grey">
+                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill={gray[600]}>
                                             Kørselstid: {driving_time}
                                         </tspan>
-                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill="grey">
+                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill={gray[600]}>
                                             Fra {from ? formatTimeFromISO(from) : 'Ukendt'} til {to ? formatTimeFromISO(to) : 'Ukendt'}
                                         </tspan>
-                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill="grey">
+                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill={gray[600]}>
                                             Distance: {distance}
                                         </tspan>
-                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill="grey">
+                                        <tspan x={boxMargin + textPadding} dy={lineHeight} fill={gray[600]}>
                                             Akkumuleret distance: {Math.round(accumulated_distance * 100) / 100} km
                                         </tspan>
                                     </text>
@@ -229,12 +230,11 @@ const ToolTipGen = (pointDec: ToolTipWrap): React.JSX.Element => {
         return <div />;
     }
     return (
-        <div className="bg-white p-3 border border-gray-300 ">
-            <div>
-                <strong>{point.serieId}</strong>
-            </div>
-            <div style={{ color: gray[400], padding: '3px 0' }}>Akkumuleret distance: {Math.round(point.data.accumulated_distance * 100) / 100} km.</div>
-        </div>
+        <ChartTooltip
+            title={point.serieId}
+            accentColor={point.serieColor}
+            rows={[{ label: 'Akkumuleret distance', value: `${Math.round(point.data.accumulated_distance * 100) / 100} km` }]}
+        />
     );
 };
 
@@ -259,7 +259,7 @@ const RoundTripChart = (props: rtchartinput) => {
         // loop in order to alternate the segments for appearance advantages
         transformed.push({
             id: drivingSegments[i].name,
-            color: brand[200],
+            color: chartPalette.blue200,
             data: [
                 {
                     // tilføj drivingSegment så det kan vises på den ny tooltip
@@ -288,7 +288,7 @@ const RoundTripChart = (props: rtchartinput) => {
         if (i < parkingSegments.length) {
             transformed.push({
                 id: parkingSegments[i].name,
-                color: brand[500],
+                color: chartPalette.blue500,
                 data: [
                     {
                         x: toSecondPrecision(parkingSegments[i].start_time),
@@ -399,12 +399,12 @@ const RoundTripChart = (props: rtchartinput) => {
                             {
                                 id: 'A',
                                 label: 'Kørsel',
-                                color: brand[200],
+                                color: chartPalette.blue200,
                             },
                             {
                                 id: 'B',
                                 label: 'Parkering',
-                                color: brand[500],
+                                color: chartPalette.blue500,
                             },
                             {
                                 id: 'C',

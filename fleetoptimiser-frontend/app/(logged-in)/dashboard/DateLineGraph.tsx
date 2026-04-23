@@ -2,6 +2,7 @@ import { ResponsiveLine } from '@nivo/line';
 import { getYTicks } from '@/app/(logged-in)/fleet/UnallocatedTripsLine';
 import { nivoTheme } from '@/theme/nivoTheme';
 import React from 'react';
+import ChartTooltip from '@/components/ChartTooltip';
 
 type dataPoint = {
     x: string;
@@ -29,17 +30,13 @@ const DateLineGraph = ({ data, yLabel, color }: props) => {
     };
     return (
         <ResponsiveLine
-            tooltip={({ point }) => {
-                return (
-                    <div className="bg-gray-900 text-white p-2 rounded text-xs">
-                        <span className="font-bold">
-                            {point.data.yFormatted} {metrics[dataType] || ''}
-                        </span>
-                        <br />
-                        Dato: {point.data.xFormatted}
-                    </div>
-                );
-            }}
+            tooltip={({ point }) => (
+                <ChartTooltip
+                    title={`Dato: ${point.data.xFormatted}`}
+                    accentColor={point.seriesColor}
+                    rows={[{ label: metrics[dataType] || '', value: String(point.data.yFormatted) }]}
+                />
+            )}
             margin={{ top: 40, right: 20, bottom: 70, left: 80 }}
             animate={true}
             data={data}

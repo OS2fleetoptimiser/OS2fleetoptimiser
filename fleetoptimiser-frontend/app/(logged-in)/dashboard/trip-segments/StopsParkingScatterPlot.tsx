@@ -1,6 +1,7 @@
 import { generateFromPalette } from '@/components/ColorGenerator';
 import { ResponsiveScatterPlotCanvas, ScatterPlotDatum } from '@nivo/scatterplot';
 import { nivoTheme } from '@/theme/nivoTheme';
+import ChartTooltip from '@/components/ChartTooltip';
 
 export interface scatterPlotEntry extends ScatterPlotDatum {
     tripId: number;
@@ -87,15 +88,16 @@ const ParkingTimeScatterPlot = ({
             tooltip={(node) => {
                 const entry = node.node.data as scatterPlotEntry;
                 return (
-                    <div className="bg-white p-2 shadow-md">
-                        <p>
-                            <span className="font-bold">Køretøj:</span> {entry.name}
-                        </p>
-                        <p>Tur start: {entry.date}</p>
-                        <p>Distance: {(+entry.distance.toFixed(2)).toLocaleString()} km</p>
-                        <p>Antal stop: {entry.stops}</p>
-                        <p>Parkeringstid: {formatMinutes(entry.parkingTime)}</p>
-                    </div>
+                    <ChartTooltip
+                        title={entry.name}
+                        accentColor={node.node.color}
+                        rows={[
+                            { label: 'Tur start', value: entry.date },
+                            { label: 'Distance', value: `${(+entry.distance.toFixed(2)).toLocaleString()} km` },
+                            { label: 'Antal stop', value: entry.stops },
+                            { label: 'Parkeringstid', value: formatMinutes(entry.parkingTime) },
+                        ]}
+                    />
                 );
             }}
         />

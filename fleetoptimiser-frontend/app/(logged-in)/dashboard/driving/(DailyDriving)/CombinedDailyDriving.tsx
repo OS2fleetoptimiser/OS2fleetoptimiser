@@ -2,6 +2,7 @@
 
 import { ResponsiveLine } from '@nivo/line';
 import { nivoTheme } from '@/theme/nivoTheme';
+import ChartTooltip from '@/components/ChartTooltip';
 
 export type Entry = {
     x: string;
@@ -27,19 +28,16 @@ const CombinedDailyDrivingGraph = ({ data, colorMapper }: Props) => {
         <div className="h-full">
                 <ResponsiveLine
                     data={data}
-                    tooltip={({ point }) => {
-                        return (
-                            <div className="bg-gray-900 text-white p-2 rounded text-xs">
-                                <div>
-                                    <span className="font-bold">{point.seriesId}</span>
-                                </div>
-                                <div>{point.data.xFormatted}</div>
-                                <div>
-                                    <span className="font-semibold">{Number(point.data.y).toFixed(1).toLocaleString()} km</span>
-                                </div>
-                            </div>
-                        );
-                    }}
+                    tooltip={({ point }) => (
+                        <ChartTooltip
+                            title={point.seriesId}
+                            accentColor={point.seriesColor}
+                            rows={[
+                                { label: 'Dato', value: String(point.data.xFormatted) },
+                                { label: 'Kilometer', value: `${Number(point.data.y).toFixed(1)} km` },
+                            ]}
+                        />
+                    )}
                     margin={{ top: 50, right: 210, bottom: 90, left: 80 }}
                     colors={(bar: LineData) =>
                         colorMapper(bar.id)

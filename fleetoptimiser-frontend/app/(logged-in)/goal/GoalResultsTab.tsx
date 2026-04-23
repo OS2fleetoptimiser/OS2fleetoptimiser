@@ -6,6 +6,8 @@ import LoadingOverlay from '@/components/LoadingOverlay';
 import { SolutionComparisonBars } from '@/app/(logged-in)/goal/SolutionComparisonBars';
 import TipsAutomatic from '@/app/(logged-in)/goal/TipsBetterSolutionsModal';
 import NoSimulationResults from '@/app/(logged-in)/fleet/NoResults';
+import SearchOffIcon from '@mui/icons-material/SearchOff';
+import EmptyState from '@/components/EmptyState';
 import { SimulationResults } from '@/app/(logged-in)/fleet/ConvertData';
 import { SolutionPicker } from './SolutionPicker';
 import { SolutionComparisonTable } from './SolutionComparisonTable';
@@ -49,6 +51,13 @@ export const GoalResultsOverview = ({ simulation, convertedGoalResults }: GoalRe
                     </div>
                     <SolutionPicker solutions={convertedGoalResults.solutions} simulationId={simulation.query.data?.id} />
                 </div>
+            )}
+            {convertedGoalResults && convertedGoalResults.solutions.length === 0 && (
+                <EmptyState icon={<SearchOffIcon color="action" fontSize="large" />}>
+                    Der blev ikke fundet nogen løsninger i den automatiske simulering.
+                    <br />
+                    Prøv at justere dine optimeringsindstillinger og kør simuleringen igen.
+                </EmptyState>
             )}
             {!convertedGoalResults && !isSimulating(simulation.query.status) && !simulation.running && <NoSimulationResults />}
         </div>

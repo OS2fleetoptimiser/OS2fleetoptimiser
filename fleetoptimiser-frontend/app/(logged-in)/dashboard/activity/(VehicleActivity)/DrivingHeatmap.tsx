@@ -1,8 +1,9 @@
 import { ComputedCell, ResponsiveHeatMapCanvas } from '@nivo/heatmap';
 import 'd3-scale-chromatic';
-import { nivoTheme, heatmapWarningGradient } from '@/theme/nivoTheme';
+import { nivoTheme, heatmapWarningGradient, chartPalette } from '@/theme/nivoTheme';
 import dayjs from 'dayjs';
 import { useMediaQuery } from 'react-responsive';
+import ChartTooltip from '@/components/ChartTooltip';
 
 export type HeatMapGroupWithMetaData = {
     x: string;
@@ -44,17 +45,16 @@ export const DrivingHeatmapKm = ({
                 onClick={(cell) => {
                     setLocationZoom(cell);
                 }}
-                tooltip={({ cell }) => {
-                    return (
-                        <div className="bg-gray-900 text-white p-2 rounded text-xs">
-                            <span className="font-bold">{cell.value ? `${cell.value.toFixed(1)} km` : '0 km'}</span>
-                            <br />
-                            Dato: {cell.data.x}
-                            <br />
-                            Køretøj: {cell.serieId}
-                        </div>
-                    );
-                }}
+                tooltip={({ cell }) => (
+                    <ChartTooltip
+                        title={`Køretøj: ${cell.serieId}`}
+                        accentColor={cell.color}
+                        rows={[
+                            { label: 'Dato', value: String(cell.data.x) },
+                            { label: 'Kørsel', value: cell.value ? `${cell.value.toFixed(1)} km` : '0 km' },
+                        ]}
+                    />
+                )}
                 animate={true}
                 motionConfig="gentle"
                 hoverTarget="rowColumn"
@@ -72,7 +72,7 @@ export const DrivingHeatmapKm = ({
                     maxValue: maxHeatValue,
                 }}
                 theme={nivoTheme}
-                emptyColor="#b6b7b9"
+                emptyColor={chartPalette.heatmapEmpty}
                 legends={[
                     {
                         anchor: 'top',
