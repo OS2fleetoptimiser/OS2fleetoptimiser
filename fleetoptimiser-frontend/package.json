@@ -43,7 +43,7 @@
         "leaflet": "^1.9.4",
         "lodash": "^4.17.23",
         "material-react-table": "^3.2.1",
-        "next": "^16.1.6",
+        "next": "^16.2.4",
         "react": "^19.2.4",
         "react-date-range": "^1.4.0",
         "react-dom": "^19.2.4",
