@@ -1,21 +1,28 @@
 import ast
-import asyncio
-import json
 import urllib.parse
 
+from datetime import datetime
 import pandas as pd
 import regex as re
 import requests
+from pydantic import ValidationError
 from sqlalchemy.orm import Session, selectinload
-from tenacity import retry, wait_random_exponential, stop_after_attempt
 
-from fleetmanager.data_access import AllowedStarts
+from fleetmanager.api.configuration.schemas import Vehicle
+from fleetmanager.data_access import AllowedStarts, Cars, FuelTypes, LeasingTypes, VehicleTypes
 from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import calc_distance
-import httpx
 
 
 logger = logging.getLogger(__name__)
+
+
+BACK_REF_TYPES: dict = {
+    "leasing_type": LeasingTypes,
+    "fuel": FuelTypes,
+    "type": VehicleTypes,
+    "location": AllowedStarts,
+}
 
 
 def get_values(original_source: str) -> dict:
@@ -88,79 +95,6 @@ def find_in_settings(settings, find_key):
             for k, v in value.items():
                 if k == find_key:
                     return v
-
-
-@retry(wait=wait_random_exponential(min=1, max=20), stop=stop_after_attempt(3))
-async def load_dmr_request(plate: str):
-    url = f"https://www.tjekbil.dk/api/v3/dmr/regnr/{plate}"
-
-    completed = False
-    retries = 3
-    retry = 0
-    while not completed:
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.get(url)
-                result = response.content.decode()
-            except httpx.ReadTimeout as e:
-                retry += 1
-                if retry < retries:
-                    await asyncio.sleep(3 * retry)
-                else:
-                    raise e
-
-    return json.loads(result)
-
-
-async def get_plate_info_from_api(plate: str) -> dict:
-    result = {}
-    task = asyncio.create_task(load_dmr_request(plate))
-    done, pending = await asyncio.wait({task}, timeout=60)
-    if task in done:
-        try:
-            result = task.result()
-            if "basic" not in result:
-                return {}
-        except asyncio.InvalidStateError as e:
-            logger.info(f"something went wrong {plate}, \n{e}")
-            return {}
-    for p in pending:
-        logger.info(f"timeout for plate {plate}")
-        p.cancel()
-    basic = result.get("basic", {})
-
-    car_data = {}
-
-    drivkraft = None
-    if "drivkraftTypeNavn" in basic:
-        drivkraft = basic.get("drivkraftTypeNavn")
-        drivkraft = None if drivkraft is None else drivkraft.lower()
-        car_data["drivkraft"] = drivkraft
-    if drivkraft == 'el':
-        wltp_el = basic.get("motorElektriskForbrug")
-        if pd.isna(wltp_el):
-            wltp_el = basic.get("motorElektriskForbrugMaalt")
-        car_data["el_faktisk_forbrug"] = wltp_el
-        try:
-            car_data["elektrisk_rækkevidde"] = result.get("extended", {}).get("techical", {}).get("elektriskRaekkevidde") # there's a spelling mistake in response technical = techical
-        except AttributeError:
-            retry = 1
-            max_retry = 4
-            while max_retry > retry:
-                result = await load_dmr_request(plate)
-                retry += 1
-                if pd.isna(result.get("extended", {})):
-                    continue
-                else:
-                    result.get("extended", {}).get("techical", {}).get(
-                        "elektriskRaekkevidde")  # there's a spelling mistake in response technical = techical
-                    break
-    else:
-        car_data["kml"] = basic.get("motorKmPerLiter")
-
-    car_data["make"] = basic.get("maerkeTypeNavn")
-    car_data["model"] = " ".join([basic.get("modelTypeNavn", ""), basic.get("variantTypeNavn", "")]).strip()
-    return car_data
 
 
 def get_latlon_address(address):
@@ -449,3 +383,207 @@ def get_allowed_starts_with_additions(
                 }
             )
     return allowed_starts
+
+def vehicle_needs_dmr_data(saved_vehicle) -> bool:
+    """
+    returns true if the vehicle is missing key attributes that triggers a dmr lookup.
+    If make, model, type and wltp (fossil or el) are all present, we skip dmr
+    to avoid overriding data set directly via integration or user.
+    """
+    if saved_vehicle is None:
+        return True
+
+    def get_val(key):
+        if hasattr(saved_vehicle, "get"):
+            val = saved_vehicle.get(key)
+        else:
+            val = getattr(saved_vehicle, key, None)
+        try:
+            return None if pd.isna(val) else val
+        except (TypeError, ValueError):
+            return val
+
+    has_make = get_val("make") is not None
+    has_model = get_val("model") is not None
+    has_type = get_val("type") is not None
+    has_wltp = get_val("wltp_fossil") is not None or get_val("wltp_el") is not None
+
+    return not (has_make and has_model and has_type and has_wltp)
+
+
+def save_vehicle(car_dict: dict, session: Session, dmr_keys: list[str] = None):
+    """
+    Insert a new Cars record or update an existing one.
+
+    car_dict should be a flat dict keyed by Cars column names. Any pre-built
+    _obj relationship keys are ignored and resolved from the FK integer values.
+
+    dmr_keys lists keys whose values came from the api.
+    Those keys will not overwrite an existing non-null value in the db, so data
+    set directly via integration or by user is never silently overwritten.
+    """
+    if dmr_keys is None:
+        dmr_keys = []
+
+    car_id = car_dict.get("id")
+    saved_car = session.get(Cars, car_id)
+    car_columns = set(Cars.__table__.columns.keys())
+
+    if saved_car is None:
+        insert_dict = {k: v for k, v in car_dict.items() if k in car_columns}
+        for key, ref_type in BACK_REF_TYPES.items():
+            if (val := insert_dict.get(key)) is not None:
+                insert_dict[f"{key}_obj"] = session.get(ref_type, val)
+        session.add(Cars(**insert_dict))
+        session.commit()
+        logger.info(f"Inserted new vehicle id={car_id}")
+        return
+
+    for key, value in car_dict.items():
+        if key not in car_columns or key == "id":
+            continue
+        try:
+            if pd.isna(value):
+                continue
+        except (TypeError, ValueError):
+            pass
+        if isinstance(value, str) and not value:
+            continue
+        if value == 0 and key != "disabled":
+            continue
+        if key in dmr_keys and getattr(saved_car, key, None) is not None:
+            continue
+        if getattr(saved_car, key, None) == value:
+            continue
+        setattr(saved_car, key, value)
+        if key in BACK_REF_TYPES:
+            setattr(saved_car, f"{key}_obj", session.get(BACK_REF_TYPES[key], value))
+
+    session.commit()
+
+
+def apply_dmr_data(car_dict: dict, dmr_info: dict) -> list[str]:
+    """
+    Fill missing fields in car_dict from dmr data.
+
+    Only sets a field if it is currently None in car_dict. Returns the list
+    of keys that were set, which should be passed as dmr_keys to save_vehicle
+    so the same protection applies at the db level.
+    """
+    if not dmr_info:
+        return []
+
+    dmr_keys = []
+    drivkraft = dmr_info.get("drivkraft")
+    drivkraft_to_fuel = {"benzin": 1, "diesel": 2, "el": 3}
+    drivkraft_to_type = {"benzin": 4, "diesel": 4, "el": 3}
+
+    def set_if_missing(key, value):
+        if car_dict.get(key) is None and value is not None:
+            car_dict[key] = value
+            dmr_keys.append(key)
+
+    set_if_missing("make", dmr_info.get("make"))
+    set_if_missing("model", dmr_info.get("model"))
+    set_if_missing("fuel", drivkraft_to_fuel.get(drivkraft))
+    set_if_missing("type", drivkraft_to_type.get(drivkraft))
+
+    if car_dict.get("wltp_fossil") is None:
+        car_dict["wltp_fossil"] = None if drivkraft == "el" else dmr_info.get("kml")
+        dmr_keys.append("wltp_fossil")
+    if car_dict.get("wltp_el") is None:
+        el = (
+            dmr_info.get("el_faktisk_forbrug")
+            if "el_faktisk_forbrug" in dmr_info
+            else dmr_info.get("elektrisk_forbrug")
+        )
+        car_dict["wltp_el"] = el
+        dmr_keys.append("wltp_el")
+    if car_dict.get("range") is None:
+        car_dict["range"] = dmr_info.get("elektrisk_rækkevidde")
+        dmr_keys.append("range")
+    if car_dict.get("end_leasing") is None:
+        car_dict["end_leasing"] = dmr_info.get("leasing_end")
+        dmr_keys.append("end_leasing")
+
+    # type/fuel are only meaningful when there is wltp data to back them up
+    if (
+        car_dict.get("type") is not None
+        and car_dict.get("wltp_fossil") is None
+        and car_dict.get("wltp_el") is None
+    ):
+        car_dict["type"] = None
+        car_dict["fuel"] = None
+
+    return dmr_keys
+
+
+def is_car_valid(car_dict: dict) -> bool:
+    """
+    validate a car dict against the Vehicle pydantic schema.
+    logs a warning and returns False if validation fails.
+    """
+    validation_dict = car_dict.copy()
+    validation_dict["fuel"] = {"id": validation_dict.get("fuel")}
+    validation_dict["type"] = {"id": validation_dict.get("type")}
+    validation_dict["location"] = {"id": validation_dict.get("location")}
+    validation_dict["leasing_type"] = {"id": validation_dict.get("leasing_type")}
+    for key, value in car_dict.items():
+        try:
+            if pd.isna(value):
+                validation_dict[key] = None
+        except (TypeError, ValueError):
+            pass
+    try:
+        Vehicle(**validation_dict)
+    except ValidationError as e:
+        logger.warning(
+            f"\n\n**************************************\n"
+            f"Could not validate vehicle {car_dict.get('id')}\n"
+            f"{e}\n"
+            f"{car_dict}\n\n"
+            f"Not saving/updating the vehicle\n"
+            f"**************************************\n\n"
+        )
+        return False
+    return True
+
+
+def get_plate_info_from_api(plate: str) -> dict:
+    # "techical" is a typo in the API response (should be "technical")
+    _EL_RANGE_KEY = "elektriskRaekkevidde"
+
+    def _fetch():
+        url = f"https://www.tjekbil.dk/api/v3/dmr/regnr/{plate}"
+        r = requests.get(url, headers={"User-Agent": "FleetOptimiser/1.0"})
+        return r.json() if r.status_code == 200 else {}
+
+    result = _fetch()
+    basic = result.get("basic") or {}
+
+    drivkraft_raw = basic.get("drivkraftTypeNavn")
+    drivkraft = drivkraft_raw.lower() if drivkraft_raw else None
+    car_data: dict = {"drivkraft": drivkraft} if drivkraft else {}
+
+    if drivkraft == "el":
+        techical = None
+        for _ in range(4):
+            extended = result.get("extended")
+            if extended is not None:
+                techical = extended.get("techical") or {}
+                break
+            result = _fetch()
+        techical = techical or {}
+
+        wltp_el = basic.get("motorElektriskForbrug")
+        if pd.isna(wltp_el):
+            wltp_el = techical.get("motorElektriskForbrugMaalt")
+        car_data["el_faktisk_forbrug"] = wltp_el
+        car_data["elektrisk_rækkevidde"] = techical.get(_EL_RANGE_KEY)
+    else:
+        car_data["kml"] = basic.get("motorKmPerLiter")
+
+    car_data["leasing_end"] = datetime.fromisoformat(raw) if (raw := basic.get("leasingGyldigTil")) else None
+    car_data["make"] = basic.get("maerkeTypeNavn")
+    car_data["model"] = " ".join(filter(None, [basic.get("modelTypeNavn"), basic.get("variantTypeNavn")])).strip()
+    return car_data

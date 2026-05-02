@@ -16,12 +16,9 @@ from fleetmanager.api.location.schemas import AllowedStart as AllowedStartSchema
 from fleetmanager.data_access import (
     AllowedStarts,
     Cars,
-    FuelTypes,
-    LeasingTypes,
     RoundTrips,
     RoundTripSegments,
     SimulationSettings,
-    VehicleTypes,
 )
 from fleetmanager.extractors.puma.pumaschema import Data, Materiels
 from fleetmanager.extractors.skyhost.updatedb import (
@@ -31,9 +28,12 @@ from fleetmanager.extractors.skyhost.updatedb import (
 )
 from fleetmanager.extractors.util import (
     extract_plate,
+    get_allowed_starts_with_additions,
     get_latlon_address,
+    get_plate_info_from_api,
     logs_to_trips,
-    to_list, get_plate_info_from_api, get_allowed_starts_with_additions,
+    save_vehicle,
+    to_list,
 )
 from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import (
@@ -176,7 +176,7 @@ def set_vehicles(ctx, description_fields=None):
             loop = asyncio.get_event_loop()
             logger.info(f"looking for {vehicle.registreringsnummer}")
             try:
-                vehicle_attributes = loop.run_until_complete(get_plate_info_from_api(plate))
+                vehicle_attributes = get_plate_info_from_api(plate)
             except Exception as e:
                 logger.info(f"finding plate info from plate failed: {plate}, {e}")
                 continue
@@ -188,38 +188,17 @@ def set_vehicles(ctx, description_fields=None):
                 "plate": plate,
                 "make": vehicle_attributes.get("make"),
                 "model": vehicle_attributes.get("model"),
-                "wltp_fossil": None
-                if drivkraft == "el"
-                else vehicle_attributes.get("kml"),
+                "wltp_fossil": None if drivkraft == "el" else vehicle_attributes.get("kml"),
                 "wltp_el": vehicle_attributes.get("el_faktisk_forbrug")
                 if "el_faktisk_forbrug" in vehicle_attributes
                 else vehicle_attributes.get("elektrisk_forbrug"),
                 "type": vehicle_type.get(drivkraft),
-                "type_obj": None
-                if drivkraft is None
-                else session.get(VehicleTypes, vehicle_type.get(drivkraft)),
                 "fuel": fuel.get(drivkraft),
-                "fuel_obj": None
-                if drivkraft is None
-                else session.get(FuelTypes, fuel.get(drivkraft)),
                 "range": vehicle_attributes.get("elektrisk_rækkevidde"),
                 "leasing_type": 3,
                 "department": vehicle.forvaltning,
-                "leasing_type_obj": session.get(LeasingTypes, 3),
                 "location": int(
-                    known_starts[
-                        known_starts.address == vehicle.placeringsadresse
-                    ].id.values[0]
-                ),
-                "location_obj": None
-                if vehicle.placeringsadresse is None
-                else session.get(
-                    AllowedStarts,
-                    int(
-                        known_starts[
-                            known_starts.address == vehicle.placeringsadresse
-                        ].id.values[0]
-                    ),
+                    known_starts[known_starts.address == vehicle.placeringsadresse].id.values[0]
                 ),
                 "description": " ".join(
                     [
@@ -230,8 +209,7 @@ def set_vehicles(ctx, description_fields=None):
                 ),
             }
 
-            session.add(Cars(**new_car_object))
-            session.commit()
+            save_vehicle(new_car_object, session)
 
 
 @cli.command()
