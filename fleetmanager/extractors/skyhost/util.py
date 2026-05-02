@@ -10,7 +10,7 @@ from datetime import datetime, timezone, timedelta, date
 from time import sleep
 from typing import Literal, TypedDict
 import pytz
-from fleetmanager.data_access import LeasingTypes, FuelTypes, VehicleTypes, AllowedStarts, Cars
+from fleetmanager.data_access import AllowedStarts
 from fleetmanager.logging import logging
 
 
@@ -37,13 +37,6 @@ winter_times = [
     date(2027, 10, 31),
 ]
 anhour = timedelta(hours=1)
-
-back_ref_types = {
-    "leasing_type": LeasingTypes,
-    "fuel": FuelTypes,
-    "type": VehicleTypes,
-    "location": AllowedStarts
-}
 
 
 class MileageTripResponseError(Exception):
@@ -275,40 +268,6 @@ def date_iter(start_date, end_date, week_period=24):
         last_start = start_date
 
 
-def update_car(current_car: dict, session: Session, dmr_attributes: list):
-    saved_car = session.get(Cars, current_car.get("id"))
-    for key, value in current_car.items():
-        if pd.isna(value):
-            continue
-
-        if getattr(saved_car, key) == value:
-            continue
-
-        if type(value) == str and len(value) == 0:
-            continue
-
-        if key in dmr_attributes and getattr(saved_car, key) is not None:
-            # we don't want to write DMR attributes if it's been changed elsewhere
-            continue
-
-        if key in back_ref_types.keys():
-            setattr(saved_car, f"{key}_obj", session.get(back_ref_types[key], value))
-
-        setattr(saved_car, key, value)
-        session.commit()
-
-
-def insert_car(current_car: dict, session: Session):
-    for key, ref_type in back_ref_types.items():
-        if back_ref_value := current_car.get(key):
-            current_car.update(
-                {f"{key}_obj": session.get(ref_type, back_ref_value)}
-            )
-
-    session.add(Cars(**current_car))
-    session.commit()
-
-
 def get_electrical_range(details: details_object | None):
     vehicle_range = None
     if (
@@ -348,9 +307,7 @@ def calcluate_wh_km_from_range(useabililty_details: useabilityDetails_object | N
     return wh_pr_km
 
 
-def get_vehicle_wltp(details: details_object | None, wltp_key: Literal["el", "fossil"] = "el", dmr_info: dict = None, keys_updated_from_dmr: list = None):
-    if keys_updated_from_dmr is None:
-        keys_updated_from_dmr = []
+def get_vehicle_wltp(details: details_object | None, wltp_key: Literal["el", "fossil"] = "el"):
     if details is None:
         return None
     env_details = details.get("environmentalDetails", {})
@@ -383,72 +340,31 @@ def get_vehicle_wltp(details: details_object | None, wltp_key: Literal["el", "fo
         wltp_function = unit_to_function[unit]
         wltp = wltp_function(float(env_details.get("fuelConsumption")))
 
-    if wltp is None and dmr_info:
-        drivkraft = dmr_info.get("drivkraft")
-        if drivkraft in ["benzin", "diesel"] and wltp_key == 'fossil':
-            keys_updated_from_dmr.append("wltp_fossil")
-            return dmr_info.get("kml"), keys_updated_from_dmr
-        elif drivkraft in ["el"] and wltp_key == 'el':
-            keys_updated_from_dmr.append("wltp_el")
-            return dmr_info.get("el_faktisk_forbrug"), keys_updated_from_dmr
-
-    return wltp, keys_updated_from_dmr
+    return wltp
 
 
-def get_vehicle_type(env_details: env_details_object | None, dmr_info: dict = None, keys_updated_from_dmr: list = None):
-    if keys_updated_from_dmr is None:
-        keys_updated_from_dmr = []
-    if dmr_info is None:
-        dmr_info = {}
+def get_vehicle_type(env_details: env_details_object | None):
     fuelType_to_vehicleType = {
         "Petrol": 4,
         "Diesel": 4,
         "Electric": 3,
         "Hydrogen": None
     }
-    dmr_to_type = {
-        "diesel": 4,
-        "benzin": 4,
-        "el": 3,
-        None: None
-    }
-    vehicle_type = None
     if env_details is None or env_details.get("fuelType") is None:
-        drivkraft = dmr_info.get("drivkraft")
-        if drivkraft in dmr_to_type:
-            vehicle_type = dmr_to_type[drivkraft]
-            keys_updated_from_dmr.append("type")
-        return vehicle_type, keys_updated_from_dmr
-    vehicle_type = fuelType_to_vehicleType[env_details.get("fuelType")]
-    return vehicle_type, keys_updated_from_dmr
+        return None
+    return fuelType_to_vehicleType[env_details.get("fuelType")]
 
 
-def get_vehicle_fuel(env_details: env_details_object | None, dmr_info: dict = None, keys_updated_from_dmr: list = None):
-    if keys_updated_from_dmr is None:
-        keys_updated_from_dmr = []
-    if dmr_info is None:
-        dmr_info = {}
+def get_vehicle_fuel(env_details: env_details_object | None):
     fuelType_to_vehicleType = {
         "Petrol": 1,
         "Diesel": 2,
         "Electric": 3,
         "Hydrogen": None
     }
-    dmr_to_type = {
-        "diesel": 2,
-        "benzin": 1,
-        "el": 3,
-        None: None
-    }
-    fuel_type = None
     if env_details is None or env_details.get("fuelType") is None:
-        drivkraft = dmr_info.get("drivkraft")
-        if drivkraft in dmr_to_type:
-            fuel_type = dmr_to_type[drivkraft]
-            keys_updated_from_dmr.append("fuel")
-        return fuel_type, keys_updated_from_dmr
-    fuel_type = fuelType_to_vehicleType[env_details.get("fuelType")]
-    return fuel_type, keys_updated_from_dmr
+        return None
+    return fuelType_to_vehicleType[env_details.get("fuelType")]
 
 
 def get_leasing_date(leasing: leasing_object | None, date_key: Literal["startDate", "endDate"] = "endDate"):

@@ -18,9 +18,14 @@ from fleetmanager.data_access import (
     Trips
 )
 from fleetmanager.data_access.dbschema import RoundTripSegments
-from fleetmanager.extractors.fleetcomplete.updatedb import is_car_valid
-from fleetmanager.extractors.gamfleet.util import get_splate_info_from_api
-from fleetmanager.extractors.util import get_allowed_starts_with_additions
+from fleetmanager.extractors.util import (
+    apply_dmr_data,
+    get_allowed_starts_with_additions,
+    get_plate_info_from_api,
+    is_car_valid,
+    save_vehicle,
+    vehicle_needs_dmr_data,
+)
 from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import (
     aggregator,
@@ -417,36 +422,16 @@ def set_trackers_v2(ctx, description_fields=None):
                 description_plate_pattern = re.search(r"\w{2}\d{5}", vehicle_from_skyhost.get("description", ""))
                 plate = None if description_plate_pattern is None else description_plate_pattern.group()
 
-            keys_updated_from_dmr_info = []
             vehicle_dmr_info = {}
-            if make is None or model is None and plate:
-                vehicle_dmr_info = get_splate_info_from_api(plate)
+            if plate and vehicle_needs_dmr_data(car_db[0] if known_car else None):
+                vehicle_dmr_info = get_plate_info_from_api(plate)
                 sleep(1)
-                make = vehicle_dmr_info.get("make", make)
-                model = vehicle_dmr_info.get("model", model)
-                keys_updated_from_dmr_info += ["make", "model"]
 
-            v_type, keys_updated_from_dmr_info = get_vehicle_type(
-                vehicle_details.get("details", {}).get("environmentalDetails"),
-                dmr_info=vehicle_dmr_info,
-                keys_updated_from_dmr=keys_updated_from_dmr_info
-            )
-            fuel, keys_updated_from_dmr_info = get_vehicle_fuel(
-                vehicle_details.get("details", {}).get("environmentalDetails"),
-                dmr_info=vehicle_dmr_info,
-                keys_updated_from_dmr=keys_updated_from_dmr_info
-            )
-            wltp_el, keys_updated_from_dmr_info = get_vehicle_wltp(
-                vehicle_details.get("details", {}),
-                "el",
-                dmr_info=vehicle_dmr_info,
-                keys_updated_from_dmr=keys_updated_from_dmr_info
-            )
-            wltp_fossil, keys_updated_from_dmr_info = get_vehicle_wltp(
-                vehicle_details.get("details", {}), "fossil",
-                dmr_info=vehicle_dmr_info,
-                keys_updated_from_dmr=keys_updated_from_dmr_info
-            )
+            env_details = vehicle_details.get("details", {}).get("environmentalDetails")
+            v_type = get_vehicle_type(env_details)
+            fuel = get_vehicle_fuel(env_details)
+            wltp_el = get_vehicle_wltp(vehicle_details.get("details", {}), "el")
+            wltp_fossil = get_vehicle_wltp(vehicle_details.get("details", {}), "fossil")
             range_km = get_electrical_range(vehicle_details.get("details"))
             car = dict(
                 id=int(id_),
@@ -472,6 +457,8 @@ def set_trackers_v2(ctx, description_fields=None):
                 range=None if range_km is None else round(range_km, 2),
             )
 
+            dmr_keys = apply_dmr_data(car, vehicle_dmr_info)
+
             if "arkiveret" in vehicle_details.get("department", {}).get("name", "").lower():
                 car["disabled"] = 1
             elif ctx.obj["update_vehicle_location"] and (known_location := get_location_id(vehicle_details.get("department"), session)):
@@ -481,12 +468,7 @@ def set_trackers_v2(ctx, description_fields=None):
             if not is_car_valid(car):
                 continue
 
-            if known_car:
-                # update if values are different and not none
-                update_car(car, session, keys_updated_from_dmr_info)
-            else:
-                # insert unknown valid car
-                insert_car(car, session)
+            save_vehicle(car, session, dmr_keys=dmr_keys)
 
 
 @cli.command()

@@ -11,12 +11,10 @@ import click
 import pandas as pd
 import requests
 from dateutil.relativedelta import relativedelta
-from pydantic import ValidationError
 from sqlalchemy import create_engine, func, or_, select, text, bindparam
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.query import Query
 
-from fleetmanager.api.configuration.schemas import Vehicle
 from fleetmanager.api.location.schemas import AllowedStart as AllowedStartSchema
 from fleetmanager.data_access import (
     AllowedStarts,
@@ -28,7 +26,14 @@ from fleetmanager.data_access import (
     VehicleTypes,
 )
 from fleetmanager.data_access.dbschema import RoundTripSegments
-from fleetmanager.extractors.util import get_allowed_starts_with_additions
+from fleetmanager.extractors.util import (
+    apply_dmr_data,
+    get_allowed_starts_with_additions,
+    get_plate_info_from_api,
+    is_car_valid,
+    save_vehicle,
+    vehicle_needs_dmr_data,
+)
 from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import aggregator, process_car_roundtrips
 from fleetmanager.model.roundtripaggregator import aggregating_score as score
@@ -114,15 +119,9 @@ def set_starts(ctx):
 @click.option("-el", "--exempt-locations", is_flag=True, default=False)
 def set_vehicles(ctx, description_fields=None, exempt_locations=False):
     fuel_to_type = {
-        # benzin til fossilbil
-        1: 4,
-        # diesel til fossilbil
-        2: 4,
-        # el til elbil
-        3: 3,
-    }
-
-    default_types = {
+        1: 4,  # benzin to fossilbil
+        2: 4,  # diesel to fossilbil
+        3: 3,  # el to  elbil
     }
 
     Session = ctx.obj["Session"]
@@ -130,14 +129,11 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
     params = ctx.obj["params"]
     url = ctx.obj["url"]
 
-    # Cars start
-    # getting vehicle settings for setting type ids on the cars
     starts = pd.read_sql(Query(AllowedStarts).statement, engine)
     fuel_settings = pd.read_sql(Query(FuelTypes).statement, engine)
     vehicle_settings = pd.read_sql(Query(VehicleTypes).statement, engine)
     vehicles_response = requests.get(url + "Api/Vehicles/get", params=params)
     cars = json.loads(vehicles_response.content)["response"]
-    # get currently saved cars to update if changes and save new ones
     current_cars = {car.id: car.to_dict() for _, car in pd.read_sql(Query(Cars).statement, engine).iterrows()}
 
     if description_fields is not None:
@@ -145,7 +141,7 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
     else:
         description_fields = []
 
-    for car in cars:
+    for k, car in enumerate(cars):
         id_ = car["id"]
 
         current_car = current_cars.get(id_, {})
@@ -158,47 +154,28 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
             logger.info(
                 f"Car {id_} did not have any homeLocation or saved location: {car['booking']['homeLocation']}"
             )
-            # continue
 
         plate = car["plate"]
         if plate is not None and len(plate) > 7:
             plate = plate[:7]
+        if plate is None and current_car:
+            existing_plate = current_car.get("plate")
+            if existing_plate and not pd.isna(existing_plate):
+                plate = existing_plate
 
-        if all(
-            [plate is None, car["info"]["make"] is None, car["info"]["model"] is None]
-        ):
+        if all([plate is None, car["info"]["make"] is None, car["info"]["model"] is None]):
             continue
 
         fuel = None
         vehicle_type = None
         if car["info"]["fuelType"]:
             fuel = car["info"]["fuelType"]
-            if fuel in fuel_settings.name.values:
-                fuel = int(
-                    fuel_settings[fuel_settings.name == fuel].refers_to.values[0]
-                )
-            else:
-                fuel = None
-
+            fuel = int(fuel_settings[fuel_settings.name == fuel].refers_to.values[0]) if fuel in fuel_settings.name.values else None
         if car["info"]["vehicleType"]:
-            # check the refers to
             vehicle_type = car["info"]["vehicleType"]
-            if vehicle_type in vehicle_settings.name.values:
-                vehicle_type = int(
-                    vehicle_settings[
-                        vehicle_settings.name == vehicle_type
-                    ].refers_to.values[0]
-                )
-            else:
-                vehicle_type = None
+            vehicle_type = int(vehicle_settings[vehicle_settings.name == vehicle_type].refers_to.values[0]) if vehicle_type in vehicle_settings.name.values else None
         if vehicle_type is None and fuel:
-            # best guess
             vehicle_type = fuel_to_type[fuel]
-
-        model = car["info"]["model"]
-        if vehicle_type is None and fuel is None and model in default_types.keys():
-            fuel = default_types[model]["fuel"]
-            vehicle_type = default_types[model]["type"]
 
         location = (
             None
@@ -206,44 +183,30 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
             else int(car["booking"]["homeLocation"])
         )
 
-        department_exists = (
-            False if car["groups"] is None or len(car["groups"]) == 0 else True
-        )
         department = None
-        departments = None if not department_exists else car["groups"]
-        if departments:
-            response_ = run_request(
-                url + "Api/Organization/ObjectGroups/get", params=params
-            )
+        if car["groups"]:
+            response_ = run_request(url + "Api/Organization/ObjectGroups/get", params=params)
             response = json.loads(response_.content)["response"]
             if response:
-                department = map(
-                    lambda final_group: final_group["title"]
-                    .replace("Gruppe:", "")
-                    .strip(),
-                    filter(
-                        lambda qualified_group: "Gruppe:" in qualified_group["title"],
-                        filter(lambda group: group["id"] in departments, response),
+                department = next(
+                    (
+                        g["title"].replace("Gruppe:", "").strip()
+                        for g in response
+                        if g["id"] in car["groups"] and "Gruppe:" in g["title"]
                     ),
+                    None,
                 )
-                try:
-                    department = next(department)
-                except StopIteration:
-                    department = None
-                    pass
 
         car_details = dict(
-            id=car["id"],
+            id=id_,
             plate=plate,
             make=car["info"]["make"],
             model=car["info"]["model"],
-            type=None,  # for now, we're avoiding to set type and fuel - because we don't get the wltp on the api
-            fuel=None,
-            # todo implement "auto fill" if the below metrics doesn't exist and similar make model exist
-            wltp_fossil=None,  # todo update when we receive confirmation
-            wltp_el=None,  # todo update when we receive confirmation
-            co2_pr_km=None,  # todo update when we receive confirmation
-            range=None,  # todo update when we receive confirmation
+            type=vehicle_type,
+            fuel=fuel,
+            wltp_fossil=None,
+            wltp_el=None,
+            range=None,
             location=None if location is None else int(location),
             department=department,
             description=" ".join(
@@ -251,117 +214,20 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
             ),
         )
 
-        with Session.begin() as session:
-            if current_car:
-                if not update_car(
-                    car_details, current_car
-                ):
-                    continue
+        dmr_info = {}
+        if plate and vehicle_needs_dmr_data(current_car if current_car else None):
+            try:
+                dmr_info = get_plate_info_from_api(plate)
+            except Exception as e:
+                logger.info(f"DMR lookup failed for plate {plate}: {e}")
+        dmr_keys = apply_dmr_data(car_details, dmr_info)
 
-                db_current_car = session.query(Cars).filter(Cars.id == id_).first()
-                if not db_current_car:
-                    # not possible
-                    continue
-
-                validate_dict = compare_new_old(car_details, current_car)
-                if not is_car_valid(validate_dict):
-                    continue
-
-                values_changed = False
-                for key, value in car_details.items():
-                    if key == "id" or pd.isna(value) or current_car.get(key) == value:
-                        continue
-                    values_changed = True
-                    setattr(db_current_car, key, value)
-
-                if values_changed:
-                    session.add(db_current_car)
-
-            elif is_car_valid(car_details):
-                session.add(Cars(**car_details))
-    # Cars end
-
-
-@cli.command()
-@click.pass_context
-def set_trips(ctx):
-    session = ctx.obj["Session"]
-    engine = ctx.obj["engine"]
-    params = ctx.obj["params"]
-    url = ctx.obj["url"]
-
-    all_cars = pd.read_sql(Query(Cars).statement, engine)
-    start_locations = pd.read_sql(Query(AllowedStarts).statement, engine)
-    address2id = {a.address: a.id for a in start_locations.itertuples()}
-
-    now = datetime.datetime.now()
-
-    for car in all_cars.itertuples():
-        car_trips = []
-        lat, lon, address_id = None, None, None
-        if not pd.isna(car.location) and int(car.location) in start_locations.id.values:
-            logger.info(f"Pulling trips for {car.id}")
-            lat, lon, address_id = start_locations[start_locations.id == car.location][
-                ["latitude", "longitude", "id"]
-            ].values[0]
-        else:
+        validation_source = compare_new_old(car_details, current_car) if current_car else car_details
+        if not is_car_valid(validation_source):
             continue
 
-        start_date = datetime.datetime(year=2022, month=1, day=20)
-        with session() as s:
-            last_trip_end = (
-                s.query(func.max(Trips.end_time))
-                .filter(Trips.car_id == car.id)
-                .first()[0]
-            )
-        if last_trip_end is not None:
-            start_date = last_trip_end
-
-        month_pairs = quantize_months(start_date, now)
-        for k, (start_month, end_month) in enumerate(month_pairs):
-            params["objectId"] = car.id
-            params["begTimestamp"] = start_month
-            params["endTimestamp"] = end_month
-
-            response_ = run_request(url + "Api/Vehicles/getTrips", params=params)
-            response = json.loads(response_.content)["response"]
-            logger.info(
-                f"pulled {0 if response is None else len(response)} for car id {car.id} in period {start_month} to {end_month}"
-            )
-            if response is None:
-                continue
-            for trip in response:
-                start_location = (
-                    None
-                    if trip["startLocation"] not in address2id
-                    else address2id[trip["startLocation"]]
-                )
-                car_trips.append(
-                    Trips(
-                        **dict(
-                            id=trip["id"],
-                            car_id=car.id,
-                            distance=trip["distance"],
-                            start_time=datetime.datetime.fromisoformat(
-                                trip["startTimestamp"][:-5]
-                            ),
-                            end_time=datetime.datetime.fromisoformat(
-                                trip["endTimestamp"][:-5]
-                            ),
-                            start_latitude=trip["startLatitude"],
-                            start_longitude=trip["startLongitude"],
-                            end_latitude=trip["endLatitude"],
-                            end_longitude=trip["endLongitude"],
-                            start_location=start_location,
-                            driver_name=None,
-                        )
-                    )
-                )
-        if car_trips:
-            with session() as s:
-                s.add_all(car_trips)
-                s.commit()
-            logger.info(f"Saved {len(car_trips)} for {car.id}")
+        with Session.begin() as session:
+            save_vehicle(car_details, session, dmr_keys=dmr_keys)
 
 
 @cli.command()
@@ -636,30 +502,6 @@ def update_car(vehicle, saved_car):
         if value != saved_car[key]:
             return True
     return False
-
-
-def is_car_valid(car_dict):
-    validation_dict = car_dict.copy()
-    validation_dict["fuel"] = {"id": validation_dict.get("fuel", None)}
-    validation_dict["type"] = {"id": validation_dict.get("type", None)}
-    validation_dict["location"] = {"id": validation_dict.get("location", None)}
-    validation_dict["leasing_type"] = {"id": validation_dict.get("leasing_type", None)}
-    for key, value in car_dict.items():
-        if pd.isna(value):
-            validation_dict[key] = None
-    try:
-        Vehicle(**validation_dict)
-    except ValidationError as e:
-        logger.warning(
-            f"\n\n**************************************\n"
-            f"Could not validate vehicle {car_dict['id']}\n"
-            f"{e}\n"
-            f"{car_dict}\n\n"
-            f"Not saving/updating the vehicle\n"
-            f"**************************************\n\n"
-        )
-        return False
-    return True
 
 
 def compare_new_old(car_dict, saved_dict):

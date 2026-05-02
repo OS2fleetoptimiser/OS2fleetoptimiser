@@ -17,10 +17,7 @@ from fleetmanager.api.location.schemas import AllowedStart as AllowedStartSchema
 from fleetmanager.data_access import (
     AllowedStarts,
     Cars,
-    FuelTypes,
-    LeasingTypes,
     RoundTrips,
-    VehicleTypes,
     SimulationSettings,
     RoundTripSegments,
 )
@@ -29,7 +26,7 @@ from fleetmanager.extractors.skyhost.updatedb import (
     summer_times,
     winter_times,
 )
-from fleetmanager.extractors.util import get_latlon_address, get_allowed_starts_with_additions
+from fleetmanager.extractors.util import get_allowed_starts_with_additions, get_latlon_address, save_vehicle
 from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import aggregating_score as score
 from fleetmanager.model.roundtripaggregator import (
@@ -218,7 +215,6 @@ def set_vehicles(ctx, description_fields=None):
         description_fields = []
 
     saved_vehicles = pd.read_sql(Query(Cars).statement, engine)
-    saved_columns = saved_vehicles.columns
 
     MileageBookMappings.locations = {
         location.address: location.id for location in sess.query(AllowedStarts)
@@ -269,17 +265,9 @@ def set_vehicles(ctx, description_fields=None):
             "description": _create_description(vehicle, description_fields),
         }
 
-        if current_car.get("location") is not None:
-            current_car["location_obj"] = sess.get(
-                AllowedStarts, current_car.get("location")
-            )
         if current_car.get("make") is None or current_car.get("make") == "":
             current_car["make"] = vehicle.get("Name")
-        if (
-            # current_car.get("fuel") == "Ikke sat" and
-            "cykel"
-            in current_car.get("make", "").lower()
-        ):
+        if "cykel" in current_car.get("make", "").lower():
             current_car["fuel"] = 10
         if (
             current_car.get("fuel") not in ["Ikke sat", None, "bike"]
@@ -291,86 +279,25 @@ def set_vehicles(ctx, description_fields=None):
                 current_car["wltp_fossil"] = vehicle.get("FuelConsumption")
         if current_car.get("fuel") == "Ikke sat":
             current_car["fuel"] = None
-        if current_car.get("fuel") is not None:
-            current_car["fuel_obj"] = sess.get(FuelTypes, current_car.get("fuel"))
-        if (
-            current_car.get("leasing_type") is not None
-            and current_car.get("end_leasing") is not None
-        ):
-            current_car["leasing_type_obj"] = sess.get(
-                LeasingTypes, current_car.get("leasing_type")
-            )
-        if current_car.get("type") is not None:
-            current_car["type_obj"] = sess.get(VehicleTypes, current_car.get("type"))
         if current_car.get("end_leasing") is not None:
-            current_car["end_leasing"] = datetime.fromisoformat(
-                current_car.get("end_leasing")
-            )
+            current_car["end_leasing"] = datetime.fromisoformat(current_car.get("end_leasing"))
         if current_car.get("start_leasing") is not None:
-            current_car["start_leasing"] = datetime.fromisoformat(
-                current_car.get("start_leasing")
-            )
+            current_car["start_leasing"] = datetime.fromisoformat(current_car.get("start_leasing"))
+
+        if current_car.get("end_leasing") is None:
+            current_car["leasing_type"] = None
 
         if (
             current_car.get("type") is not None
             and current_car.get("wltp_fossil") is None
             and current_car.get("wltp_el") is None
         ):
-            # reset the type and fuel if wltp is not set, cars can't be validated without type and wltp entered.
             current_car["type"] = None
-            current_car["type_obj"] = None
             current_car["fuel"] = None
-            current_car["fuel_obj"] = None
 
-        if change_status_disabled:
-            current_car["disabled"] = 1
-        else:
-            current_car["disabled"] = 0
+        current_car["disabled"] = 1 if change_status_disabled else 0
 
-        if car_id in saved_vehicles.id.values:
-            # logic for updating values for known vehicles
-            saved_vehicle = (
-                saved_vehicles[saved_vehicles.id == car_id].iloc[0].to_dict()
-            )
-            comparable_keys = [
-                key for key in current_car.keys() if key in saved_columns
-            ] + ["disabled"]
-
-            if any(
-                [
-                    saved_vehicle.get(key) != current_car.get(key)
-                    for key in comparable_keys
-                    if pd.isna(current_car.get(key)) is False
-                ]
-            ):
-                db_car = sess.get(Cars, car_id)
-                complex_types = {
-                    "location": AllowedStarts,
-                    "fuel": FuelTypes,
-                    "type": VehicleTypes,
-                    "leasing_type": LeasingTypes,
-                }
-                for key in comparable_keys:
-                    if key == "leasing_type" and current_car.get("end_leasing") is None:
-                        continue
-                    new_value = current_car.get(key)
-                    if (
-                        saved_vehicle.get(key) != new_value
-                        and pd.isna(new_value) is False
-                        and (new_value != 0 or key == "disabled")
-                    ):
-                        # something changed
-                        setattr(db_car, key, new_value)
-                        if key in complex_types:
-                            setattr(
-                                db_car,
-                                f"{key}_obj",
-                                sess.get(complex_types[key], new_value),
-                            )
-                sess.commit()
-        else:
-            sess.add(Cars(**current_car))
-            sess.commit()
+        save_vehicle(current_car, sess)
 
 
 @cli.command()

@@ -17,20 +17,23 @@ from fleetmanager.data_access import (
     Cars,
     RoundTrips,
     RoundTripSegments,
-    FuelTypes,
-    VehicleTypes,
-    LeasingTypes,
     SimulationSettings
 )
 from fleetmanager.extractors.mileagebook.updatedb import CarModel
 from fleetmanager.extractors.skyhost.updatedb import summer_times, winter_times
 
-from fleetmanager.extractors.util import extract_plate, get_allowed_starts_with_additions
+from fleetmanager.extractors.util import (
+    extract_plate,
+    get_allowed_starts_with_additions,
+    get_plate_info_from_api,
+    save_vehicle,
+    vehicle_needs_dmr_data,
+)
 from fleetmanager.logging import logging
 from fleetmanager.model.roundtripaggregator import aggregating_score as score, sanitise_for_overlaps
 from fleetmanager.model.roundtripaggregator import aggregator, process_car_roundtrips
 
-from fleetmanager.extractors.gamfleet.util import run_request, get_splate_info_from_api, get_logs, format_trip_logs
+from fleetmanager.extractors.gamfleet.util import run_request, get_logs, format_trip_logs
 
 logger = logging.getLogger(__name__)
 
@@ -185,14 +188,13 @@ def set_vehicles(ctx, description_fields=None):
             continue
 
         # only need to collect this again if we have no information on the vehicle
-        if (saved_vehicle is None) or (pd.isna(saved_vehicle.wltp_fossil) and pd.isna(saved_vehicle.wltp_fossil) and pd.isna(saved_vehicle.make)):
+        if vehicle_needs_dmr_data(saved_vehicle):
             plate = extract_plate(vehicle.get("LicensePlate").replace(" ", ""))
             plate = plate if plate else extract_plate(vehicle.get("SecondLicensePlate").replace(" ", ""))
             vehicle_information = {}
             if plate:
-                vehicle_information = get_splate_info_from_api(plate)
+                vehicle_information = get_plate_info_from_api(plate)
 
-            # now we should compare and check if update necessary or we should save cause it's new
             drivkraft = vehicle_information.get("drivkraft")
             drivkraft = None if drivkraft is None else drivkraft.lower()
             motor_register_car = {
@@ -216,97 +218,27 @@ def set_vehicles(ctx, description_fields=None):
                 ),
             }
 
-            # determine if it's worth saving, should location flagged?
             if motor_register_car.get("location") is None:
                 logger.info(f"New district {district_name} not saved")
 
-            if motor_register_car.get("location") is not None:
-                motor_register_car["location_obj"] = sess.get(
-                    AllowedStarts, motor_register_car.get("location")
-                )
-            if motor_register_car.get("fuel") is not None:
-                motor_register_car["fuel_obj"] = sess.get(FuelTypes, motor_register_car.get("fuel"))
-
-            if motor_register_car.get("leasing_type") is not None and motor_register_car.get("end_leasing") is not None:
-                motor_register_car["leasing_type_obj"] = sess.get(
-                    LeasingTypes, motor_register_car.get("leasing_type")
-                )
-            if motor_register_car.get("type") is not None:
-                motor_register_car["type_obj"] = sess.get(VehicleTypes, motor_register_car.get("type"))
-
-            if motor_register_car.get("location") is not None:
-                motor_register_car["location_obj"] = sess.get(AllowedStarts, motor_register_car.get("location"))
-
+            # reset type/fuel when no wltp — a vehicle can't be used without both
             if (
-                    motor_register_car.get("type") is not None
-                    and motor_register_car.get("wltp_fossil") is None
-                    and motor_register_car.get("wltp_el") is None
+                motor_register_car.get("type") is not None
+                and motor_register_car.get("wltp_fossil") is None
+                and motor_register_car.get("wltp_el") is None
             ):
-                # reset the type and fuel if wltp is not set, cars can't be validated without type and wltp entered.
                 motor_register_car["type"] = None
-                motor_register_car["type_obj"] = None
                 motor_register_car["fuel"] = None
-                motor_register_car["fuel_obj"] = None
 
-
-            if saved_vehicle is None:
-                # new car, just save it
-                sess.add(Cars(**motor_register_car))
-                sess.commit()
-
-            else:
-                # compare values
-                comparable_keys = [
-                    key for key in motor_register_car.keys() if key in saved_columns
-                ]
-
-                if any(
-                        [
-                            saved_vehicle.get(key) != motor_register_car.get(key)
-                            for key in comparable_keys
-                            if pd.isna(motor_register_car.get(key)) is False
-                        ]
-                ):
-                    db_car = sess.get(Cars, vehicle_id)
-
-                    complex_types = {
-                        "location": AllowedStarts,
-                        "fuel": FuelTypes,
-                        "type": VehicleTypes,
-                        "leasing_type": LeasingTypes,
-                    }
-                    for key in comparable_keys:
-                        if key == 'leasing_type' and motor_register_car.get("end_leasing") is None:
-                            continue
-                        new_value = motor_register_car.get(key)
-                        if (
-                                saved_vehicle.get(key) != new_value
-                                and pd.isna(new_value) is False
-                                and new_value != 0
-                        ):
-                            # something changed
-                            setattr(db_car, key, new_value)
-                            if key in complex_types:
-                                setattr(
-                                    db_car,
-                                    f"{key}_obj",
-                                    sess.get(complex_types[key], new_value),
-                                )
-                    sess.commit()
+            dmr_keys = ["make", "model", "range", "wltp_fossil", "wltp_el", "type", "fuel", "end_leasing"]
+            save_vehicle(motor_register_car, sess, dmr_keys=dmr_keys)
         else:
-            # here we only need to check if the location has changed
-            saved_location = sess.get(AllowedStarts, saved_vehicle.location)
-            if saved_location.address != district_name:
-                new_location = sess.query(AllowedStarts).filter(AllowedStarts.address == district_name).first()
-                if new_location is None:
-                    logger.info(f"New district name does not exist: {district_name}, skipping update on vehicle id {vehicle_id}")
-                    continue
-
-                db_car = sess.get(Cars, vehicle_id)
-                db_car.location = new_location.id
-                db_car.location_obj = new_location
-                sess.commit()
+            # vehicle has full data — only keep the location in sync
+            new_location = sess.query(AllowedStarts).filter(AllowedStarts.address == district_name).first()
+            if new_location is None:
+                logger.info(f"New district name does not exist: {district_name}, skipping update on vehicle id {vehicle_id}")
                 continue
+            save_vehicle({"id": vehicle_id, "location": new_location.id}, sess)
 
 
 @cli.command()
