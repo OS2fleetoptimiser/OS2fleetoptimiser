@@ -478,9 +478,10 @@ def aggregator(
                     continue
 
                 # discard if the end is also home, then we can assume that next start is also home
+                # exception: trips with start and end = home and real distance are valid roundtrips
                 if end_is_same_home(
                     current_end, allowed_starts, home_criteria, closest_home
-                ):
+                ) and trip.distance <= distance_criteria:
                     continue
 
                 log_ratio, distance_ratio = stays_within_vicinity(
@@ -557,7 +558,7 @@ def aggregator(
                     or force_end
                 )
                 and sum(a.distance for a in current_roundtrip) > distance_criteria
-                and len(current_roundtrip) >= 2
+                and len(current_roundtrip) >= 1
             ):
                 if force_end and not (
                     closest_home == current_home and closest_distance < home_criteria
@@ -571,6 +572,11 @@ def aggregator(
                 if end_is_same_home(
                     current_end, allowed_starts, home_criteria, closest_home
                 ):
+                    if trip.distance > distance_criteria:
+                        # this is a valid roundtrip that has the same start and end without stopping
+                        # allow to save these types as roundtrip
+                        car_roundtrips.append([trip])
+                        aggregating_types.append("complete")
                     current_roundtrip = []
                     roundtrip_distance = 0
                     current_home = None
@@ -653,8 +659,6 @@ def aggregator(
     ]
 
     ### POST PROCESSING START ###
-    # ensure that the last roundtrip is a completed one - otherwise we want to wait until the
-    # following day to allow for more logs to get in, in order to allow the vehicle to possibly return to home
     if roundtrips:
         # find the trips that is longer than the defined alternative trip duration to perform sanity check
         roundtrip_longer_than_alternative_hours = list(
@@ -689,11 +693,12 @@ def aggregator(
                     # to figure out if there are logs and locations
                     lambda roundtrip: 0 not in roundtrip[-1]
                     and len(roundtrip[-1].values())
-                    # qualify only if there are more than 10 logs
+                    # at least 5 logs needed to determine a meaningful most-frequent location
                     and len(
                         roundtrip_longer_than_alternative_hours[roundtrip[0]]["ids"]
                     )
-                    > 10  # check if the assigned start_location_id is the most frequently visited location
+                    >= 5
+                    # check if the assigned start_location_id is the most frequently visited location
                     and max(roundtrip[-1].values())
                     > roundtrip[-1].get(
                 roundtrip_longer_than_alternative_hours[roundtrip[0]]["start_location_id"], 0),
@@ -818,15 +823,47 @@ def aggregator(
             else:
                 roundtrips = []
         ### POST PROCESSING END ###
-        if (
-            roundtrips and
-            "complete" not in roundtrips[-1]["aggregation_type"]
-            and use_most_frequent_location is False
-        ):
-            # we don't want to save the last roundtrip if it's not a complete one
-            roundtrips.pop(-1)
 
-    roundtrips = pd.DataFrame(roundtrips)
+    # recovery process; we don't want to drop distance from the fleet provider
+    # hence we recover dropped logs from the aggregation
+    if roundtrips and only_natural_aggregation is False:
+        covered_ids = {id_ for rt in roundtrips for id_ in rt["ids"]}
+        orphan_df = car_trips[~car_trips["id"].isin(covered_ids)].copy()
+        if not orphan_df.empty and orphan_df["distance"].sum() > 0:
+            orphan_df["stop_duration"] = (
+                orphan_df["start_time"].shift(-1) - orphan_df["end_time"]
+            )
+            orphan_segments = split_roundtrip(
+                list(orphan_df.itertuples()),
+                stop_duration_limit=allowed_stop_duration,
+                duration_limit=allowed_trip_duration,
+                distance_criteria=distance_criteria,
+            )
+            for segment in orphan_segments:
+                roundtrips.append(
+                    route_format(
+                        segment,
+                        car_id=car["id"],
+                        location=car["location"],
+                        aggregation_type="inbetween",
+                        enforced_point=None
+                        if anonymise_gps is False
+                        else anonymise_coordinates,
+                    )
+                )
+
+    if not roundtrips:
+        return []
+    roundtrips = pd.DataFrame(roundtrips).sort_values("start_time")
+    if (
+        "complete" not in roundtrips.iloc[-1]["aggregation_type"]
+        and use_most_frequent_location is False
+    ):
+        # we don't want to save the last roundtrip if it's not a complete one,
+        # i.e. don't save a potential open roundtrip
+        roundtrips = roundtrips.iloc[:-1]
+    if roundtrips.empty:
+        return []
     roundtrips["start_location_id"] = car.get("location")
     return roundtrips.to_dict("records")
 
@@ -1189,6 +1226,12 @@ def process_car_roundtrips(
         possible_count = len(car_trips[car_trips.end_time <= qualified_routes.iloc[-1].end_time])
         usage_distance = qualified_routes.distance.sum()
         possible_distance = car_trips[car_trips.end_time <= qualified_routes.iloc[-1].end_time].distance.sum()
+        elgible_trips = car_trips[
+            (car_trips.start_time >= qualified_routes.iloc[0].start_time) &
+            (car_trips.end_time <= qualified_routes.iloc[-1].end_time)]
+        total_kilometers = elgible_trips.distance.sum()
+        precision = qualified_routes[qualified_routes.aggregation_type.apply(lambda x: "complete" in x)].distance.sum() / total_kilometers
+
         if save and precision_only is False:
             if is_session_maker:
                 with session_or_maker.begin() as session:
@@ -1196,10 +1239,14 @@ def process_car_roundtrips(
             else:
                 commit_roundtrips(session_or_maker, car, qualified_routes)
 
+        last_type = qualified_routes.iloc[-1].aggregation_type
+        unused_tail = car_trips[car_trips.start_time > qualified_routes.iloc[-1].end_time]
         logger.info(
             f"Car: {car.id}, {len(qualified_routes)} roundtrips. Km utilisation "
             f"{usage_distance / possible_distance}"
-            f". Ratio log {usage_count / possible_count}, "
+            f". Ratio log {usage_count / possible_count}"
+            f". Precision: {precision}"
+            f". Last type: {last_type}, unused tail: {len(unused_tail)}"
         )
     if return_ids:
         ids = []
