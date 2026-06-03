@@ -1205,7 +1205,7 @@ def grouped_driving_data_to_excel(data, threshold):
     for vehicle in data.get("query_vehicles", []):
         vehicle_location = vehicle.get("location_id")
         if vehicle_location not in response:
-            if vehicle_location is None:
+            if vehicle_location is None or vehicle_location not in locations:
                 continue
             response[vehicle_location] = {
                 "address": locations[vehicle_location],
