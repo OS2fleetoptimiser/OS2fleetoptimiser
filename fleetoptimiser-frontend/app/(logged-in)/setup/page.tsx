@@ -54,7 +54,12 @@ export default function Home() {
         queries: locationForvaltning.map((location) => ({
             queryKey: ['vehiclesByLocation', startPeriod, endPeriod, location.id, location.forvaltning],
             queryFn: () => {
-                return fetchVehiclesByLocation({startPeriod, endPeriod, location: location.id, forvaltning: location.forvaltning})
+                return fetchVehiclesByLocation({
+                    startPeriod,
+                    endPeriod,
+                    location: location.id,
+                    forvaltning: location.forvaltning === 'Alle lokationer' ? undefined : location.forvaltning,
+                })
             },
             staleTime: Infinity,
         })),
