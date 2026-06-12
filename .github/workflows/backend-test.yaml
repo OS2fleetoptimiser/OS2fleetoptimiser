@@ -9,6 +9,9 @@ on:
       - v*.*.*-rc.*
     paths:
       - 'fleetmanager/**'
+      - 'Dockerfile'
+      - 'pyproject.toml'
+      - 'poetry.lock'
 
 jobs:
   build-and-test:
