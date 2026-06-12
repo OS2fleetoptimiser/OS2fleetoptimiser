@@ -19,4 +19,4 @@ ADD fleetmanager ./fleetmanager
 
 RUN poetry install --only-root
 
-RUN ["/bin/sh", "-c", "pytest -k fleetmanager/tests/"]
+RUN ["/bin/sh", "-c", "pytest fleetmanager/tests/"]
