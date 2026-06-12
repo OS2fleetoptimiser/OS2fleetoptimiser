@@ -14,8 +14,8 @@ export type heatmapData = {
 }[];
 
 export default function TimeActivityHeatMap({ data, threshold }: { data: heatmapData; threshold: number }) {
-    const showLabels = useMediaQuery({ minWidth: '1280px' }) && data[0].data.length < 30;
-    // labels become cluttered if below 1280px or more than 29 days
+    const showLabels = useMediaQuery({ minWidth: '1280px' }) && data[0].data.length <= 31;
+    // labels become cluttered if below 1280px or more than 31 days
     const lightTextMax = (threshold / 100) * 0.4;
     return (
         <div className="hover:cursor-pointer h-full">
