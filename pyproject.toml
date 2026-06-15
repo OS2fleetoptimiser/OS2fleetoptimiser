@@ -11,7 +11,7 @@ pandas = "^2.0.1"
 deap = "1.4.1"
 SQLAlchemy = "2.0.15"
 celery = {extras = ["redis"], version = "^5.2.7"}
-fastapi = "^0.109.1"
+fastapi = ">=0.125,<0.126"
 mysqlclient = "^2.1.1"
 uvicorn = "^0.21.1"
 geoalchemy2 = "^0.14.1"
