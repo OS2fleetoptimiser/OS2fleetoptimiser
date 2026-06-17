@@ -71,7 +71,7 @@
         "cross-spawn": "^7.0.5",
         "eslint": "^9.39.2",
         "eslint-config-next": "^16.1.6",
-        "postcss": "^8.5.11",
+        "postcss": "^8.5.12",
         "prettier": "2.8.5",
         "tailwindcss": "^3.2.7"
     },
