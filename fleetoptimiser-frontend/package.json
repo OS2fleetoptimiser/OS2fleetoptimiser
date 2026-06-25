@@ -39,7 +39,7 @@
         "file-saver": "^2.0.5",
         "follow-redirects": "^1.16.0",
         "formik": "^2.4.9",
-        "http-proxy-middleware": "^3.0.5",
+        "http-proxy-middleware": "^3.0.7",
         "leaflet": "^1.9.4",
         "lodash": "^4.18.1",
         "material-react-table": "^3.2.1",
@@ -71,7 +71,7 @@
         "cross-spawn": "^7.0.5",
         "eslint": "^9.39.2",
         "eslint-config-next": "^16.1.6",
-        "postcss": "^8.5.11",
+        "postcss": "^8.5.13",
         "prettier": "2.8.5",
         "tailwindcss": "^3.2.7"
     },
