@@ -828,7 +828,9 @@ def aggregator(
     # hence we recover dropped logs from the aggregation
     if roundtrips and only_natural_aggregation is False:
         covered_ids = {id_ for rt in roundtrips for id_ in rt["ids"]}
-        orphan_df = car_trips[~car_trips["id"].isin(covered_ids)].copy()
+        # don't recover the open tail, leave it for the next run to complete
+        open_tail_ids = {t.id for t in current_roundtrip} if use_most_frequent_location is False else set()
+        orphan_df = car_trips[~car_trips["id"].isin(covered_ids | open_tail_ids)].copy()
         if not orphan_df.empty and orphan_df["distance"].sum() > 0:
             orphan_df["stop_duration"] = (
                 orphan_df["start_time"].shift(-1) - orphan_df["end_time"]
