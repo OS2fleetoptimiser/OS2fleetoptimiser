@@ -1726,10 +1726,10 @@ def get_availability(
         roundtrips = roundtrips.filter(RoundTrips.start_location_id.in_(locations))
         vehicles_query = vehicles_query.filter(Cars.location.in_(locations))
 
-    cars_count = vehicles_query.count()
-    cars_count = 0 if pd.isna(cars_count) else cars_count
+    car_ids = {vehicle.id for vehicle in vehicles_query}
     result = roundtrips.all()
-
+    car_ids.update({roundtrip.car_id for roundtrip in result})
+    cars_count = len(car_ids)
     time_table: pd.DatetimeIndex = pd.date_range(start=start_date, end=end_date,
                                                  freq=datetime.timedelta(minutes=1), name="timestamp")
 
