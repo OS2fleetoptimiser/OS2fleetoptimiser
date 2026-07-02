@@ -82,7 +82,9 @@ class Vehicle(BaseModel):
     sleep: int | None = Field(
         example=5, description="Minimum hour rest pr. charge for electrical vehicles"
     )
-    id: int = Field(example=1, description="ID of the vehicle")
+    id: int | None = Field(example=1, description="ID of the vehicle")
+    external_id: str | None = Field(None, example=195291203, description="External id from the fleet system")
+    source: str | None = Field(None, example="skyhost", description="Which fleet system the vehicle came from")
     location: Location | None
     deleted: bool | None = Field(
         example=False,
