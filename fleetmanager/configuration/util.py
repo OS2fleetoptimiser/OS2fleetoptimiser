@@ -157,6 +157,11 @@ def update_single_vehicle(session: Session, vehicle: Vehicle, fields: set[str] |
         return "the car id does not exist"
     for key, value in vehicle:
 
+        # id is the lookup key; external_id/source are owned by the extractors and
+        # must never be overwritten (or nulled) by a manual vehicle edit
+        if key in ("id", "external_id", "source"):
+            continue
+
         if fields is not None and key not in fields:
             continue
 
@@ -272,7 +277,7 @@ def get_single_vehicle(session: Session, vehicle_id: int):
 
 def create_single_vehicle(session: Session, vehicle: VehicleInput, test_vehicle: bool = True):
     """
-    Function to create a vehicle. If the vehicle id is less than "min_allowed_id", the id will be set to 1000000.
+    Function to create a vehicle.
     The selected location must exist and the vehicle itself pass validation on Vehicle class.
     """
     key_to_model = {
@@ -282,15 +287,9 @@ def create_single_vehicle(session: Session, vehicle: VehicleInput, test_vehicle:
         "location": AllowedStarts,
     }
 
-    min_allowed_id = 1000000
     locations = [a.id for a in session.query(AllowedStarts.id).all()]
-    max_id = session.query(func.max(Cars.id)).first()[0]
-    if max_id is None or max_id < min_allowed_id:
-        new_id = min_allowed_id
-    else:
-        new_id = max_id + 1
 
-    vehicle_entry = {"id": new_id}
+    vehicle_entry = {}
     for key, value in vehicle:
         if key in ("id", "name"):
             continue
@@ -312,7 +311,10 @@ def create_single_vehicle(session: Session, vehicle: VehicleInput, test_vehicle:
 
     # manually creating a vehicle implies no fleet management synchronisation hence mark as test_vehicle
     vehicle_entry["test_vehicle"] = test_vehicle
-    session.add(Cars(**vehicle_entry))
+    new_car = Cars(**vehicle_entry)
+    session.add(new_car)
+    session.flush()
+    new_id = new_car.id
     session.commit()
     return new_id
 
