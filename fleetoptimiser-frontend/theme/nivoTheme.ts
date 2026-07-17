@@ -35,6 +35,7 @@ export const chartPalette = {
   heatmap: 'hsl(210, 50%, 55%)',
   heatmapWarning: 'hsl(0, 55%, 58%)',
   heatmapEmpty: 'hsl(220, 20%, 88%)',
+  heatmapWorkshop: 'hsl(265, 50%, 62%)',
 }
 
 export const vehicleTypeColors: Record<string, string> = {

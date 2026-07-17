@@ -5,7 +5,7 @@ import { Button, Card, InputAdornment, Paper, Skeleton, Tab, TextField, Typograp
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { useState } from 'react';
-import { HeatMapGroupWithMetaData, DrivingHeatmapKm } from './DrivingHeatmap';
+import { HeatMapGroupWithMetaData, DrivingHeatmapKm, DrivingHeatmapLegend } from './DrivingHeatmap';
 import ApiError from '@/components/ApiError';
 import { ComputedCell } from '@nivo/heatmap';
 import TabList from '@mui/lab/TabList';
@@ -141,8 +141,9 @@ const VehicleActivityDashboard = ({
                         Køretøjsaktivitet
                     </Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
-                        Køretøjsaktivitet viser hvor mange kilometer der er kørt i den valgte periode, enten samlet på lokationen eller enkeltvis pr køretøj. Skift mellem lokationer - og køretøjer fanen. Justér grænseværdien for at fremhæve lavere eller højere antal kørte kilometer. Hvis et felt er gråt indikerer det, at køretøjet har en igangværende tur, men ikke har været aktiv - altså står den stille et andet sted end sin hjemmelokation.
+                        Køretøjsaktivitet viser hvor mange kilometer der er kørt i den valgte periode, enten samlet på lokationen eller enkeltvis pr køretøj. Skift mellem lokationer - og køretøjer fanen. Justér grænseværdien for at fremhæve lavere eller højere antal kørte kilometer. Hvis et felt er gråt indikerer det, at køretøjet har en igangværende tur, men ikke har været aktiv - altså står den stille et andet sted end sin hjemmelokation. Felter markeret med værkstedsfarven angiver dage, hvor køretøjet har været på værksted (kun på køretøjer fanen).
                     </Typography>
+                    <DrivingHeatmapLegend />
                     <TabContext value={tab}>
                         <div className="w-full border-b">
                             <TabList onChange={(event, value) => setTab(value)}>

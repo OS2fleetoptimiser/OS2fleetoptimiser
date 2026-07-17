@@ -84,6 +84,7 @@ type plotActivityPoint = {
     startDate: Dayjs;
     endDate: Dayjs;
     active: boolean;
+    workshop?: boolean;
 };
 
 type vehicleLocationPlotData = {
