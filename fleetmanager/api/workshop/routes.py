@@ -7,15 +7,32 @@ from sqlalchemy.orm import Session
 from fleetmanager.workshop import (
     add_workshop,
     delete_workshop,
+    get_workshop_settings,
     get_workshop_visits,
     get_workshops,
     update_workshop,
+    update_workshop_settings,
 )
 
 from ..dependencies import get_session
-from .schemas import Workshop, WorkshopVisit
+from .schemas import Workshop, WorkshopSettings, WorkshopVisit
 
 router = APIRouter(prefix="/workshops")
+
+
+@router.get("/settings", response_model=WorkshopSettings)
+async def get_settings(session: Session = Depends(get_session)):
+    """Get the global workshop settings."""
+    return get_workshop_settings(session)
+
+
+@router.patch("/settings", response_model=WorkshopSettings)
+async def patch_settings(
+    settings: WorkshopSettings,
+    session: Session = Depends(get_session),
+):
+    """Update the global workshop settings."""
+    return update_workshop_settings(session, settings.min_visit_hours)
 
 
 @router.get("/workshop", response_model=list[Workshop])

@@ -12,6 +12,10 @@ class Workshop(BaseModel):
     addition_date: datetime | None
 
 
+class WorkshopSettings(BaseModel):
+    min_visit_hours: float
+
+
 class WorkshopVisit(BaseModel):
     id: int
     car_id: int

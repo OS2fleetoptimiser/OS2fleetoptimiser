@@ -2,8 +2,51 @@ from datetime import date, datetime
 
 from sqlalchemy.orm import Session
 
-from fleetmanager.api.workshop.schemas import Workshop, WorkshopVisit
-from fleetmanager.data_access import Cars, Workshops, WorkshopVisits
+from fleetmanager.api.workshop.schemas import Workshop, WorkshopSettings, WorkshopVisit
+from fleetmanager.data_access import Cars, SimulationSettings, Workshops, WorkshopVisits
+
+WORKSHOP_MIN_HOURS_SETTING = "workshop_visit_min_hours"
+DEFAULT_MIN_VISIT_HOURS = 4.0
+
+
+def get_workshop_settings(session: Session) -> WorkshopSettings:
+    """Return the global workshop settings (minimum visit duration)."""
+    setting = (
+        session.query(SimulationSettings)
+        .filter(SimulationSettings.name == WORKSHOP_MIN_HOURS_SETTING)
+        .first()
+    )
+    value = DEFAULT_MIN_VISIT_HOURS
+    if setting is not None:
+        try:
+            value = float(setting.value)
+        except (TypeError, ValueError):
+            pass
+    return WorkshopSettings(min_visit_hours=value)
+
+
+def update_workshop_settings(
+    session: Session, min_visit_hours: float
+) -> WorkshopSettings:
+    """Update the global minimum visit duration setting."""
+    setting = (
+        session.query(SimulationSettings)
+        .filter(SimulationSettings.name == WORKSHOP_MIN_HOURS_SETTING)
+        .first()
+    )
+    if setting is None:
+        session.add(
+            SimulationSettings(
+                id=None,
+                name=WORKSHOP_MIN_HOURS_SETTING,
+                value=str(min_visit_hours),
+                type="float",
+            )
+        )
+    else:
+        setting.value = str(min_visit_hours)
+    session.commit()
+    return WorkshopSettings(min_visit_hours=min_visit_hours)
 
 
 def _to_schema(workshop: Workshops) -> Workshop:
