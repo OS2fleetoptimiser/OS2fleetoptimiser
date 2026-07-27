@@ -203,7 +203,7 @@ def set_roundtrips_v2(ctx):
     query_vehicles = (
         session.query(
             Cars.id,
-            Cars.imei,
+            Cars.external_id,
             Cars.location,
             func.coalesce(func.max(RoundTrips.end_time), max_date).label("max_date"),
         )
@@ -216,13 +216,13 @@ def set_roundtrips_v2(ctx):
             or_(Cars.wltp_el.isnot(None), Cars.wltp_fossil.isnot(None)),
             Cars.location.isnot(None)
         )
-        .group_by(Cars.id, Cars.location, Cars.imei)
+        .group_by(Cars.id, Cars.location, Cars.external_id)
         .outerjoin(RoundTrips, RoundTrips.car_id == Cars.id)
     )
 
     allowed_starts = get_allowed_starts_with_additions(session)
-    vehicles_imeis = {str(veh.imei): veh for veh in query_vehicles}  #  we got to identify by imei / externalid since Skyhost removed their legacy id
-    known_imeis = list(vehicles_imeis.keys())
+    vehicles_external_ids = {str(veh.external_id): veh for veh in query_vehicles}  # identify by external_id (skyhost removed their legacy id, so v2 stores the imei as external_id)
+    known_external_ids = list(vehicles_external_ids.keys())
     collected_trip_length = 0
     collected_trip_count = 0
     collected_route_length = 0
@@ -232,10 +232,10 @@ def set_roundtrips_v2(ctx):
         headers = {"Authorization": f"Bearer {api_key}"}
 
         for skyhost_vehicle in complete_vehicle_list:
-            if str(skyhost_vehicle.get("externalId")) not in known_imeis:
+            if str(skyhost_vehicle.get("externalId")) not in known_external_ids:
                 continue
             skyhost_device_id = skyhost_vehicle.get("id")
-            saved_vehicle = vehicles_imeis[str(skyhost_vehicle.get("externalId"))]
+            saved_vehicle = vehicles_external_ids[str(skyhost_vehicle.get("externalId"))]
             trips = get_trips_v2(
                 from_date=saved_vehicle.max_date,
                 to_date=now,
