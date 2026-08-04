@@ -148,7 +148,9 @@ class VehicleTypes(Base):
 
 class Cars(Base):
     __tablename__ = "cars"
-    id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, nullable=False, autoincrement=True, default=None)
+    external_id: Mapped[Optional[str]] = mapped_column(String(64), default=None)
+    source: Mapped[Optional[str]] = mapped_column(String(64), default=None)
     imei: Mapped[str] = mapped_column(String(20), nullable=True, default=None)
     plate: Mapped[Optional[str]] = mapped_column(String(128), default=None)
     make: Mapped[Optional[str]] = mapped_column(String(128), default=None)
