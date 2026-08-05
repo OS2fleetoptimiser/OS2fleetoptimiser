@@ -1,9 +1,10 @@
 """
-Adoption + migration entrypoint. Run by the migrate service on every deploy:
+Migration entrypoint. Run by the migrate service on every deploy:
 
     python -m fleetmanager.data_access.migrate
 
-Adopts pre-Alembic customer databases (repair + stamp) and upgrades to head.
+The baseline migration is idempotent, so databases created by the pre-Alembic
+`create_all` go through the same chain as empty ones - no adoption step needed.
 """
 import logging
 import sys
@@ -12,12 +13,9 @@ from pathlib import Path
 import sqlalchemy as sa
 from alembic import command
 from alembic.config import Config
-from alembic.migration import MigrationContext
-from alembic.operations import Operations
 from alembic.script import ScriptDirectory
 
 from .db_engine import build_dsn, create_defaults
-from .dbschema import Base
 
 logger = logging.getLogger("fleetmanager.migrate")
 logger.setLevel(logging.INFO)
@@ -36,11 +34,17 @@ def resolve_stamped_revision(engine, our_revisions) -> str | None:
     if not sa.inspect(engine).has_table("alembic_version"):
         return None
     with engine.begin() as conn:
-        version = conn.execute(
+        versions = conn.execute(
             sa.text("SELECT version_num FROM alembic_version")
-        ).scalar()
-        if version is None:
+        ).scalars().all()
+        if len(versions) == 0:
             return None
+        if len(versions) > 1:
+            sys.exit(
+                f"alembic_version holds several revisions {versions} - refusing to"
+                " touch this database."
+            )
+        version = versions[0]
         if version in our_revisions:
             return version
         if version in KNOWN_STALE_REVISIONS:
@@ -50,25 +54,6 @@ def resolve_stamped_revision(engine, our_revisions) -> str | None:
     sys.exit(
         f"Unknown alembic_version '{version}' - refusing to touch this database."
     )
-
-
-def repair(engine) -> None:
-    """Create missing tables and add missing columns on a pre-Alembic database."""
-    Base.metadata.create_all(engine, checkfirst=True)
-
-    insp = sa.inspect(engine)
-    with engine.begin() as conn:
-        ops = Operations(MigrationContext.configure(conn))
-        for table in Base.metadata.sorted_tables:
-            existing = {col["name"] for col in insp.get_columns(table.name)}
-            for column in table.columns:
-                if column.name in existing:
-                    continue
-                logger.info("Adding missing column %s.%s", table.name, column.name)
-                ops.add_column(
-                    table.name,
-                    sa.Column(column.name, column.type, nullable=True),
-                )
 
 
 def main() -> None:
@@ -81,14 +66,9 @@ def main() -> None:
     config = Config(str(ALEMBIC_INI))
     script = ScriptDirectory.from_config(config)
     our_revisions = {rev.revision for rev in script.walk_revisions()}
-    baseline = script.get_bases()[0]
     engine = sa.create_engine(dsn)
 
-    stamped = resolve_stamped_revision(engine, our_revisions)
-    if stamped is None and sa.inspect(engine).has_table("cars"):
-        logger.info("Existing unstamped database - adopting (repair + stamp)")
-        repair(engine)
-        command.stamp(config, baseline)
+    resolve_stamped_revision(engine, our_revisions)
 
     command.upgrade(config, "head")
     create_defaults(engine)

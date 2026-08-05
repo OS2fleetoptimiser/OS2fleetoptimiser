@@ -66,13 +66,34 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+def run_migrations(connection) -> None:
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        include_object=include_object,
+        compare_type=True,
+        render_as_batch=True,
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
+
+
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
 
     In this scenario we need to create an Engine
     and associate a connection with the context.
 
+    A caller invoking alembic programmatically can pass its own connection in
+    config.attributes, which takes precedence over the DB_* environment.
+
     """
+    connection = config.attributes.get("connection", None)
+    if connection is not None:
+        run_migrations(connection)
+        return
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
@@ -80,16 +101,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection,
-            target_metadata=target_metadata,
-            include_object=include_object,
-            compare_type=True,
-            render_as_batch=True,
-          )
-
-        with context.begin_transaction():
-            context.run_migrations()
+        run_migrations(connection)
 
 
 if context.is_offline_mode():

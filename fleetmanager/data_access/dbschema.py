@@ -24,7 +24,7 @@ class Base(MappedAsDataclass, DeclarativeBase):
 
 class Trips(Base):
     __tablename__ = "trips"
-    id: Mapped[int | None] = mapped_column(primary_key=True)
+    id: Mapped[int | None] = mapped_column(primary_key=True, nullable=False)
     car_id: Mapped[int] = mapped_column(ForeignKey("cars.id"), index=True)
     distance: Mapped[Optional[float]]
     start_time: Mapped[Optional[datetime]] = mapped_column(index=True)
