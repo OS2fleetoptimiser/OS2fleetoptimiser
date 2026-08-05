@@ -81,12 +81,6 @@ def engine_creator(
             # encoding="latin-1",
         )
 
-    insp = inspect(db_engine)
-        
-    if not insp.has_table("cars"):
-        Base.metadata.create_all(db_engine)
-        create_defaults(db_engine)
-
     return db_engine
 
 
