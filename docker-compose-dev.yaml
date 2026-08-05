@@ -11,11 +11,20 @@ services:
     command: ["npm", "run", "dev"]
     ports:
       - "127.0.0.1:3000:3000"
+  migrate:
+    image: fleetoptimiser-backend:latest
+    command: ["python", "-m", "fleetmanager.data_access.migrate"]
+    env_file: .dev-env
+    networks:
+      - backend_shared
   backend:
     image: fleetoptimiser-backend:latest
     command: ["uvicorn", "fleetmanager:api.app", "--port", "3001", "--host", "0.0.0.0", "--proxy-headers", "--root-path", "/api", "--workers", "2"]
     depends_on:
-      - celery
+      celery:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
     env_file: .dev-env
     ports:
       - "127.0.0.1:3001:3001"
@@ -26,7 +35,10 @@ services:
   celery:
     image: fleetoptimiser-backend:latest
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
     command: ["celery", "-A", "fleetmanager.tasks.celery", "worker", "--pool", "threads"]
     env_file: .dev-env
     networks:

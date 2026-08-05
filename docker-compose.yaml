@@ -25,11 +25,21 @@ services:
       - ROLE_CHECK= # the matching role from the authentication, if present user must have this attribute
       - ROLE_CHECK_READ= # the matching role if user only has read access
 
+  migrate:
+    image: fleetoptimiser-backend:latest
+    command: ["python", "-m", "fleetmanager.data_access.migrate"]
+    env_file: .prod-env
+    networks:
+      - backend_shared
+
   backend:
     image: fleetoptimiser-backend:latest
     command: ["uvicorn", "fleetmanager:api.app", "--port", "3001", "--host", "0.0.0.0", "--proxy-headers", "--root-path", "/api", "--workers", "2"]
     depends_on:
-      - celery
+      celery:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
     env_file: .prod-env
     networks:
       - frontend_backend
@@ -38,6 +48,9 @@ services:
       - ./running_tasks:/fleetmanager/running_tasks/ # mapping to a volume to record running "abortable" simulation
   celery:
     image: fleetoptimiser-backend:latest
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     command: ["celery", "-A", "fleetmanager.tasks.celery", "worker", "--pool", "threads"]
     env_file: .prod-env
     networks:

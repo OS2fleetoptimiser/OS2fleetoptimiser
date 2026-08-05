@@ -1,0 +1,93 @@
+name: Migration check
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*.*.*'
+    paths:
+      # Path filters are not evaluated for tag pushes, so every release tag
+      # runs this check regardless of which files it touches.
+      - 'fleetmanager/data_access/**'
+      - 'fleetmanager/alembic.ini'
+      - 'pyproject.toml'
+      - 'poetry.lock'
+      - '.github/workflows/migration-check.yaml'
+
+jobs:
+  migrate-from-empty:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: 'Y'
+          MSSQL_SA_PASSWORD: Ci_Passw0rd_2026
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Ci_Passw0rd_2026 -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 20
+          --health-start-period 30s
+
+    env:
+      DB_SERVER: mssql+pyodbc
+      DB_URL: 127.0.0.1:1433
+      DB_NAME: fleetoptimiser_ci
+      DB_USER: sa
+      DB_PASSWORD: Ci_Passw0rd_2026
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install system dependencies
+        run: |
+          curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
+          curl https://packages.microsoft.com/config/ubuntu/24.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql17 msodbcsql18 unixodbc-dev \
+            libxml2-dev libxslt-dev libxmlsec1-dev xmlsec1 libpq-dev pkg-config
+
+      - name: Install dependencies
+        run: |
+          pip install poetry==2.2.1
+          poetry config virtualenvs.create false
+          poetry install --without dev
+
+      - name: Create empty database
+        run: |
+          python - <<'PY'
+          import os, time, pyodbc
+          dsn = (
+              "DRIVER={ODBC Driver 18 for SQL Server};SERVER=127.0.0.1,1433;"
+              f"UID={os.environ['DB_USER']};PWD={os.environ['DB_PASSWORD']};"
+              "TrustServerCertificate=yes"
+          )
+          for attempt in range(30):
+              try:
+                  conn = pyodbc.connect(dsn, autocommit=True)
+                  break
+              except pyodbc.Error:
+                  time.sleep(5)
+          else:
+              raise SystemExit("SQL Server did not become available")
+          conn.execute(f"CREATE DATABASE {os.environ['DB_NAME']}")
+          PY
+
+      - name: Run migrations from empty database
+        run: python -m fleetmanager.data_access.migrate
+
+      - name: Verify chain matches the models
+        run: alembic -c fleetmanager/alembic.ini check
