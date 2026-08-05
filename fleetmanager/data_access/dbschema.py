@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, MetaData
 from sqlalchemy.orm import (
     relationship,
     Mapped,
@@ -12,12 +12,19 @@ from datetime import datetime
 
 
 class Base(MappedAsDataclass, DeclarativeBase):
-    pass
-
+    metadata = MetaData(
+        naming_convention={
+            "ix": "ix_%(column_0_label)s",
+            "uq": "uq_%(table_name)s_%(column_0_name)s",
+            "ck": "ck_%(table_name)s_%(constraint_name)s",
+            "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+            "pk": "pk_%(table_name)s",
+        }
+    )
 
 class Trips(Base):
     __tablename__ = "trips"
-    id: Mapped[int | None] = mapped_column(primary_key=True)
+    id: Mapped[int | None] = mapped_column(primary_key=True, nullable=False)
     car_id: Mapped[int] = mapped_column(ForeignKey("cars.id"), index=True)
     distance: Mapped[Optional[float]]
     start_time: Mapped[Optional[datetime]] = mapped_column(index=True)
@@ -95,6 +102,30 @@ class AllowedStartAdditions(Base):
     id: Mapped[int | None] = mapped_column(Integer, primary_key=True, nullable=False, default=None)
 
 
+class Workshops(Base):
+    __tablename__ = "workshops"
+    name: Mapped[Optional[str]] = mapped_column(String(128))
+    address: Mapped[Optional[str]] = mapped_column(String(128))
+    latitude: Mapped[Optional[float]]
+    longitude: Mapped[Optional[float]]
+    id: Mapped[Optional[int]] = mapped_column(
+        primary_key=True, nullable=False, default=None
+    )
+    addition_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, default_factory=datetime.now
+    )
+
+
+class WorkshopVisits(Base):
+    __tablename__ = "workshop_visits"
+    car_id: Mapped[int] = mapped_column(ForeignKey("cars.id"), index=True)
+    workshop_id: Mapped[int] = mapped_column(ForeignKey("workshops.id"), index=True)
+    start_time: Mapped[Optional[datetime]] = mapped_column(index=True)
+    end_time: Mapped[Optional[datetime]] = mapped_column(index=True)
+    duration: Mapped[Optional[float]]  # in hours
+    id: Mapped[int | None] = mapped_column(primary_key=True, nullable=False, default=None)
+
+
 class LeasingTypes(Base):
     __tablename__ = "leasing_types"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -117,7 +148,9 @@ class VehicleTypes(Base):
 
 class Cars(Base):
     __tablename__ = "cars"
-    id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, nullable=False, autoincrement=True, default=None)
+    external_id: Mapped[Optional[str]] = mapped_column(String(64), default=None)
+    source: Mapped[Optional[str]] = mapped_column(String(64), default=None)
     imei: Mapped[str] = mapped_column(String(20), nullable=True, default=None)
     plate: Mapped[Optional[str]] = mapped_column(String(128), default=None)
     make: Mapped[Optional[str]] = mapped_column(String(128), default=None)
@@ -249,6 +282,9 @@ def get_default_simulation_settings():
         ),
         SimulationSettings(id=19, name="pris_hvo", value="19.84", type="float"),
         SimulationSettings(id=20, name="hvo_udledning", value="0.894", type="float"),
+        SimulationSettings(
+            id=21, name="workshop_visit_min_hours", value="4", type="float"
+        ),
     ]
 
 

@@ -9,6 +9,8 @@ from .dbschema import (
     SimulationSettings,
     Trips,
     VehicleTypes,
+    Workshops,
+    WorkshopVisits,
     get_default_fuel_types,
     RoundTripSegments
 )
