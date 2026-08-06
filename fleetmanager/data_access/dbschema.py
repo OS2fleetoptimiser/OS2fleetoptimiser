@@ -151,7 +151,7 @@ class Cars(Base):
     id: Mapped[int] = mapped_column(primary_key=True, nullable=False, autoincrement=True, default=None)
     external_id: Mapped[Optional[str]] = mapped_column(String(64), default=None)
     source: Mapped[Optional[str]] = mapped_column(String(64), default=None)
-    imei: Mapped[str] = mapped_column(String(20), nullable=True, default=None)
+    imei: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, default=None)
     plate: Mapped[Optional[str]] = mapped_column(String(128), default=None)
     make: Mapped[Optional[str]] = mapped_column(String(128), default=None)
     model: Mapped[Optional[str]] = mapped_column(String(128), default=None)
@@ -194,8 +194,8 @@ class Cars(Base):
     round_trips: Mapped[Optional[List["RoundTrips"]]] = relationship(
         "RoundTrips", back_populates="car", default_factory=list
     )
-    forvaltning: Mapped[Optional[bool]] = mapped_column(String(128), default=None)
-    description: Mapped[Optional[bool]] = mapped_column(String(128), default=None)
+    forvaltning: Mapped[Optional[str]] = mapped_column(String(128), default=None)
+    description: Mapped[Optional[str]] = mapped_column(String(128), default=None)
     test_vehicle: Mapped[Optional[bool]] = mapped_column(Boolean(), default=False)
 
 
