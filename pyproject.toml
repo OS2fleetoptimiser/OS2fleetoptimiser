@@ -37,6 +37,7 @@ openpyxl = "^3.1.2"
 openpyn = "^3.0.0"
 tenacity = "^8.2.3"
 httpx = "^0.25.2"
+alembic = "^1.18.5"
 
 [tool.poetry.dev-dependencies]
 black = "^26.3.1"

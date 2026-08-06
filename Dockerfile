@@ -10,7 +10,7 @@ RUN apt-get update &&\
     apt-get install -y unixodbc iproute2 unixodbc-dev gnupg curl libxml2-dev libpq-dev libxslt-dev libxmlsec1-dev &&\
     curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - &&\
     curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list &&\
-    apt-get update && ACCEPT_EULA=Y apt-get install -y msodbcsql18 mssql-tools &&\
+    apt-get update && ACCEPT_EULA=Y apt-get install -y msodbcsql17 msodbcsql18 mssql-tools &&\
     pip install poetry==2.2.1
 
 COPY poetry.lock pyproject.toml ./
