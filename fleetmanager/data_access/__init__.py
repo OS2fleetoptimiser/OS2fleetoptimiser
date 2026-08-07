@@ -5,10 +5,17 @@ from .dbschema import (
     Cars,
     FuelTypes,
     LeasingTypes,
+    ReportAlerts,
+    ReportDeliveries,
+    ReportRecipients,
+    ReportSubscriptions,
+    ReportSubscriptionScope,
     RoundTrips,
     SimulationSettings,
     Trips,
     VehicleTypes,
+    Workshops,
+    WorkshopVisits,
     get_default_fuel_types,
-    RoundTripSegments
+    RoundTripSegments,
 )

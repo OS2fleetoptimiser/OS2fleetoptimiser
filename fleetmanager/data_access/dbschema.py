@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, MetaData, UniqueConstraint
 from sqlalchemy.orm import (
     relationship,
     Mapped,
@@ -12,12 +12,19 @@ from datetime import datetime
 
 
 class Base(MappedAsDataclass, DeclarativeBase):
-    pass
-
+    metadata = MetaData(
+        naming_convention={
+            "ix": "ix_%(column_0_label)s",
+            "uq": "uq_%(table_name)s_%(column_0_name)s",
+            "ck": "ck_%(table_name)s_%(constraint_name)s",
+            "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+            "pk": "pk_%(table_name)s",
+        }
+    )
 
 class Trips(Base):
     __tablename__ = "trips"
-    id: Mapped[int | None] = mapped_column(primary_key=True)
+    id: Mapped[int | None] = mapped_column(primary_key=True, nullable=False)
     car_id: Mapped[int] = mapped_column(ForeignKey("cars.id"), index=True)
     distance: Mapped[Optional[float]]
     start_time: Mapped[Optional[datetime]] = mapped_column(index=True)
@@ -95,6 +102,30 @@ class AllowedStartAdditions(Base):
     id: Mapped[int | None] = mapped_column(Integer, primary_key=True, nullable=False, default=None)
 
 
+class Workshops(Base):
+    __tablename__ = "workshops"
+    name: Mapped[Optional[str]] = mapped_column(String(128))
+    address: Mapped[Optional[str]] = mapped_column(String(128))
+    latitude: Mapped[Optional[float]]
+    longitude: Mapped[Optional[float]]
+    id: Mapped[Optional[int]] = mapped_column(
+        primary_key=True, nullable=False, default=None
+    )
+    addition_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, default_factory=datetime.now
+    )
+
+
+class WorkshopVisits(Base):
+    __tablename__ = "workshop_visits"
+    car_id: Mapped[int] = mapped_column(ForeignKey("cars.id"), index=True)
+    workshop_id: Mapped[int] = mapped_column(ForeignKey("workshops.id"), index=True)
+    start_time: Mapped[Optional[datetime]] = mapped_column(index=True)
+    end_time: Mapped[Optional[datetime]] = mapped_column(index=True)
+    duration: Mapped[Optional[float]]  # in hours
+    id: Mapped[int | None] = mapped_column(primary_key=True, nullable=False, default=None)
+
+
 class LeasingTypes(Base):
     __tablename__ = "leasing_types"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -117,8 +148,10 @@ class VehicleTypes(Base):
 
 class Cars(Base):
     __tablename__ = "cars"
-    id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
-    imei: Mapped[str] = mapped_column(String(20), nullable=True, default=None)
+    id: Mapped[int] = mapped_column(primary_key=True, nullable=False, autoincrement=True, default=None)
+    external_id: Mapped[Optional[str]] = mapped_column(String(64), default=None)
+    source: Mapped[Optional[str]] = mapped_column(String(64), default=None)
+    imei: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, default=None)
     plate: Mapped[Optional[str]] = mapped_column(String(128), default=None)
     make: Mapped[Optional[str]] = mapped_column(String(128), default=None)
     model: Mapped[Optional[str]] = mapped_column(String(128), default=None)
@@ -161,8 +194,8 @@ class Cars(Base):
     round_trips: Mapped[Optional[List["RoundTrips"]]] = relationship(
         "RoundTrips", back_populates="car", default_factory=list
     )
-    forvaltning: Mapped[Optional[bool]] = mapped_column(String(128), default=None)
-    description: Mapped[Optional[bool]] = mapped_column(String(128), default=None)
+    forvaltning: Mapped[Optional[str]] = mapped_column(String(128), default=None)
+    description: Mapped[Optional[str]] = mapped_column(String(128), default=None)
     test_vehicle: Mapped[Optional[bool]] = mapped_column(Boolean(), default=False)
 
 
@@ -178,6 +211,62 @@ class UserLogin(Base):
     __tablename__ = 'user_login'
     user_id: Mapped[str] = mapped_column(String(128), primary_key=True)
     last_seen_date: Mapped[datetime] = mapped_column(DateTime)
+
+
+class ReportSubscriptions(Base):
+    __tablename__ = 'report_subscriptions'
+    name: Mapped[str] = mapped_column(String(128))
+    trigger_type: Mapped[str] = mapped_column(String(64))
+    schedule: Mapped[str] = mapped_column(String(64))
+    created_by: Mapped[str] = mapped_column(String(128))
+    id: Mapped[Optional[int]] = mapped_column(primary_key=True, nullable=False, autoincrement=True, default=None)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default_factory=datetime.now)
+    threshold_days: Mapped[Optional[int]] = mapped_column(Integer, default=None)
+    all_vehicles: Mapped[bool] = mapped_column(Boolean(), default=False)
+    deleted: Mapped[bool] = mapped_column(Boolean(), default=False)
+    active: Mapped[bool] = mapped_column(Boolean(), default=True)
+    last_run: Mapped[Optional[datetime]] = mapped_column(DateTime, default=None)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default_factory=datetime.now, onupdate=datetime.now)
+
+class ReportSubscriptionScope(Base):
+    __tablename__ = 'report_subscription_scope'
+    subscription_id: Mapped[int] = mapped_column(ForeignKey('report_subscriptions.id',  ondelete="CASCADE"), nullable=False, index=True)
+    location_id: Mapped[Optional[int]] = mapped_column(ForeignKey('allowed_starts.id'), nullable=True, default=None)
+    car_id: Mapped[Optional[int]] = mapped_column(ForeignKey('cars.id'), nullable=True, default=None)
+    forvaltning: Mapped[Optional[str]] = mapped_column(String(128), default=None)
+    id: Mapped[Optional[int]] = mapped_column(primary_key=True, nullable=False, autoincrement=True, default=None)
+
+class ReportRecipients(Base):
+    __tablename__ = 'report_recipients'
+    __table_args__ = (UniqueConstraint("subscription_id", "email"),)
+    subscription_id: Mapped[int] = mapped_column(ForeignKey('report_subscriptions.id', ondelete="CASCADE"), nullable=False, index=True)
+    email: Mapped[str] = mapped_column(String(256))
+    id: Mapped[Optional[int]] = mapped_column(primary_key=True, autoincrement=True, nullable=False, default=None)
+    name: Mapped[Optional[str]] = mapped_column(String(128), default=None)
+
+class ReportAlerts(Base):
+    __tablename__ = 'report_alerts'
+    subscription_id: Mapped[int] = mapped_column(ForeignKey('report_subscriptions.id'), nullable=False, index=True)
+    id: Mapped[Optional[int]] = mapped_column(primary_key=True, autoincrement=True, nullable=False, default=None)
+    car_id: Mapped[Optional[int]] = mapped_column(ForeignKey('cars.id'), nullable=True, default=None)
+    location_id: Mapped[Optional[int]] = mapped_column(ForeignKey('allowed_starts.id'), nullable=True, default=None)
+    last_activity: Mapped[Optional[datetime]] = mapped_column(DateTime, default=None)
+    status: Mapped[str] = mapped_column(String(16), default="open", index=True)
+    opened_at: Mapped[datetime] = mapped_column(DateTime, default_factory=datetime.now)
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=None)
+    resolved_by_user: Mapped[Optional[str]] = mapped_column(String(128), default=None)
+
+
+class ReportDeliveries(Base):
+    __tablename__ = 'report_deliveries'
+    subscription_id: Mapped[int] = mapped_column(ForeignKey('report_subscriptions.id'), nullable=False, index=True)
+    recipient_email: Mapped[str] = mapped_column(String(256))
+    subject: Mapped[str] = mapped_column(String(256))
+    status: Mapped[str] = mapped_column(String(16))
+    id: Mapped[Optional[int]] = mapped_column(primary_key=True, autoincrement=True, nullable=False, default=None)
+    alert_id: Mapped[Optional[int]] = mapped_column(ForeignKey('report_alerts.id'), default=None)
+    sent_at: Mapped[datetime] = mapped_column(DateTime, default_factory=datetime.now)
+    error: Mapped[Optional[str]] = mapped_column(String(500), default=None)
 
 
 def get_default_leasing_types():
@@ -249,6 +338,9 @@ def get_default_simulation_settings():
         ),
         SimulationSettings(id=19, name="pris_hvo", value="19.84", type="float"),
         SimulationSettings(id=20, name="hvo_udledning", value="0.894", type="float"),
+        SimulationSettings(
+            id=21, name="workshop_visit_min_hours", value="4", type="float"
+        ),
     ]
 
 
