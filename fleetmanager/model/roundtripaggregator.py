@@ -1173,16 +1173,17 @@ def process_car_roundtrips(
         car_trips["start_time"].shift(-1) - car_trips["end_time"]
     )
 
-    # detect workshop visits from the same trips before aggregating; guarded so a
-    # failure here can never affect the roundtrip aggregation
-    if save and not precision_only and is_session_maker:
+    # detect workshop visits from the same trips before aggregating. run_workshop_detection
+    # handles both session types and never raises, so a failure here can never affect
+    # the roundtrip aggregation. the try only guards the deferred import, which is
+    # deferred because workshop_detection imports from this module
+    if save and not precision_only:
         try:
-            from fleetmanager.model.workshop_detection import (
-                process_car_workshop_visits,
-            )
+            from fleetmanager.model.workshop_detection import run_workshop_detection
 
-            with session_or_maker.begin() as workshop_session:
-                process_car_workshop_visits(workshop_session, car.id, car_trips)
+            run_workshop_detection(
+                session_or_maker, is_session_maker, car.id, car_trips
+            )
         except Exception as workshop_error:
             logger.warning(
                 f"Workshop visit detection failed for car {car.id}: {workshop_error}"

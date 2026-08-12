@@ -9,6 +9,7 @@ that position is within a workshop radius and the dwell is long enough, it is a
 visit. Consecutive dwells at the same workshop separated by a trivial move are
 merged into a single visit.
 """
+import atexit
 import os
 
 import pandas as pd
@@ -22,6 +23,11 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_WORKSHOP_RADIUS_KM = 0.2
 DEFAULT_MIN_VISIT_HOURS = 4.0
+# how far a vehicle may be driven between two dwells at the same workshop for the
+# move to count as repositioning rather than a trip away. Deliberately separate
+# from the radius: "how close counts as being at the workshop" and "how short a
+# move is trivial" are independent decisions
+DEFAULT_TRIVIAL_MOVE_KM = 1.0
 
 
 def get_workshops(session) -> list[dict]:
@@ -62,6 +68,7 @@ def detect_workshop_visits(
     workshops: list[dict],
     radius_km: float,
     min_hours: float,
+    trivial_move_km: float = DEFAULT_TRIVIAL_MOVE_KM,
 ) -> list[dict]:
     """
     Return the workshop visits found in a single car's trips. Each visit is a
@@ -91,24 +98,28 @@ def detect_workshop_visits(
             }
         )
 
-    return _merge_and_threshold(dwells, radius_km, min_hours)
+    return _merge_and_threshold(dwells, trivial_move_km, min_hours)
 
 
 def _merge_and_threshold(
-    dwells: list[dict], radius_km: float, min_hours: float
+    dwells: list[dict], trivial_move_km: float, min_hours: float
 ) -> list[dict]:
     """
     Merge consecutive dwells at the same workshop when the trip separating them
-    is a trivial move (distance within the radius), then keep only spans that
-    are at least min_hours long.
+    is a trivial move (driven distance within trivial_move_km), then keep only
+    spans that are at least min_hours long. The driven distance is what tells a
+    repositioning within the yard from a trip away and back: both leave the
+    vehicle within the radius, so the positions alone cannot separate them.
     """
     visits = []
     for dwell in dwells:
         if visits:
             previous = visits[-1]
+            distance_between = previous["trip_distance"]
             trivial_move = (
-                previous["trip_distance"] is not None
-                and previous["trip_distance"] <= radius_km
+                distance_between is not None
+                and not pd.isna(distance_between)
+                and distance_between <= trivial_move_km
             )
             if dwell["workshop_id"] == previous["workshop_id"] and trivial_move:
                 previous["end_time"] = dwell["end_time"]
@@ -177,6 +188,7 @@ def process_car_workshop_visits(
     workshops: list[dict] | None = None,
     radius_km: float | None = None,
     min_hours: float | None = None,
+    trivial_move_km: float | None = None,
 ) -> int:
     """Detect and persist workshop visits for one car. Returns the number inserted."""
     if workshops is None:
@@ -189,6 +201,93 @@ def process_car_workshop_visits(
         )
     if min_hours is None:
         min_hours = get_visit_min_hours(session)
+    if trivial_move_km is None:
+        trivial_move_km = float(
+            os.getenv("WORKSHOP_TRIVIAL_MOVE_KM", DEFAULT_TRIVIAL_MOVE_KM)
+        )
 
-    visits = detect_workshop_visits(car_trips, workshops, radius_km, min_hours)
+    visits = detect_workshop_visits(
+        car_trips, workshops, radius_km, min_hours, trivial_move_km
+    )
     return commit_workshop_visits(session, car_id, visits)
+
+
+class DetectionStats:
+    """
+    Counts detection outcomes over a run so it can be reported in one line. A
+    per-car warning is easy to miss; "failed for 34 of 34 cars" is not.
+    """
+
+    def __init__(self):
+        self.attempted = 0
+        self.failed = 0
+
+    def reset(self):
+        self.attempted = 0
+        self.failed = 0
+
+    def summary(self) -> str | None:
+        if self.attempted == 0:
+            return None
+        if self.failed == 0:
+            return f"Workshop detection ran for {self.attempted} cars"
+        return (
+            f"Workshop detection failed for {self.failed} of {self.attempted} cars"
+        )
+
+
+detection_stats = DetectionStats()
+
+
+def log_detection_summary():
+    """Log one summary line for the run, then reset. Also runs at process exit."""
+    message = detection_stats.summary()
+    if message is None:
+        return
+    if detection_stats.failed:
+        logger.error(message)
+    else:
+        logger.info(message)
+    detection_stats.reset()
+
+
+# the extractors are one-shot cli commands, so process exit is the end of a run.
+# this keeps the summary a single integration point instead of six wirings
+atexit.register(log_detection_summary)
+
+
+def run_workshop_detection(
+    session_or_maker,
+    is_session_maker: bool,
+    car_id: int,
+    car_trips: pd.DataFrame,
+) -> int:
+    """
+    Detect and persist workshop visits for one car without ever raising, so a
+    failure here cannot affect the roundtrip aggregation that follows. Works with
+    both a sessionmaker and a plain Session; only the former can open its own
+    transaction, the latter shares the extractor's session and is committed here
+    because nothing else is guaranteed to commit it.
+    """
+    detection_stats.attempted += 1
+    try:
+        if is_session_maker:
+            with session_or_maker.begin() as session:
+                return process_car_workshop_visits(session, car_id, car_trips)
+
+        inserted = process_car_workshop_visits(session_or_maker, car_id, car_trips)
+        session_or_maker.commit()
+        return inserted
+    except Exception as error:
+        detection_stats.failed += 1
+        logger.warning(f"Workshop visit detection failed for car {car_id}: {error}")
+        if not is_session_maker:
+            # a session left in a failed state would break the aggregation below
+            try:
+                session_or_maker.rollback()
+            except Exception as rollback_error:
+                logger.warning(
+                    f"Could not roll back after workshop detection failure for car "
+                    f"{car_id}: {rollback_error}"
+                )
+        return 0

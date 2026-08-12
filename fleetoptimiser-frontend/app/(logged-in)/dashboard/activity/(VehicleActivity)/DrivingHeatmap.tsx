@@ -1,6 +1,6 @@
 import { ComputedCell, ResponsiveHeatMapCanvas } from '@nivo/heatmap';
 import 'd3-scale-chromatic';
-import { nivoTheme, chartPalette } from '@/theme/nivoTheme';
+import { nivoTheme, chartPalette, heatmapWarningGradient, heatmapWarningHsl } from '@/theme/nivoTheme';
 import dayjs from 'dayjs';
 import { useMediaQuery } from 'react-responsive';
 import ChartTooltip from '@/components/ChartTooltip';
@@ -13,14 +13,14 @@ export type HeatMapGroupWithMetaData = {
     workshop?: boolean;
 };
 
-// red (no driving) -> white (max driving); mirrors the sequential heatmapWarningGradient
+// red (no driving) -> white (max driving); interpolated from the same palette values
+// as heatmapWarningGradient so the cells and the legend strip cannot drift apart
 const drivingColor = (value: number | null | undefined, maxHeatValue?: number) => {
     if (value === null || value === undefined) return chartPalette.heatmapEmpty;
     const max = maxHeatValue && maxHeatValue > 0 ? maxHeatValue : 1;
     const t = Math.max(0, Math.min(1, value / max));
-    const saturation = 55 * (1 - t);
-    const lightness = 58 + 42 * t;
-    return `hsl(0, ${saturation}%, ${lightness}%)`;
+    const { hue, saturation, lightness } = heatmapWarningHsl;
+    return `hsl(${hue}, ${saturation * (1 - t)}%, ${lightness + (100 - lightness) * t}%)`;
 };
 
 export type heatmapData = {
@@ -86,15 +86,27 @@ export const DrivingHeatmapKm = ({
     );
 };
 
+// the categories the km scale cannot express; the scale itself is the gradient strip
 const legendItems = [
-    { color: 'hsl(0, 55%, 58%)', label: 'Ingen kørsel' },
-    { color: '#ffffff', label: 'Kørsel' },
     { color: chartPalette.heatmapEmpty, label: 'Aktiv rundtur, ingen kørsel' },
     { color: chartPalette.heatmapWorkshop, label: 'Værkstedsbesøg' },
 ];
 
-export const DrivingHeatmapLegend = () => (
-    <div className="flex flex-wrap gap-4 mb-2">
+export const DrivingHeatmapLegend = ({ maxHeatValue }: { maxHeatValue?: number }) => (
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-2">
+        <div className="flex items-center gap-1.5">
+            <span className="text-xs text-gray-600">Kørte km</span>
+            <span className="text-xs text-gray-600">0</span>
+            <span
+                className="inline-block w-24 h-2.5 rounded-sm border border-gray-300"
+                style={{
+                    backgroundImage: `linear-gradient(to right, ${heatmapWarningGradient[0]}, ${heatmapWarningGradient[1]})`,
+                }}
+            />
+            {maxHeatValue !== undefined && (
+                <span className="text-xs text-gray-600">{maxHeatValue.toLocaleString('da-DK')}+</span>
+            )}
+        </div>
         {legendItems.map((item) => (
             <div key={item.label} className="flex items-center gap-1.5">
                 <span

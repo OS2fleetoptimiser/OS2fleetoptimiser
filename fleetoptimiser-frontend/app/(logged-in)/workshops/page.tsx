@@ -25,6 +25,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PageTitle from '@/components/PageTitle';
+import ApiError from '@/components/ApiError';
 import { useWritePrivilegeContext } from '@/app/providers/WritePrivilegeProvider';
 import {
     Workshop,
@@ -39,8 +40,8 @@ import WorkshopDialog from '@/app/(logged-in)/workshops/WorkshopDialog';
 
 export default function Page() {
     const { hasWritePrivilege } = useWritePrivilegeContext();
-    const { data: workshops, isPending } = useGetWorkshops();
-    const { data: settings } = useGetWorkshopSettings();
+    const { data: workshops, isPending, isError, refetch } = useGetWorkshops();
+    const { data: settings, isError: settingsError } = useGetWorkshopSettings();
 
     const createWorkshop = useCreateWorkshop();
     const updateWorkshop = useUpdateWorkshop();
@@ -50,11 +51,11 @@ export default function Page() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editing, setEditing] = useState<Workshop | null>(null);
     const [deleteId, setDeleteId] = useState<number | undefined>(undefined);
-    const [minHours, setMinHours] = useState<string>('');
+    // null means untouched, so the loaded value shows; '' is a field the user cleared
+    const [minHours, setMinHours] = useState<string | null>(null);
     const [toast, setToast] = useState<{ msg: string; severity: 'success' | 'error' } | null>(null);
 
-    // keep the local input in sync once the setting has loaded
-    const minHoursValue = minHours !== '' ? minHours : settings ? String(settings.min_visit_hours) : '';
+    const minHoursValue = minHours ?? (settings ? String(settings.min_visit_hours) : '');
 
     const openCreate = () => {
         setEditing(null);
@@ -162,6 +163,8 @@ export default function Page() {
                             value={minHoursValue}
                             onChange={(e) => setMinHours(e.target.value)}
                             disabled={!hasWritePrivilege || !settings}
+                            error={settingsError}
+                            helperText={settingsError ? 'Indstillingen kunne ikke hentes' : undefined}
                             InputProps={{ endAdornment: <InputAdornment position="end">timer</InputAdornment> }}
                             sx={{ width: 160 }}
                         />
@@ -182,7 +185,9 @@ export default function Page() {
                 </Button>
             </div>
 
-            {isPending ? (
+            {isError ? (
+                <ApiError retryFunction={() => refetch()}>Værkstederne kunne ikke hentes</ApiError>
+            ) : isPending ? (
                 <Skeleton variant="rounded" height={400} />
             ) : (
                 <DataGrid

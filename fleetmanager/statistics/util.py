@@ -1477,7 +1477,7 @@ def group_by_vehicle_location(
     unique_keys = date_duration_getter(start_date, end_date, aggregation_level)
 
     location_grouped = {
-        (location, it[0]): {"distance": 0, "startDate": it[1], "endDate": it[2], "workshop": False}
+        (location, it[0]): {"distance": 0, "startDate": it[1], "endDate": it[2]}
         for location in locations
         for it in unique_keys
     }
@@ -1599,7 +1599,8 @@ def get_workshop_visit_intervals(
         .filter(
             WorkshopVisits.car_id.in_(vehicles),
             WorkshopVisits.end_time >= start_date,
-            WorkshopVisits.start_time <= end_date,
+            # end_date is inclusive, so cover the whole day rather than its midnight
+            WorkshopVisits.start_time < end_date + datetime.timedelta(days=1),
         )
         .all()
     )

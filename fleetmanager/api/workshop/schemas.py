@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Workshop(BaseModel):
@@ -13,7 +13,8 @@ class Workshop(BaseModel):
 
 
 class WorkshopSettings(BaseModel):
-    min_visit_hours: float
+    # a zero or negative threshold would make every brief stop at the address a visit
+    min_visit_hours: float = Field(gt=0)
 
 
 class WorkshopVisit(BaseModel):
