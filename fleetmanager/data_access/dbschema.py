@@ -95,6 +95,30 @@ class AllowedStartAdditions(Base):
     id: Mapped[int | None] = mapped_column(Integer, primary_key=True, nullable=False, default=None)
 
 
+class Workshops(Base):
+    __tablename__ = "workshops"
+    name: Mapped[Optional[str]] = mapped_column(String(128))
+    address: Mapped[Optional[str]] = mapped_column(String(128))
+    latitude: Mapped[Optional[float]]
+    longitude: Mapped[Optional[float]]
+    id: Mapped[Optional[int]] = mapped_column(
+        primary_key=True, nullable=False, default=None
+    )
+    addition_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, default_factory=datetime.now
+    )
+
+
+class WorkshopVisits(Base):
+    __tablename__ = "workshop_visits"
+    car_id: Mapped[int] = mapped_column(ForeignKey("cars.id"), index=True)
+    workshop_id: Mapped[int] = mapped_column(ForeignKey("workshops.id"), index=True)
+    start_time: Mapped[Optional[datetime]] = mapped_column(index=True)
+    end_time: Mapped[Optional[datetime]] = mapped_column(index=True)
+    duration: Mapped[Optional[float]]  # in hours
+    id: Mapped[int | None] = mapped_column(primary_key=True, nullable=False, default=None)
+
+
 class LeasingTypes(Base):
     __tablename__ = "leasing_types"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -249,6 +273,9 @@ def get_default_simulation_settings():
         ),
         SimulationSettings(id=19, name="pris_hvo", value="19.84", type="float"),
         SimulationSettings(id=20, name="hvo_udledning", value="0.894", type="float"),
+        SimulationSettings(
+            id=21, name="workshop_visit_min_hours", value="4", type="float"
+        ),
     ]
 
 

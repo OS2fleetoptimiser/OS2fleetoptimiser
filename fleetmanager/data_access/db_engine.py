@@ -71,12 +71,38 @@ def engine_creator(
         )
 
     insp = inspect(db_engine)
-        
+
     if not insp.has_table("cars"):
         Base.metadata.create_all(db_engine)
         create_defaults(db_engine)
 
+    # create_all above only runs on a fresh database, so create the workshop
+    # tables and their default setting on already-populated databases too
+    if not insp.has_table("workshops") or not insp.has_table("workshop_visits"):
+        Base.metadata.create_all(db_engine)
+        ensure_workshop_defaults(db_engine)
+
     return db_engine
+
+
+def ensure_workshop_defaults(engine_: Engine) -> None:
+    """
+    Seed the workshop default settings on databases created before the feature.
+    """
+    from .dbschema import get_default_simulation_settings
+
+    Session = sessionmaker(bind=engine_)
+    with Session.begin() as sess:
+        for setting in get_default_simulation_settings():
+            if setting.name != "workshop_visit_min_hours":
+                continue
+            existing = sess.execute(
+                select(SimulationSettings).where(
+                    SimulationSettings.name == setting.name
+                )
+            ).all()
+            if len(existing) == 0:
+                sess.add(setting)
 
 
 def create_defaults(engine_: Engine) -> None:
