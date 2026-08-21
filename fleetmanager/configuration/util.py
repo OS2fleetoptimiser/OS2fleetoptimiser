@@ -789,34 +789,36 @@ def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
     for i, row in metadata.iterrows():
         excel_row = i + 2
 
-        vehicle_invalid = False
+        # collect every problem in the row, so the user does not have to fix
+        # them one upload at a time
+        row_errors = []
         if (row["Lokation"] not in locations) and (row["Lokation"] != None):
-            validation[excel_row] = "Fejl i: Lokation: Lokation eksisterer ikke"
-            vehicle_invalid = True
+            row_errors.append("Lokation: Lokation eksisterer ikke")
 
         drivmiddel = safe_lower(row["Drivmiddel"])
         if drivmiddel not in fuel_types:
             reason = f"skal udfyldes; {', '.join(fuel_types.keys())}" if not drivmiddel else f"ukendt type; \"{drivmiddel}\""
-            validation[excel_row] = f"Fejl i: Drivmiddel, {reason}"
-            vehicle_invalid = True
+            row_errors.append(f"Drivmiddel, {reason}")
 
         vehicle_type = safe_lower(row["Type"])
         if vehicle_type not in vehicle_types:
             reason = f"skal udfyldes; {', '.join(vehicle_types.keys())}" if not vehicle_type else f"ukendt type; \"{vehicle_type}\""
-            validation[excel_row] = f"Fejl i: Type, {reason}"
-            vehicle_invalid = True
+            row_errors.append(f"Type, {reason}")
 
         leasing_type = safe_lower(row["Leasing type"])
         if leasing_type not in leasing_types:
             reason = f"skal udfyldes; {', '.join(leasing_types.keys())}" if not leasing_type else f"ukendt type; \"{leasing_type}\""
-            validation[excel_row] = f"Fejl i: Leasingtype, {reason}"
-            vehicle_invalid = True
+            row_errors.append(f"Leasingtype, {reason}")
 
+        if row_errors:
+            validation[excel_row] = f"Fejl i: {'; '.join(row_errors)}"
+
+        # an unknown id makes the row irrelevant, regardless of its other problems
         if row.get("id") not in valid_ids:
             validation[excel_row] = "Ignoreres: Id ikke i database"
-            vehicle_invalid = True
+            continue
 
-        if vehicle_invalid:
+        if row_errors:
             continue
 
         try:
