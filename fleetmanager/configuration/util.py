@@ -744,7 +744,7 @@ def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
     try:
         metadata = pd.read_excel(BytesIO(xlsx_bytes), converters=converters)
     except ValueError as e:
-        raise MetadataFileError
+        raise MetadataFileError(reason=str(e))
 
     metadata = metadata.replace({float("nan"): None})
 
@@ -775,7 +775,10 @@ def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
 
     # check columns
     if set(metadata.keys()) != set(column_names.values()):
-        raise MetadataColumnError
+        raise MetadataColumnError(
+            missing_columns=set(column_names.values()) - set(metadata.keys()),
+            unexpected_columns=unknown_columns,
+        )
 
     # get valid ids from database
     valid_ids = [i[0] for i in session.query(Cars.id).all()]
