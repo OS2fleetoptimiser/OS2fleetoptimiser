@@ -25,11 +25,25 @@ interface ValidationResultType {
 
 interface ErrorDetail {
     error: string;
+    filename?: string;
+    content_type?: string;
+    expected_content_type?: string;
+    reason?: string;
+    missing_columns?: string[];
+    unexpected_columns?: string[];
+    errors?: RowValidation[];
+    ignores?: RowValidation[];
 }
 
 interface ErrorResponse {
     detail: ErrorDetail;
 }
+
+// FastAPI's own request validation puts an array in detail, ours is always an object
+const getErrorDetail = (err: AxiosError): ErrorDetail | undefined => {
+    const detail = (err.response?.data as ErrorResponse | undefined)?.detail;
+    return detail && !Array.isArray(detail) ? detail : undefined;
+};
 
 const ValidationResultList = ({ validationResult }: { validationResult: ValidationResultType | null }) => {
     if (validationResult == null) {
@@ -80,12 +94,32 @@ const postMetadata = async (f: File | null, validationOnly: boolean) => {
 };
 
 const mapErrors = (err: AxiosError) => {
-    const errorData = err.response?.data as ErrorResponse | undefined;
+    const detail = getErrorDetail(err);
 
-    if (err.response?.status == 422 && errorData?.detail.error == 'invalid_columns') {
-        return 'Fejl i en eller flere kolonneoverskrifter';
+    if (detail?.error == 'invalid_mimetype') {
+        return `Filen "${detail.filename ?? 'ukendt'}" blev sendt som "${detail.content_type ?? 'ukendt filtype'}". Åbn den i Excel, gem den som .xlsx og prøv igen.`;
     }
-    if (err.response?.status == 422 && errorData?.detail.error == 'invalid_rows') {
+    if (detail?.error == 'unreadable_file') {
+        const reason = detail.reason ? ` (${detail.reason})` : '';
+        return `Filen kunne ikke læses som regneark${reason}. Tjek at den er gemt som .xlsx og ikke er beskyttet med adgangskode.`;
+    }
+    if (detail?.error == 'invalid_columns') {
+        const parts: string[] = [];
+        if (detail.missing_columns?.length) {
+            parts.push(`manglende kolonne(r): ${detail.missing_columns.join(', ')}`);
+        }
+        if (detail.unexpected_columns?.length) {
+            parts.push(`ukendt(e) kolonne(r): ${detail.unexpected_columns.join(', ')}`);
+        }
+        return parts.length ? `Fejl i kolonneoverskrifterne — ${parts.join('; ')}.` : 'Fejl i en eller flere kolonneoverskrifter';
+    }
+    if (detail?.error == 'invalid_rows') {
+        const count = detail.errors?.length;
+        return count ? `${count} række(r) kunne ikke gemmes — ret dem i filen og upload igen:` : 'Fejl i en eller flere rækker';
+    }
+
+    // fallback for responses without a known error code
+    if (err.response?.status == 422) {
         return 'Fejl i en eller flere rækker';
     }
     if (err.response?.status == 415) {
@@ -93,6 +127,17 @@ const mapErrors = (err: AxiosError) => {
     }
 
     return 'Ukendt fejl';
+};
+
+// the row level rejection carries the offending rows, so they can be listed as during validation
+const rowsFromError = (err: AxiosError): ValidationResultType | null => {
+    const detail = getErrorDetail(err);
+
+    if (!detail?.errors?.length) {
+        return null;
+    }
+
+    return { valid: [], errors: detail.errors, ignores: detail.ignores ?? [], total_updated: 0 };
 };
 
 export const ImportModal = ({ open, onClose, refetch }: ModalProps) => {
@@ -113,8 +158,8 @@ export const ImportModal = ({ open, onClose, refetch }: ModalProps) => {
             setStatus('apierror');
 
             if (isAxiosError(err)) {
-                const msg = mapErrors(err);
-                setErrorMsg(msg);
+                setErrorMsg(mapErrors(err));
+                setValidationResult(rowsFromError(err));
                 return;
             }
 
@@ -132,8 +177,8 @@ export const ImportModal = ({ open, onClose, refetch }: ModalProps) => {
             setStatus('apierror');
 
             if (isAxiosError(err)) {
-                const msg = mapErrors(err);
-                setErrorMsg(msg);
+                setErrorMsg(mapErrors(err));
+                setValidationResult(rowsFromError(err));
                 return;
             }
 
@@ -199,7 +244,8 @@ export const ImportModal = ({ open, onClose, refetch }: ModalProps) => {
 
                         {status == 'apierror' && (
                             <div className="flex flex-col justify-center">
-                                <div className="mx-auto">{errorMsg}</div>
+                                <div className="mx-auto text-center">{errorMsg}</div>
+                                {!!validationResult?.errors.length && <ValidationResultList validationResult={validationResult} />}
                             </div>
                         )}
 
