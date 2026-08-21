@@ -730,9 +730,21 @@ def match_errors(id):
 def safe_lower(val):
     return val.strip().lower() if isinstance(val, str) and val.strip() else None
 
+def safe_datetime(val):
+    """
+    Parse a leasing date, but hand back the raw value if it cannot be read, so a single
+    bad cell is reported on its row instead of failing the entire upload.
+    """
+    try:
+        return pd.to_datetime(val)
+    except (ValueError, TypeError):
+        return val
+
+LEASING_DATE_COLUMNS = ("Start leasing", "Slut leasing")
+
 def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
 
-    converters = {"Start leasing": pd.to_datetime, "Slut leasing": pd.to_datetime}
+    converters = {column: safe_datetime for column in LEASING_DATE_COLUMNS}
     leasing_types = _typelist_to_dict(get_default_leasing_types())
     fuel_types = _typelist_to_dict(get_default_fuel_types())
     vehicle_types = _typelist_to_dict(get_default_vehicle_types())
@@ -809,6 +821,11 @@ def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
         if leasing_type not in leasing_types:
             reason = f"skal udfyldes; {', '.join(leasing_types.keys())}" if not leasing_type else f"ukendt type; \"{leasing_type}\""
             row_errors.append(f"Leasingtype, {reason}")
+
+        for column in LEASING_DATE_COLUMNS:
+            # anything still a string was handed back unparsed by safe_datetime
+            if isinstance(row[column], str):
+                row_errors.append(f'{column}, kan ikke læses som dato; "{row[column]}"')
 
         if row_errors:
             validation[excel_row] = f"Fejl i: {'; '.join(row_errors)}"
