@@ -77,7 +77,7 @@ export default function OverViewGraphs({ endDate, forvaltninger, locations, star
                 {emissionSeries.data &&
                     (emissionSeries.data.data.length > 0 ? (
                         <div className="h-80">
-                            <DownloadableGraph filename={`overblik_udledning_${fileNameAppendix}.png`}>
+                            <DownloadableGraph filename={`overblik_udledning_${fileNameAppendix}.png`} header={{ title: 'CO2e udledning (Ton)' }}>
                                 <DateLineGraph data={[emissionSeries.data]} yLabel={'Ton CO2e udledning'} color={chartPalette.blue700}></DateLineGraph>
                             </DownloadableGraph>
                         </div>
@@ -99,7 +99,7 @@ export default function OverViewGraphs({ endDate, forvaltninger, locations, star
                 {shareSeries.data &&
                     (shareSeries.data.data.length > 0 ? (
                         <div className="h-80">
-                            <DownloadableGraph filename={`overblik_fossilfri_${fileNameAppendix}.png`}>
+                            <DownloadableGraph filename={`overblik_fossilfri_${fileNameAppendix}.png`} header={{ title: 'Procentvis kørt i elbil' }}>
                                 <DateLineGraph data={[shareSeries.data]} yLabel={'Procentvis kørt i elbil'} color={chartPalette.blue500}></DateLineGraph>
                             </DownloadableGraph>
                         </div>
@@ -121,7 +121,7 @@ export default function OverViewGraphs({ endDate, forvaltninger, locations, star
                 {drivenSeries.data &&
                     (drivenSeries.data.data.length > 0 ? (
                         <div className="h-80">
-                            <DownloadableGraph filename={`overblik_kørsel_${fileNameAppendix}.png`}>
+                            <DownloadableGraph filename={`overblik_kørsel_${fileNameAppendix}.png`} header={{ title: 'Kørte kilometer' }}>
                                 <DateLineGraph data={[drivenSeries.data]} yLabel={'Kørte kilometer'} color={chartPalette.blue200}></DateLineGraph>
                             </DownloadableGraph>
                         </div>

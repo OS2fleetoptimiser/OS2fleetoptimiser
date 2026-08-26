@@ -96,7 +96,16 @@ const MonthlyDrivingDashboard = ({ availableshifts, end, start, departments, for
                             </div>
                         </Box>
                         <div className="h-96">
-                            <DownloadableGraph filename={`maanedelig_koersel-${fileNameAppendix}.png`}>
+                            <DownloadableGraph
+                                filename={`maanedelig_koersel-${fileNameAppendix}.png`}
+                                header={{
+                                    title: 'Kørte kilometer pr. måned',
+                                    stats: [
+                                        { label: 'Kørte kilometer', value: `${Math.round(dashboardData.data.totalDriven).toLocaleString()} km` },
+                                        { label: 'Køretøjer i grafen', value: `${dashboardData.data.uniqueVehicles}` },
+                                    ],
+                                }}
+                            >
                                 <MonthlyDrivingGraph data={dashboardData.data.drivingData} colorMapper={shiftColorMapper} />
                             </DownloadableGraph>
                         </div>

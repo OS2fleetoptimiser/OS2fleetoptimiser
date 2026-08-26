@@ -117,7 +117,13 @@ const AverageDrivingDashboard = ({ availableshifts, end, locations, forvaltninge
                             </div>
                         </Box>
                         <div className="h-96">
-                            <DownloadableGraph filename={`gennemsnitlig_koersel-${fileNameAppendix}.png`}>
+                            <DownloadableGraph
+                                filename={`gennemsnitlig_koersel-${fileNameAppendix}.png`}
+                                header={{
+                                    title: 'Gennemsnitlig kørte kilometer',
+                                    stats: [{ label: 'Køretøjer i grafen', value: `${drivingData.data.dataPoints.length}` }],
+                                }}
+                            >
                                 <AverageDrivingGraph data={drivingData.data.dataPoints} keys={drivingData.data.keys} colorMapper={shiftColorMapper} />
                             </DownloadableGraph>
                         </div>

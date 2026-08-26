@@ -119,6 +119,11 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
     });
     const fileNameAppendix = `${start}-${end}-${locations?.length ?? 'alle'}_lokationer`;
     const shiftColorMapper = getColorMapperFunc(availableshifts);
+    // shared by the stat box and the downloaded image so the two cannot drift apart
+    const shiftSummaries = Object.values(dashboardData.data ?? {}).map((series) => {
+        const avg = series.data.length > 0 ? Math.round(series.data.reduce((sum, p) => sum + p.y, 0) / series.data.length) : 0;
+        return { label: series.id, value: `${avg.toLocaleString()} km/dag`, sub: `${series.uniqueCars} køretøjer` };
+    });
 
     return (
         <div>
@@ -141,22 +146,19 @@ const DailyDrivingDashboard = ({ availableshifts, start, end, departments, forva
                             Grafen viser det samlede antal kørte kilometer pr. dag i den valgte periode. Grafen opdeles på dagsbasis ved perioder under 31 dage, ugebasis under 90 dage og månedsbasis ved længere perioder.
                         </Typography>
                         <Box className="flex w-fit divide-x divide-gray-300 py-3 mb-4 rounded-lg" sx={{ bgcolor: '#fcfcfc' }}>
-                            {Object.keys(dashboardData.data).map((shiftKey) => {
-                                const series = dashboardData.data[shiftKey]
-                                const avg = series.data.length > 0
-                                    ? Math.round(series.data.reduce((sum, p) => sum + p.y, 0) / series.data.length)
-                                    : 0
-                                return (
-                                    <div key={shiftKey} className="px-5">
-                                        <div className="text-xs text-gray-500">{series.id}</div>
-                                        <div className="text-lg font-semibold">{avg.toLocaleString()} km/dag</div>
-                                        <div className="text-xs text-gray-400">{series.uniqueCars} køretøjer</div>
-                                    </div>
-                                )
-                            })}
+                            {shiftSummaries.map((summary) => (
+                                <div key={summary.label} className="px-5">
+                                    <div className="text-xs text-gray-500">{summary.label}</div>
+                                    <div className="text-lg font-semibold">{summary.value}</div>
+                                    <div className="text-xs text-gray-400">{summary.sub}</div>
+                                </div>
+                            ))}
                         </Box>
                         <div className="h-96">
-                            <DownloadableGraph filename={`daglig_koersel-${fileNameAppendix}.png`}>
+                            <DownloadableGraph
+                                filename={`daglig_koersel-${fileNameAppendix}.png`}
+                                header={{ title: 'Kørte kilometer pr. dag', stats: shiftSummaries }}
+                            >
                                 <CombinedDailyDrivingGraph
                                     data={Object.keys(dashboardData.data).map((shiftKey) => dashboardData.data[shiftKey])}
                                     colorMapper={shiftColorMapper}
