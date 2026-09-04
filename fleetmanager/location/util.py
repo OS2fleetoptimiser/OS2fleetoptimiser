@@ -305,6 +305,15 @@ def precision_test(
         "SKYHOST_V2": {"precision_function": precision_test_skyhost_v2, "keys_key": "SKYHOST_V2_KEYS"}
     }
 
+    source_to_extractor = {   
+        "skyhost-v1": "SKYHOST",
+        "skyhost-v2": "SKYHOST_V2",
+        "mileagebook": "MILEAGEBOOK",
+        "gamfleet": "GAMFLEET",
+        "fleetcomplete": "FLEETCOMPLETE",
+        "puma": "PUMA",
+    }
+
     engine = engine_creator()
     session = sessionmaker(bind=engine)()
 
@@ -313,6 +322,8 @@ def precision_test(
         Cars.location,
         Cars.plate,  # puma extraction is dependent on the plate
         Cars.imei,  # skyhostV2 is dependent on imei as externalid
+        Cars.external_id,
+        Cars.source,
     ).filter(
         Cars.location == location,
         Cars.omkostning_aar.isnot(None),
@@ -328,6 +339,9 @@ def precision_test(
     ).all()
 
     len_cars = len(cars)
+    present_sources = {car.source for car in cars}
+    needed = {source_to_extractor[s] for s in present_sources if s in source_to_extractor}
+    extractors = [e for e in extractors if e in needed]
     results = []
     response = PrecisionTestResults(
         test_settings=PrecisionTestIn(

@@ -203,7 +203,7 @@ def set_roundtrips_v2(ctx):
     query_vehicles = (
         session.query(
             Cars.id,
-            Cars.imei,
+            Cars.external_id,
             Cars.location,
             func.coalesce(func.max(RoundTrips.end_time), max_date).label("max_date"),
         )
@@ -216,13 +216,13 @@ def set_roundtrips_v2(ctx):
             or_(Cars.wltp_el.isnot(None), Cars.wltp_fossil.isnot(None)),
             Cars.location.isnot(None)
         )
-        .group_by(Cars.id, Cars.location, Cars.imei)
+        .group_by(Cars.id, Cars.location, Cars.external_id)
         .outerjoin(RoundTrips, RoundTrips.car_id == Cars.id)
     )
 
     allowed_starts = get_allowed_starts_with_additions(session)
-    vehicles_imeis = {str(veh.imei): veh for veh in query_vehicles}  #  we got to identify by imei / externalid since Skyhost removed their legacy id
-    known_imeis = list(vehicles_imeis.keys())
+    vehicles_external_ids = {str(veh.external_id): veh for veh in query_vehicles}  # identify by external_id (skyhost removed their legacy id, so v2 stores the imei as external_id)
+    known_external_ids = list(vehicles_external_ids.keys())
     collected_trip_length = 0
     collected_trip_count = 0
     collected_route_length = 0
@@ -232,10 +232,10 @@ def set_roundtrips_v2(ctx):
         headers = {"Authorization": f"Bearer {api_key}"}
 
         for skyhost_vehicle in complete_vehicle_list:
-            if str(skyhost_vehicle.get("externalId")) not in known_imeis:
+            if str(skyhost_vehicle.get("externalId")) not in known_external_ids:
                 continue
             skyhost_device_id = skyhost_vehicle.get("id")
-            saved_vehicle = vehicles_imeis[str(skyhost_vehicle.get("externalId"))]
+            saved_vehicle = vehicles_external_ids[str(skyhost_vehicle.get("externalId"))]
             trips = get_trips_v2(
                 from_date=saved_vehicle.max_date,
                 to_date=now,
@@ -319,7 +319,7 @@ def set_roundtrips(ctx):
 
     for car in cars.itertuples():
         if (
-            str(car.id) not in carid2key
+            str(car.external_id) not in carid2key
             or pd.isna(car.omkostning_aar)
             or pd.isna(car.location)
         ):
@@ -331,8 +331,9 @@ def set_roundtrips(ctx):
                 )
             ).fetchone()[0]
         current_trips = get_trips(
-            car.id, key=carid2key[str(car.id)], from_date=max_date
+            car.external_id, key=carid2key[str(car.external_id)], from_date=max_date
         )
+        current_trips["car_id"] = car.id
         # test which aggregates the most
         if len(current_trips) == 0:
             continue
@@ -389,7 +390,7 @@ def set_trackers_v2(ctx, description_fields=None):
         for vehicle_from_skyhost in complete_vehicle_list:
             imei = vehicle_from_skyhost.get("externalId")
             skyhost_id = vehicle_from_skyhost.get("id")
-            car_db = list(filter(lambda car: car.imei == imei, cars_in_db))
+            car_db = list(filter(lambda car: car.external_id == imei and car.source == "skyhost-v2", cars_in_db))
             if len(car_db) > 1:
                 logger.warning(f"There are multiple cars with the same imei number {imei}")
                 continue
@@ -405,13 +406,8 @@ def set_trackers_v2(ctx, description_fields=None):
             vehicle_details.update(**vehicle_from_skyhost)
             make, model = None, None
 
-            known_car = False
-            # the new object from skyhost rest does not support "old" id format, hence we use the external imei
-            if len(car_db) == 0:
-                id_ = imei
-            else:
-                known_car = True
-                id_ = car_db[0].id
+            known_car = len(car_db) == 1
+            if known_car:
                 make = car_db[0].make
                 model = car_db[0].model
 
@@ -434,7 +430,8 @@ def set_trackers_v2(ctx, description_fields=None):
             wltp_fossil = get_vehicle_wltp(vehicle_details.get("details", {}), "fossil")
             range_km = get_electrical_range(vehicle_details.get("details"))
             car = dict(
-                id=int(id_),
+                external_id = imei,
+                source = "skyhost-v2",
                 imei=imei,
                 plate=plate,
                 make=make,
@@ -507,14 +504,15 @@ def set_trackers(ctx, description_fields=None):
             continue
 
         with Session() as sess:
-            banned_cars = (
-                sess.query(Cars.id)
-                .filter(or_(Cars.deleted == True, Cars.disabled == True))
+            banned_cars = [
+                str(car.external_id)
+                for car in sess.query(Cars.external_id)
+                .filter(or_(Cars.deleted == True, Cars.disabled == True), Cars.source == "skyhost-v1")
                 .all()
-            )
+            ]
 
         for tracker in trackers.frame.itertuples():
-            if tracker.ID in banned_cars:
+            if str(tracker.ID) in banned_cars:
                 continue
             plate = tracker.Marker if tracker.Marker is not None and re.match(r"\w{2}\d{5}", str(tracker.Marker)) else None
             if plate is None and 'Description' in trackers.frame.columns:
@@ -522,7 +520,8 @@ def set_trackers(ctx, description_fields=None):
                 plate = None if description_plate_pattern is None else description_plate_pattern.group()
             # some times plate is in tracker.Marker
             car = dict(
-                id=tracker.ID,
+                external_id=str(tracker.ID),
+                source="skyhost-v1",
                 imei=tracker.IMEI,
                 plate=plate,
                 description=" ".join(
@@ -539,12 +538,12 @@ def set_trackers(ctx, description_fields=None):
                 "Description" in trackers.frame.columns and
                 (
                     tracker.Description in default_cars.plate.values
-                    or int(tracker.ID) in default_cars.id.values
+                    or str(tracker.ID) in default_cars.external_id.values
                 )
             ):
                 # we already know the car
                 # only thing we can update by now is the imei
-                saved_vehicle_object = sess.get(Cars, int(tracker.ID))
+                saved_vehicle_object = sess.query(Cars).filter_by(external_id=str(tracker.ID), source="skyhost-v1").first()
                 if saved_vehicle_object:
                     saved_vehicle_object.imei = car.get("imei")
                     if (plate and saved_vehicle_object.plate is None) or (
@@ -670,7 +669,10 @@ def set_trips(ctx):
                     }
 
         cars = pd.read_sql(
-            Query(Cars).filter(Cars.id.in_(trackers.frame.ID.values)).statement, engine
+            Query(Cars).filter(
+                Cars.external_id.in_([str(i) for i in trackers.frame.ID.values]),
+                Cars.source == "skyhost-v1",
+            ).statement, engine
         )
         for car in cars.itertuples():
             with engine.connect() as conn:
@@ -689,7 +691,7 @@ def set_trips(ctx):
             ):
                 logger.info(f"{start_month}, {end_month}")
                 dbook = driving_book(
-                    car.id,
+                    car.external_id,
                     start_month.isoformat(),
                     end_month.isoformat(),
                     agent,
@@ -784,7 +786,7 @@ def location_precision_test(
     """
     Function to test the precision of added parking spots
     """
-    carids = [str(car.id) for car in cars]
+    carids = [str(car.external_id) for car in cars]
     carid2key = {}
     for key in keys:
         if len(carid2key) == len(cars):
@@ -816,12 +818,12 @@ def location_precision_test(
     ]
 
     for car in cars:
-        if str(car.id) not in carid2key:
+        if str(car.external_id) not in carid2key:
             logger.info(f"Car id {car.id} not found in trackers amongst the keys")
             continue
 
         current_trips = get_trips(
-            car.id, key=carid2key[str(car.id)], from_date=start_date
+            car.external_id, key=carid2key[str(car.external_id)], from_date=start_date
         )
 
         if len(current_trips) == 0:

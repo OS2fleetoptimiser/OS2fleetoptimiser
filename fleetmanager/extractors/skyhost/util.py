@@ -167,7 +167,7 @@ def get_or_create(Session, model, parameters):
     returns the entry.
     """
     with Session.begin() as session:
-        instance = session.query(model).filter_by(id=parameters["id"]).first()
+        instance = session.query(model).filter_by(external_id=parameters["external_id"], source=parameters["source"]).first()
         if instance:
             session.expunge_all()
     if instance:

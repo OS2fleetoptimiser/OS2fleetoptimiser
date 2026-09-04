@@ -425,8 +425,9 @@ def save_vehicle(car_dict: dict, session: Session, dmr_keys: list[str] = None):
     if dmr_keys is None:
         dmr_keys = []
 
-    car_id = car_dict.get("id")
-    saved_car = session.get(Cars, car_id)
+    external_id = car_dict.get("external_id")
+    source = car_dict.get("source")
+    saved_car = session.query(Cars).filter_by(external_id=external_id, source=source).first()
     car_columns = set(Cars.__table__.columns.keys())
 
     if saved_car is None:
@@ -434,13 +435,16 @@ def save_vehicle(car_dict: dict, session: Session, dmr_keys: list[str] = None):
         for key, ref_type in BACK_REF_TYPES.items():
             if (val := insert_dict.get(key)) is not None:
                 insert_dict[f"{key}_obj"] = session.get(ref_type, val)
-        session.add(Cars(**insert_dict))
+        new_car = Cars(**insert_dict)
+        session.add(new_car)
+        session.flush()
+        new_id = new_car.id
         session.commit()
-        logger.info(f"Inserted new vehicle id={car_id}")
+        logger.info(f"Inserted new vehicle id={new_id} external_id={external_id} source={source}")
         return
 
     for key, value in car_dict.items():
-        if key not in car_columns or key == "id":
+        if key not in car_columns or key in ("id", "external_id", "source"):
             continue
         try:
             if pd.isna(value):

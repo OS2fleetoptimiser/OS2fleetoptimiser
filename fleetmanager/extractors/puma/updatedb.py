@@ -127,7 +127,8 @@ def set_vehicles(ctx, description_fields=None):
             continue
 
         saved_vehicle = cars_in_db[
-            (cars_in_db.plate == vehicle.registreringsnummer.replace(" ", "")) | (cars_in_db.id == vehicle.nummer)
+            (cars_in_db.plate == vehicle.registreringsnummer.replace(" ", "")) | ((cars_in_db.external_id == str(vehicle.nummer)) &
+            (cars_in_db.source == "puma"))
         ]
         if len(saved_vehicle) > 1:
             logger.warning(
@@ -184,7 +185,8 @@ def set_vehicles(ctx, description_fields=None):
                 continue
             drivkraft = vehicle_attributes.get("drivkraft")
             new_car_object = {
-                "id": vehicle.nummer,
+                "external_id": str(vehicle.nummer),
+                "source": "puma",
                 "plate": plate,
                 "make": vehicle_attributes.get("make"),
                 "model": vehicle_attributes.get("model"),

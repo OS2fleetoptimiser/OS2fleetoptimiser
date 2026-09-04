@@ -134,7 +134,7 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
     vehicle_settings = pd.read_sql(Query(VehicleTypes).statement, engine)
     vehicles_response = requests.get(url + "Api/Vehicles/get", params=params)
     cars = json.loads(vehicles_response.content)["response"]
-    current_cars = {car.id: car.to_dict() for _, car in pd.read_sql(Query(Cars).statement, engine).iterrows()}
+    current_cars = {str(car.external_id): car.to_dict() for _, car in pd.read_sql(Query(Cars).statement, engine).iterrows() if car.source == "fleetcomplete"}
 
     if description_fields is not None:
         description_fields = description_fields.split(",")
@@ -144,7 +144,7 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
     for k, car in enumerate(cars):
         id_ = car["id"]
 
-        current_car = current_cars.get(id_, {})
+        current_car = current_cars.get(str(id_), {})
         if current_car and (current_car.get("disabled", False) or current_car.get("deleted", False)):
             continue
         if (
@@ -198,7 +198,8 @@ def set_vehicles(ctx, description_fields=None, exempt_locations=False):
                 )
 
         car_details = dict(
-            id=id_,
+            external_id=str(id_),
+            source="fleetcomplete",
             plate=plate,
             make=car["info"]["make"],
             model=car["info"]["model"],
@@ -248,11 +249,12 @@ def set_roundtrips(ctx):
             Query(Cars).filter(Cars.omkostning_aar.isnot(None)).statement, engine
         )
 
-        banned_cars = (
-            session.query(Cars.id)
+        banned_cars = [
+            car.id
+            for car in session.query(Cars.id)
             .filter(or_(Cars.deleted == True, Cars.disabled == True))
             .all()
-        )
+        ]
 
         for car in cars.itertuples():
             if car.id in banned_cars or pd.isna(car.location):
@@ -263,7 +265,7 @@ def set_roundtrips(ctx):
                 .filter(RoundTrips.car_id == car.id)
             )
             current_trips = get_trips(
-                car.id,
+                car.external_id,
                 ctx.obj["url"],
                 from_date=max_date,
                 start_location=car.location,
@@ -524,7 +526,7 @@ def location_precision_test(
     """
     function to test the precision with added parking spots
     """
-    carids = [str(car.id) for car in cars]
+    carids = [str(car.external_id) for car in cars]
     carid2key = {}
 
     car_url = "https://app.ecofleet.com/seeme/Api/Vehicles/get"
@@ -564,13 +566,13 @@ def location_precision_test(
     ]
 
     for car in cars:
-        if str(car.id) not in carid2key:
+        if str(car.external_id) not in carid2key:
             logger.info(f"Car id {car.id} not found in trackers amongst the keys")
             continue
-        params = {"key": carid2key[str(car.id)], "json": ""}
+        params = {"key": carid2key[str(car.external_id)], "json": ""}
 
         car_trips = get_trips(
-            car.id,
+            car.external_id,
             base_url,
             from_date=start_date,
             params=params

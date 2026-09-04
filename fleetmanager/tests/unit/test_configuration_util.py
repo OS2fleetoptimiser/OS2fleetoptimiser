@@ -100,7 +100,6 @@ def test_create_delete_vehicle(db_session):
     # Step 3: Get existing car count to calculate expected new ID
     existing_cars = db_session.query(Cars).all()
     existing_max_id = max([c.id for c in existing_cars]) if existing_cars else 0
-    expected_new_id = max(1000000, existing_max_id + 1)
 
     # Step 4: Use type 3 (elbil) with fuel 3 (el) - confirmed compatible
     # Provide all required fields (Pydantic v2 requires explicit None for optional fields without defaults)
@@ -132,7 +131,7 @@ def test_create_delete_vehicle(db_session):
 
     # Verify creation succeeded
     assert isinstance(saved_id, int), f"Vehicle creation failed with error: {saved_id}"
-    assert saved_id == expected_new_id, f"Expected ID {expected_new_id}, got {saved_id}"
+    assert saved_id > existing_max_id, f"Expected DB-assigned id > {existing_max_id}, got {saved_id}"
 
     # Step 6: Verify retrieval
     saved_vehicle = get_single_vehicle(db_session, vehicle_id=saved_id)
