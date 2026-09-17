@@ -67,7 +67,18 @@ export default function AvailabilityChart({ start, end, locations, departments, 
                             Grafen viser kapaciteten for puljen over de valgte køretøjer i den valgte periode. For hvert tidspunkt vises det antal af køretøjer, der var ledige på det pågældende tidspunkt. Hvis køretøjet ikke har en igangværende rundtur på tidspunktet, antages den som værende ledig. Der tages et gennemsnit af ledige køretøjer over 5 minutters interval. OBS: køretøjet kan stå som ledig, hvis rundturen ikke er komplet.
                         </Typography>
                         <div className="h-[500px]">
-                            <DownloadableGraph filename={`ledighedsgraf-${fileNameAppendix}.png`}>
+                            <DownloadableGraph
+                                filename={`ledighedsgraf-${fileNameAppendix}.png`}
+                                header={{
+                                    title: 'Ledighedsgraf',
+                                    stats: [
+                                        { label: 'Antal køretøjer', value: `${vehicle_availability.data.totalVehicles}` },
+                                        { label: 'Størst ledighed', value: `${vehicle_availability.data.maxAvailability}` },
+                                        { label: 'Mindst ledighed', value: `${vehicle_availability.data.leastAvailability}` },
+                                        { label: 'Gennemsnitlig ledighed', value: `${vehicle_availability.data.averageAvailability}` },
+                                    ],
+                                }}
+                            >
                                 <AvailabilityGraph totalVehicles={vehicle_availability.data.totalVehicles} data={vehicle_availability.data.data} />
                             </DownloadableGraph>
                         </div>
