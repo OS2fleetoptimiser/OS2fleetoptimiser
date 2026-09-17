@@ -730,9 +730,21 @@ def match_errors(id):
 def safe_lower(val):
     return val.strip().lower() if isinstance(val, str) and val.strip() else None
 
+def safe_datetime(val):
+    """
+    Parse a leasing date, but hand back the raw value if it cannot be read, so a single
+    bad cell is reported on its row instead of failing the entire upload.
+    """
+    try:
+        return pd.to_datetime(val)
+    except (ValueError, TypeError):
+        return val
+
+LEASING_DATE_COLUMNS = ("Start leasing", "Slut leasing")
+
 def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
 
-    converters = {"Start leasing": pd.to_datetime, "Slut leasing": pd.to_datetime}
+    converters = {column: safe_datetime for column in LEASING_DATE_COLUMNS}
     leasing_types = _typelist_to_dict(get_default_leasing_types())
     fuel_types = _typelist_to_dict(get_default_fuel_types())
     vehicle_types = _typelist_to_dict(get_default_vehicle_types())
@@ -744,7 +756,7 @@ def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
     try:
         metadata = pd.read_excel(BytesIO(xlsx_bytes), converters=converters)
     except ValueError as e:
-        raise MetadataFileError
+        raise MetadataFileError(reason=str(e))
 
     metadata = metadata.replace({float("nan"): None})
 
@@ -775,7 +787,10 @@ def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
 
     # check columns
     if set(metadata.keys()) != set(column_names.values()):
-        raise MetadataColumnError
+        raise MetadataColumnError(
+            missing_columns=set(column_names.values()) - set(metadata.keys()),
+            unexpected_columns=unknown_columns,
+        )
 
     # get valid ids from database
     valid_ids = [i[0] for i in session.query(Cars.id).all()]
@@ -786,34 +801,41 @@ def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
     for i, row in metadata.iterrows():
         excel_row = i + 2
 
-        vehicle_invalid = False
+        # collect every problem in the row, so the user does not have to fix
+        # them one upload at a time
+        row_errors = []
         if (row["Lokation"] not in locations) and (row["Lokation"] != None):
-            validation[excel_row] = "Fejl i: Lokation: Lokation eksisterer ikke"
-            vehicle_invalid = True
+            row_errors.append("Lokation: Lokation eksisterer ikke")
 
         drivmiddel = safe_lower(row["Drivmiddel"])
         if drivmiddel not in fuel_types:
             reason = f"skal udfyldes; {', '.join(fuel_types.keys())}" if not drivmiddel else f"ukendt type; \"{drivmiddel}\""
-            validation[excel_row] = f"Fejl i: Drivmiddel, {reason}"
-            vehicle_invalid = True
+            row_errors.append(f"Drivmiddel, {reason}")
 
         vehicle_type = safe_lower(row["Type"])
         if vehicle_type not in vehicle_types:
             reason = f"skal udfyldes; {', '.join(vehicle_types.keys())}" if not vehicle_type else f"ukendt type; \"{vehicle_type}\""
-            validation[excel_row] = f"Fejl i: Type, {reason}"
-            vehicle_invalid = True
+            row_errors.append(f"Type, {reason}")
 
         leasing_type = safe_lower(row["Leasing type"])
         if leasing_type not in leasing_types:
             reason = f"skal udfyldes; {', '.join(leasing_types.keys())}" if not leasing_type else f"ukendt type; \"{leasing_type}\""
-            validation[excel_row] = f"Fejl i: Leasingtype, {reason}"
-            vehicle_invalid = True
+            row_errors.append(f"Leasingtype, {reason}")
 
+        for column in LEASING_DATE_COLUMNS:
+            # anything still a string was handed back unparsed by safe_datetime
+            if isinstance(row[column], str):
+                row_errors.append(f'{column}, kan ikke læses som dato; "{row[column]}"')
+
+        if row_errors:
+            validation[excel_row] = f"Fejl i: {'; '.join(row_errors)}"
+
+        # an unknown id makes the row irrelevant, regardless of its other problems
         if row.get("id") not in valid_ids:
             validation[excel_row] = "Ignoreres: Id ikke i database"
-            vehicle_invalid = True
+            continue
 
-        if vehicle_invalid:
+        if row_errors:
             continue
 
         try:

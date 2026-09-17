@@ -1,6 +1,7 @@
 from datetime import datetime, date
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+import logging
 import os
 from sqlalchemy.orm import Session
 
@@ -44,8 +45,7 @@ router = APIRouter(
     prefix="/configuration",
 )
 
-
-# todo add logging
+logger = logging.getLogger(__name__)
 
 
 @router.get("/vehicles", response_model=VehiclesList)
@@ -164,17 +164,54 @@ async def delete_vehicle(vehicle_id: int, session: Session = Depends(get_session
     return {"success": True}
 
 
+def split_validation(validation: dict[int, str]):
+    """
+    Split the per row validation messages into the three buckets the frontend renders.
+    """
+    valid = []
+    error = []
+    ignore = []
+    for k, v in validation.items():
+        out = {"row": k, "msg": v}
+        if v == "ok":
+            valid.append(out)
+        if v.startswith("Fejl"):
+            error.append(out)
+        if v.startswith("Ignore"):
+            ignore.append(out)
+
+    return valid, error, ignore
+
+
 @router.post("/vehicles/metadata")
 async def vehicles_validate_metadata(
     validationonly: bool = False,
     file: UploadFile = File(...),
     session: Session = Depends(get_session),
 ):
+    """
+    Validate, and unless validationonly is set, persist an uploaded xlsx of vehicle metadata.
+
+    Every rejection carries an "error" code in the response detail, along with the specifics
+    the user needs to correct the file; the received content type, the mismatching column
+    names or the offending rows.
+    """
     # check payload
     valid_mimetype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     if file.content_type != valid_mimetype:
+        logger.warning(
+            "Metadata upload rejected, unexpected content type. filename=%s content_type=%s",
+            file.filename,
+            file.content_type,
+        )
         raise HTTPException(
-            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail={"error": "invalid_filetype"}
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail={
+                "error": "invalid_mimetype",
+                "filename": file.filename,
+                "content_type": file.content_type,
+                "expected_content_type": valid_mimetype,
+            },
         )
 
     # process payload
@@ -182,35 +219,57 @@ async def vehicles_validate_metadata(
     try:
         validation, vehicles = validate_vehicle_metadata(session, contents)
     except MetadataColumnError as e:
+        logger.warning(
+            "Metadata upload rejected, column mismatch. filename=%s missing=%s unexpected=%s",
+            file.filename,
+            e.missing_columns,
+            e.unexpected_columns,
+        )
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"error": "invalid_columns"}
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error": "invalid_columns",
+                "missing_columns": e.missing_columns,
+                "unexpected_columns": e.unexpected_columns,
+            },
         )
     except MetadataFileError as e:
+        logger.warning(
+            "Metadata upload rejected, file could not be parsed. filename=%s reason=%s",
+            file.filename,
+            e.reason,
+        )
         raise HTTPException(
-            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail={"error": "invalid_filetype"}
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail={
+                "error": "unreadable_file",
+                "filename": file.filename,
+                "reason": e.reason,
+            },
         )
 
-    if validationonly:
-        valid = []
-        ignore = []
-        error = []
-        for k, v in validation.items():
-            out = {"row": k, "msg": v}
-            if v == "ok":
-                valid.append(out)
-            if v.startswith("Fejl"):
-                error.append(out)
-            if v.startswith("Ignore"):
-                ignore.append(out)
+    valid, error, ignore = split_validation(validation)
 
+    if validationonly:
         return {"valid": valid, "errors": error, "ignores": ignore}
 
     try:
         total_updated = update_vehicle_metadata(session, validation, vehicles)
     except MetadataRowInvalidError as e:
+        logger.warning(
+            "Metadata upload rejected, %s of %s rows invalid. filename=%s",
+            len(error),
+            len(validation),
+            file.filename,
+        )
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"error": "invalid_rows", "data": validation},
+            detail={
+                "error": "invalid_rows",
+                "data": validation,
+                "errors": error,
+                "ignores": ignore,
+            },
         )
 
     return {"total_updated": total_updated}
