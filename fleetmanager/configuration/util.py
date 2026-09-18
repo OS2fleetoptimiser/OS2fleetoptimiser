@@ -1,3 +1,4 @@
+import re
 from ast import literal_eval
 from datetime import time, date, datetime
 from io import BytesIO
@@ -729,6 +730,18 @@ def safe_lower(val):
     return val.strip().lower() if isinstance(val, str) and val.strip() else None
 
 
+def parse_sheet_date(value):
+    """
+    The export writes leasing dates as DD-MM-YYYY text, which pandas would otherwise read
+    month first whenever the day is 12 or less.
+    """
+    if isinstance(value, str):
+        text = value.strip()
+        if re.fullmatch(r"\d{1,2}-\d{1,2}-\d{4}", text):
+            return pd.to_datetime(text, format="%d-%m-%Y")
+    return pd.to_datetime(value)
+
+
 # sheet headers of the xlsx import keyed by Cars column, must match formatDataForExport in the frontend
 METADATA_COLUMNS = {
     "id": "id",
@@ -758,7 +771,7 @@ METADATA_CLEARABLE = {"wltp_fossil", "wltp_el", "start_leasing", "end_leasing", 
 
 def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
 
-    converters = {"Start leasing": pd.to_datetime, "Slut leasing": pd.to_datetime}
+    converters = {"Start leasing": parse_sheet_date, "Slut leasing": parse_sheet_date}
     leasing_types = _typelist_to_dict(get_default_leasing_types())
     fuel_types = _typelist_to_dict(get_default_fuel_types())
     vehicle_types = _typelist_to_dict(get_default_vehicle_types())

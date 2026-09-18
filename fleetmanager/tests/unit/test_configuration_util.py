@@ -24,6 +24,7 @@ from fleetmanager.configuration.util import (
     save_all_configurations,
     validate_vehicle_metadata,
     update_vehicle_metadata,
+    parse_sheet_date,
 )
 from fleetmanager.data_access import Cars, RoundTrips
 from fleetmanager.data_access import AllowedStarts, VehicleTypes, FuelTypes, LeasingTypes, Cars
@@ -368,3 +369,7 @@ def test_metadata_import_keeps_status_and_only_clears_listed_columns(db_session)
     edited_car = db_session.get(Cars, 0)
     assert edited_car.capacity_decrease is None
     assert edited_car.omkostning_aar == cost_before
+
+
+def test_parse_sheet_date_reads_day_first():
+    assert parse_sheet_date("05-03-2024") == datetime(2024, 3, 5)
