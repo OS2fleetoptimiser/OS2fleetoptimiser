@@ -143,22 +143,20 @@ def get_vehicles(session: Session):
     return sorted_vehicles
 
 
-def update_single_vehicle(session: Session, vehicle: Vehicle, ignore_none_values=False, accepted_none_values: list = None):
+def update_single_vehicle(session: Session, vehicle: Vehicle, fields: set[str] | None = None):
     """
     Function to update a single vehicle in the database.
     Checks that the vehicle and location exists before update any values on the vehicle.
-    Any key, value pair will be updated on the vehicle, so all None values will also update on the vehicle.
-    accepted_none_values, allows changing vehicle type which implies value change of related wltp field
+    Every key, value pair is written as-is, so None values also clear the column on the vehicle.
+    fields, when given, limits the update to those keys and leaves all other columns untouched.
     """
-    if accepted_none_values is None:
-        accepted_none_values = []
     locations = [a.id for a in session.query(AllowedStarts.id).all()]
     db_vehicle = session.query(Cars).filter(Cars.id == vehicle.id).first()
     if db_vehicle is None:
         return "the car id does not exist"
     for key, value in vehicle:
 
-        if ignore_none_values and (value is None) and (key not in accepted_none_values):
+        if fields is not None and key not in fields:
             continue
 
         if (
@@ -730,6 +728,34 @@ def match_errors(id):
 def safe_lower(val):
     return val.strip().lower() if isinstance(val, str) and val.strip() else None
 
+
+# sheet headers of the xlsx import keyed by Cars column, must match formatDataForExport in the frontend
+METADATA_COLUMNS = {
+    "id": "id",
+    "plate": "Nummerplade",
+    "make": "Mærke",
+    "model": "Model",
+    "type": "Type",
+    "fuel": "Drivmiddel",
+    "wltp_fossil": "Wltp (Fossil)",
+    "wltp_el": "Wltp (El)",
+    "capacity_decrease": "Procentvis WLTP",
+    "range": "Rækkevidde (km)",
+    "omkostning_aar": "Omk./år",
+    "location": "Lokation",
+    "department": "Afdeling",
+    "forvaltning": "Forvaltning",
+    "start_leasing": "Start leasing",
+    "end_leasing": "Slut leasing",
+    "leasing_type": "Leasing type",
+    "km_aar": "Kilometer pr/år",
+    "sleep": "Hvile",
+}
+METADATA_FIELDS = set(METADATA_COLUMNS) - {"id"}
+# a blank cell keeps the current value, except in these columns where a blank clears it
+METADATA_CLEARABLE = {"wltp_fossil", "wltp_el", "start_leasing", "end_leasing", "capacity_decrease"}
+
+
 def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
 
     converters = {"Start leasing": pd.to_datetime, "Slut leasing": pd.to_datetime}
@@ -748,33 +774,11 @@ def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
 
     metadata = metadata.replace({float("nan"): None})
 
-    column_names = {
-        "id": "id",
-        "plate": "Nummerplade",
-        "make": "Mærke",
-        "model": "Model",
-        "type": "Type",
-        "fuel": "Drivmiddel",
-        "wltp_fossil": "Wltp (Fossil)",
-        "wltp_el": "Wltp (El)",
-        "capacity_decrease": "Procentvis WLTP",
-        "range": "Rækkevidde (km)",
-        "omkostning_aar": "Omk./år",
-        "location": "Lokation",
-        "department": "Afdeling",
-        "forvaltning": "Forvaltning",
-        "start_leasing": "Start leasing",
-        "end_leasing": "Slut leasing",
-        "leasing_type": "Leasing type",
-        "km_aar": "Kilometer pr/år",
-        "sleep": "Hvile",
-    }
-
-    unknown_columns = set(metadata.keys()) - set(column_names.values())
+    unknown_columns = set(metadata.keys()) - set(METADATA_COLUMNS.values())
     metadata.drop(list(unknown_columns), axis=1, inplace=True)
 
     # check columns
-    if set(metadata.keys()) != set(column_names.values()):
+    if set(metadata.keys()) != set(METADATA_COLUMNS.values()):
         raise MetadataColumnError
 
     # get valid ids from database
@@ -845,7 +849,7 @@ def validate_vehicle_metadata(session: Session, xlsx_bytes: bytes):
             error_fields = []
             for err in e.errors():
                 loc = err.get("loc")[0]  # assume un-nested
-                f = column_names.get(loc, "Ukendt felt")
+                f = METADATA_COLUMNS.get(loc, "Ukendt felt")
 
                 # try known errors first, then pydantic errors, finally default
                 msg_id = err.get("msg", " . ").split(".")[0]
@@ -869,7 +873,6 @@ def update_vehicle_metadata(
     if not valid:
         raise MetadataRowInvalidError
 
-    # update all not-None values
     count = 0
 
     for key, value in validation.items():
@@ -877,13 +880,12 @@ def update_vehicle_metadata(
             continue
 
         vehicle = vehicles[key]
-        # we have validated the vehicle to have the correct wltp according to vehicle type, hence accept none values
-        res = update_single_vehicle(
-            session,
-            vehicle,
-            ignore_none_values=True,
-            accepted_none_values=["wltp_fossil", "wltp_el", "end_leasing", "start_leasing"]
-        )
+        fields = {
+            field
+            for field, cell in vehicle
+            if field in METADATA_FIELDS and (cell is not None or field in METADATA_CLEARABLE)
+        }
+        update_single_vehicle(session, vehicle, fields=fields)
         count = count + 1
 
     return count
