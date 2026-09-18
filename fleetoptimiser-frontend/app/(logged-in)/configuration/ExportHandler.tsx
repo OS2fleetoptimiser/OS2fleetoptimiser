@@ -1,4 +1,5 @@
 import { FormattedData } from '@/app/(logged-in)/configuration/InterfaceSettings';
+import { getStatusLabel } from '@/app/(logged-in)/configuration/VehicleStatus';
 import { Vehicle } from '@/components/hooks/useGetVehicles';
 import dayjs from 'dayjs';
 import { saveAs } from 'file-saver';
@@ -6,6 +7,7 @@ import * as XLSX from 'xlsx';
 
 export function formatDataForExport(originalData: Vehicle[]): FormattedData[] {
     return originalData.map((data) => ({
+        Status: getStatusLabel(data),
         id: data.id,
         Nummerplade: data.plate,
         Mærke: data.make,
