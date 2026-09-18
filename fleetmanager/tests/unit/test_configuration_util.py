@@ -1,4 +1,7 @@
 from datetime import date, datetime, time, timedelta
+from io import BytesIO
+
+import pandas as pd
 
 from fleetmanager.api.configuration.schemas import (
     Vehicle,
@@ -19,6 +22,8 @@ from fleetmanager.configuration.util import (
     get_all_configurations_from_db,
     validate_settings,
     save_all_configurations,
+    validate_vehicle_metadata,
+    update_vehicle_metadata,
 )
 from fleetmanager.data_access import Cars, RoundTrips
 from fleetmanager.data_access import AllowedStarts, VehicleTypes, FuelTypes, LeasingTypes, Cars
@@ -305,3 +310,62 @@ def test_save_all_configuration(db_session):
             configuration_after_saving.shift_settings,
         )
     )
+
+
+def _sheet_bytes(vehicles: list[dict]) -> bytes:
+    """Sheet with the columns of the frontend export (formatDataForExport in ExportHandler.tsx)."""
+
+    def as_sheet_date(value):
+        return value.strftime("%d-%m-%Y") if value else None
+
+    rows = [
+        {
+            "id": vehicle["id"],
+            "Nummerplade": vehicle["plate"],
+            "Mærke": vehicle["make"],
+            "Model": vehicle["model"],
+            "Type": vehicle["type"]["name"],
+            "Drivmiddel": vehicle["fuel"]["name"],
+            "Wltp (Fossil)": vehicle["wltp_fossil"],
+            "Wltp (El)": vehicle["wltp_el"],
+            "Procentvis WLTP": vehicle["capacity_decrease"],
+            "Rækkevidde (km)": vehicle["range"],
+            "Omk./år": vehicle["omkostning_aar"],
+            "Lokation": vehicle["location"]["address"],
+            "Afdeling": vehicle["department"],
+            "Forvaltning": vehicle["forvaltning"],
+            "Start leasing": as_sheet_date(vehicle["start_leasing"]),
+            "Slut leasing": as_sheet_date(vehicle["end_leasing"]),
+            "Leasing type": vehicle["leasing_type"]["name"],
+            "Kilometer pr/år": vehicle["km_aar"],
+            "Hvile": vehicle["sleep"],
+        }
+        for vehicle in vehicles
+    ]
+    buffer = BytesIO()
+    pd.DataFrame(rows).to_excel(buffer, index=False)
+    return buffer.getvalue()
+
+
+def test_metadata_import_keeps_status_and_only_clears_listed_columns(db_session):
+    # the seeded plates are all digits, which pandas would read from the sheet as numbers
+    for vehicle in db_session.query(Cars):
+        vehicle.plate = f"AB{vehicle.id}"
+    db_session.get(Cars, 1).disabled = True
+    db_session.get(Cars, 0).capacity_decrease = 20.0
+    db_session.commit()
+    cost_before = db_session.get(Cars, 0).omkostning_aar
+
+    vehicles = get_vehicles(db_session)
+    edited_vehicle = next(vehicle for vehicle in vehicles if vehicle["id"] == 0)
+    edited_vehicle["capacity_decrease"] = None  # a blank cell in a column that may be cleared
+    edited_vehicle["omkostning_aar"] = None  # a blank cell in a column that keeps its value
+    validation, parsed = validate_vehicle_metadata(db_session, _sheet_bytes(vehicles))
+    assert all(result == "ok" for result in validation.values()), validation
+    update_vehicle_metadata(db_session, validation, parsed)
+
+    # the sheet has no status column, so importing it must not re-activate the vehicle
+    assert db_session.get(Cars, 1).disabled is True
+    edited_car = db_session.get(Cars, 0)
+    assert edited_car.capacity_decrease is None
+    assert edited_car.omkostning_aar == cost_before
