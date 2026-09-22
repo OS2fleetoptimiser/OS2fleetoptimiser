@@ -2,6 +2,7 @@ import VehicleModal from '@/app/(logged-in)/configuration/CreateOrUpdateVehicle'
 import ImportModal from '@/app/(logged-in)/configuration/ImportModal';
 import DeleteConfirmationDialog from '@/app/(logged-in)/configuration/DeleteConfirmationDialog';
 import { exportDataToXlsx } from '@/app/(logged-in)/configuration/ExportHandler';
+import { getStatusLabel, VehicleStatusLabel } from '@/app/(logged-in)/configuration/VehicleStatus';
 import MoveRoundTripsDialog from '@/app/(logged-in)/configuration/MoveRoundTripsDialog';
 import API from '@/components/AxiosBase';
 import { DropDownData } from '@/components/hooks/useGetDropDownData';
@@ -12,7 +13,7 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import Power from '@mui/icons-material/Power';
 import PowerOff from '@mui/icons-material/PowerOff';
-import { Alert, Box, Button, Chip, IconButton, Snackbar, Tooltip } from '@mui/material';
+import { Alert, Box, Button, Chip, ChipProps, IconButton, Snackbar, Tooltip } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -119,25 +120,17 @@ const VehicleConfigTable = ({ vehicleData, dropDownData, onDeleteRoundTrips }: {
         return vehicleData.some((vehicle) => Boolean(vehicle.imei));
     }, [vehicleData]);
 
-    // client side evaluation of missing data and ended leasing for coloring vehicle by status
-    const hasMissingData = (row: Vehicle) => {
-        const cond1 = row.end_leasing == null && [1, 2].includes(row.leasing_type?.id || -1);
-        const cond2 = row.wltp_el == null && row.wltp_fossil == null && row.fuel?.id != 10;
-        const cond3 = row.omkostning_aar == null;
-        return cond1 || cond2 || cond3;
-    };
-
-    const hasEndedLeasing = (row: Vehicle) => {
-        const now = dayjs();
-        return dayjs(row.end_leasing).isBefore(now);
+    const statusChipProps: Record<VehicleStatusLabel, Pick<ChipProps, 'color' | 'icon'>> = {
+        Deaktiveret: { color: 'default' },
+        'Manglende metadata': { color: 'error' },
+        Testkøretøj: { color: 'info' },
+        'Udløbet leasing': { color: 'warning' },
+        OK: { color: 'success', icon: <DoneIcon /> },
     };
 
     const getStatus = (vehicle: Vehicle) => {
-        if (vehicle.disabled) return <Chip variant="outlined" color="default" label="Deaktiveret" />;
-        if (hasMissingData(vehicle)) return <Chip variant="outlined" color="error" label="Manglende metadata" />;
-        if (vehicle.test_vehicle) return <Chip variant="outlined" color="info" label="Testkøretøj" />;
-        if (hasEndedLeasing(vehicle)) return <Chip variant="outlined" color="warning" label="Udløbet leasing" />;
-        return <Chip variant="outlined" color="success" icon={<DoneIcon />} label="OK" />;
+        const label = getStatusLabel(vehicle);
+        return <Chip variant="outlined" label={label} {...statusChipProps[label]} />;
     };
 
     const columns = useMemo<MRT_ColumnDef<Vehicle>[]>(() => {
@@ -146,13 +139,7 @@ const VehicleConfigTable = ({ vehicleData, dropDownData, onDeleteRoundTrips }: {
                 header: 'Status',
                 size: 100,
                 Cell: ({ row }) => getStatus(row.original),
-                accessorFn: (row) => {
-                    if (row.disabled) return 'Deaktiveret';
-                    if (hasMissingData(row)) return 'Manglende metadata';
-                    if (row.test_vehicle) return 'Testkøretøj';
-                    if (hasEndedLeasing(row)) return 'Udløbet leasing';
-                    return 'OK';
-                },
+                accessorFn: getStatusLabel,
                 sortingFn: 'basic',
             },
             {
