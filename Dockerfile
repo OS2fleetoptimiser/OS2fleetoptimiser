@@ -1,4 +1,4 @@
-FROM python:3.10-bookworm
+FROM python:3.11-bookworm
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
