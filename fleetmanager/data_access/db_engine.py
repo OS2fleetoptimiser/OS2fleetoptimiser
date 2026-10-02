@@ -1,4 +1,5 @@
 import os
+from urllib.parse import quote_plus
 
 import sqlalchemy
 from sqlalchemy import create_engine, select, inspect, Engine
@@ -17,6 +18,28 @@ from .dbschema import (
     get_default_simulation_settings,
     get_default_vehicle_types,
 )
+
+DEFAULT_ODBC_DRIVER = "ODBC Driver 17 for SQL Server"
+
+
+def build_dsn(db_server, db_user, db_password, db_url, db_name) -> str:
+    """
+    Builds the connection string used by engine_creator and the extractor CLIs.
+    For mssql+pyodbc the ODBC driver is read from DB_ODBC_DRIVER, and DB_ODBC_OPTIONS
+    adds extra connection keywords, e.g. "Encrypt=yes&TrustServerCertificate=yes".
+
+    Returns
+    -------
+    str
+    """
+    dsn = f"{db_server}://{db_user}:{db_password}@{db_url}/{db_name}"
+    if db_server == "mssql+pyodbc":
+        driver = os.getenv("DB_ODBC_DRIVER") or DEFAULT_ODBC_DRIVER
+        dsn += f"?driver={quote_plus(driver)}"
+        options = os.getenv("DB_ODBC_OPTIONS")
+        if options:
+            dsn += f"&{options}"
+    return dsn
 
 
 def engine_creator(
@@ -53,12 +76,8 @@ def engine_creator(
         db_server = os.getenv("DB_SERVER")
 
     if all((db_name, db_password, db_user, db_url, db_server)):
-        dsn = f"{db_server}://{db_user}:{db_password}@{db_url}/{db_name}"
-        if db_server == "mssql+pyodbc":
-            
-            dsn += "?driver=ODBC+Driver+17+for+SQL+Server"
         db_engine = create_engine(
-            dsn,
+            build_dsn(db_server, db_user, db_password, db_url, db_name),
             pool_recycle=1800,
             # encoding="latin-1",
         )

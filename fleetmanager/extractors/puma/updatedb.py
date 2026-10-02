@@ -19,6 +19,7 @@ from fleetmanager.data_access import (
     RoundTrips,
     RoundTripSegments,
     SimulationSettings,
+    build_dsn,
 )
 from fleetmanager.extractors.puma.pumaschema import Data, Materiels
 from fleetmanager.extractors.skyhost.updatedb import (
@@ -82,7 +83,7 @@ def cli(
     ctx
     """
     ctx.ensure_object(dict)
-    engine = create_engine(f"{db_server}://{db_user}:{password}@{db_url}/{db_name}")
+    engine = create_engine(build_dsn(db_server, db_user, password, db_url, db_name))
 
     puma_engine = create_engine(
         f"{pumadriver}://{pumauser}:{pumapassword}@{pumaurl}/{pumaname}"

@@ -17,7 +17,8 @@ from fleetmanager.data_access import (
     Cars,
     RoundTrips,
     RoundTripSegments,
-    SimulationSettings
+    SimulationSettings,
+    build_dsn
 )
 from fleetmanager.extractors.mileagebook.updatedb import CarModel
 from fleetmanager.extractors.skyhost.updatedb import summer_times, winter_times
@@ -92,7 +93,7 @@ def cli(
     ctx
     """
     ctx.ensure_object(dict)
-    engine = create_engine(f"{db_server}://{db_user}:{password}@{db_url}/{db_name}")
+    engine = create_engine(build_dsn(db_server, db_user, password, db_url, db_name))
     ctx.obj["engine"] = engine
     ctx.obj["Session"] = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     ctx.obj["url"] = "https://gamfleet.azurewebsites.net/External/"
