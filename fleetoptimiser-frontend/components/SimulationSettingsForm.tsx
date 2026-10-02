@@ -1,9 +1,9 @@
 import usePatchConfigurations from '@/components/hooks/usePatchConfigurations';
-import { Alert, Box, Button, FormControl, InputLabel, MenuItem, Paper, Select, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, FormControl, InputLabel, Link, MenuItem, Paper, Select, TextField, Typography } from '@mui/material';
 import { Form, Formik } from 'formik';
 import { InferType, number, object, string } from 'yup';
 import SaveIcon from '@mui/icons-material/Save';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { useAppDispatch } from './redux/hooks';
 import { setSimulationSettings } from './redux/SimulationSlice';
 import { useWritePrivilegeContext } from "@/app/providers/WritePrivilegeProvider";
@@ -30,7 +30,16 @@ const simulationSettingsSchema = object({
 
 type FormData = InferType<typeof simulationSettingsSchema>;
 
-const SectionHeader = ({ title, description }: { title: string; description?: string }) => (
+const TCO_TOOL_URL =
+    'https://denansvarligeindkober.dk/sites/default/files/2022-11/Milj%C3%B8styrelsen_TCO_v%C3%A6rkt%C3%B8j_transportydelser_okt.%202022.xlsm';
+
+const TcoToolLink = () => (
+    <Link href={TCO_TOOL_URL} target="_blank" rel="noopener noreferrer">
+        TCO Værktøj for transportydelser
+    </Link>
+);
+
+const SectionHeader = ({ title, description }: { title: string; description?: ReactNode }) => (
     <Box sx={{ px: 2.5, py: 1.5, bgcolor: 'action.hover', borderBottom: 1, borderColor: 'divider' }}>
         <Typography variant="subtitle2" color="text.primary">{title}</Typography>
         {description && (
@@ -88,7 +97,12 @@ export const SettingsForm = ({ initialValues }: { initialValues: FormData }) => 
                                     <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
                                         <SectionHeader
                                             title="Udledning"
-                                            description="Angiv kg. CO2e pr. kWh, liter benzin, diesel og HVO. CO2e er en fælles enhed, som gør det muligt at sammenligne udledning på tværs af drivmidler."
+                                            description={
+                                                <>
+                                                    Angiv kg. CO2e pr. kWh, liter benzin, diesel og HVO. CO2e er en fælles enhed, som gør det muligt at sammenligne udledning på tværs af drivmidler. Tallene for udledning af CO2e pr. drivmiddel stammer fra Miljøstyrelsens TCO-værktøj til udregning af samlede omkostninger for transportydelser. Værktøjet kan downloades via følgende link{' '}
+                                                    <TcoToolLink />
+                                                </>
+                                            }
                                         />
                                         <div className="grid grid-cols-2 gap-3 p-4">
                                             <TextField
@@ -133,7 +147,7 @@ export const SettingsForm = ({ initialValues }: { initialValues: FormData }) => 
                                     <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
                                         <SectionHeader
                                             title="Drivmiddelpriser"
-                                            description="Pris pr. enhed for hvert drivmiddel. Bruges til at beregne driftsomkostninger ud fra allokerede kilometer."
+                                            description="Pris pr. enhed for hvert drivmiddel. Bruges til at beregne driftsomkostninger ud fra kørte kilometer. Opdater tallene for at afspejle de nutidige omkostninger der er for drivmidler."
                                         />
                                         <div className="grid grid-cols-2 gap-3 p-4">
                                             <TextField
@@ -178,7 +192,12 @@ export const SettingsForm = ({ initialValues }: { initialValues: FormData }) => 
                                     <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
                                         <SectionHeader
                                             title="Samfundsøkonomiske omkostninger"
-                                            description="Ekstern samfundsøkonomisk omkostning ved CO2e-udledning. Beløbet pålægges den samlede omkostning."
+                                            description={
+                                                <>
+                                                    Ekstern samfundsøkonomisk omkostning ved CO2e-udledning. Beløbet pålægges den samlede omkostning på baggrund af den udledte CO2e. Tallet stammer fra Miljøstyrelsens TCO-værktøj. Værktøjet kan downloades via følgende link{' '}
+                                                    <TcoToolLink />
+                                                </>
+                                            }
                                         />
                                         <div className="p-4">
                                             <TextField
@@ -197,7 +216,7 @@ export const SettingsForm = ({ initialValues }: { initialValues: FormData }) => 
                                     <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
                                         <SectionHeader
                                             title="Køretøjsskift"
-                                            description="Minimum tid mellem et køretøj er hjemme og kan tage en ny tur."
+                                            description="Minimum tid mellem et køretøj er hjemme og kan tage en ny tur. Tiden kan påvirke resultatet i simuleringer og optimeringer, da køretøjet bliver blokeret i længere tid."
                                         />
                                         <div className="p-4">
                                             <TextField
