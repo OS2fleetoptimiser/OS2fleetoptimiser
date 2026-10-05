@@ -34,6 +34,9 @@ target_metadata = Base.metadata
 # ... etc.
 
 def include_object(object, name, type_, reflected, compare_to):
+    # Only unknown tables are hidden. Unknown columns are not, so autogenerate
+    # against a customer copy proposes drop_column for columns a customer added;
+    # remove those from the script before committing it.
     if type_ == "table" and reflected and compare_to is None:
         logger.info("Ignoring unknown table '%s' (not in models)", name)
         return False

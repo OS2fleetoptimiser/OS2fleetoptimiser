@@ -1,5 +1,8 @@
 version: '3.7'
 
+# migrate, backend and celery must always run the same image version
+x-backend-image: &backend-image fleetoptimiser-backend:latest
+
 networks:
   backend_shared:
     name: backend_shared
@@ -12,13 +15,13 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
   migrate:
-    image: fleetoptimiser-backend:latest
+    image: *backend-image
     command: ["python", "-m", "fleetmanager.data_access.migrate"]
     env_file: .dev-env
     networks:
       - backend_shared
   backend:
-    image: fleetoptimiser-backend:latest
+    image: *backend-image
     command: ["uvicorn", "fleetmanager:api.app", "--port", "3001", "--host", "0.0.0.0", "--proxy-headers", "--root-path", "/api", "--workers", "2"]
     depends_on:
       celery:
@@ -33,7 +36,7 @@ services:
     volumes:
       - ./running_tasks:/fleetmanager/running_tasks/  # mapping to a volume to record running "abortable" simulation
   celery:
-    image: fleetoptimiser-backend:latest
+    image: *backend-image
     depends_on:
       rabbitmq:
         condition: service_started

@@ -4,7 +4,6 @@ from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
 
-from fleetmanager.data_access.dbschema import Base
 from fleetmanager.data_access.migrate import (
     ALEMBIC_INI,
     KNOWN_STALE_REVISIONS,
@@ -34,6 +33,15 @@ def make_version_table(engine, version=None):
 def count_versions(engine):
     with engine.connect() as conn:
         return conn.execute(sa.text("SELECT COUNT(*) FROM alembic_version")).scalar()
+
+
+def baseline_metadata():
+    """
+    The schema frozen in the baseline revision. Tests compare against this rather
+    than the live models, so later migrations don't make them fail.
+    """
+    script = ScriptDirectory.from_config(Config(str(ALEMBIC_INI)))
+    return script.get_revision(script.get_bases()[0]).module.metadata
 
 
 def run_baseline(engine):
@@ -98,7 +106,7 @@ def test_baseline_builds_the_whole_schema_from_empty():
     run_baseline(engine)
 
     tables = set(sa.inspect(engine).get_table_names())
-    assert set(Base.metadata.tables).issubset(tables)
+    assert set(baseline_metadata().tables).issubset(tables)
 
 
 def test_baseline_fills_gaps_in_a_legacy_database():
@@ -122,7 +130,7 @@ def test_baseline_fills_gaps_in_a_legacy_database():
     assert insp.has_table("workshops"), "Missing table should have been created"
 
     car_columns = {col["name"] for col in insp.get_columns("cars")}
-    model_columns = {col.name for col in Base.metadata.tables["cars"].columns}
+    model_columns = {col.name for col in baseline_metadata().tables["cars"].columns}
     assert model_columns.issubset(car_columns), "Missing columns should have been added"
 
     added = next(col for col in insp.get_columns("cars") if col["name"] == "location")
@@ -152,7 +160,7 @@ def test_baseline_creates_missing_indexes_on_existing_tables():
 
 def test_baseline_is_a_noop_on_a_complete_schema():
     engine = make_engine()
-    Base.metadata.create_all(engine)
+    baseline_metadata().create_all(engine)
     before = {
         table: {col["name"] for col in sa.inspect(engine).get_columns(table)}
         for table in sa.inspect(engine).get_table_names()

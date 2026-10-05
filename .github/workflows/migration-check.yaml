@@ -14,6 +14,13 @@ on:
       - 'pyproject.toml'
       - 'poetry.lock'
       - '.github/workflows/migration-check.yaml'
+  pull_request:
+    paths:
+      - 'fleetmanager/data_access/**'
+      - 'fleetmanager/alembic.ini'
+      - 'pyproject.toml'
+      - 'poetry.lock'
+      - '.github/workflows/migration-check.yaml'
 
 jobs:
   migrate-from-empty:

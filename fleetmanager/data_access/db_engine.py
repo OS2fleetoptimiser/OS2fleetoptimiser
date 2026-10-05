@@ -80,6 +80,10 @@ def engine_creator(
             poolclass=StaticPool,
             # encoding="latin-1",
         )
+        # the in-memory database is never a customer database and migrate cannot
+        # reach it, so it gets its schema here
+        Base.metadata.create_all(db_engine)
+        create_defaults(db_engine)
 
     return db_engine
 

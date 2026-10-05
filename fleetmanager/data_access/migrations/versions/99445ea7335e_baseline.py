@@ -262,5 +262,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Drop the baseline schema."""
-    metadata.drop_all(op.get_bind())
+    # on a legacy database the baseline adopted tables it did not create, so
+    # dropping the schema here would delete customer data
+    raise RuntimeError("the baseline adopts existing tables and cannot be downgraded")
