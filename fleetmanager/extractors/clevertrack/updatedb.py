@@ -10,7 +10,7 @@ from sqlalchemy import create_engine, func, or_, select, update
 from sqlalchemy.orm import sessionmaker
 from tenacity import RetryError
 
-from fleetmanager.data_access import AllowedStarts, Cars, RoundTrips
+from fleetmanager.data_access import AllowedStarts, Cars, RoundTrips, build_dsn
 from fleetmanager.extractors.clevertrack.api_util import (
     DuplicatePlateCleverTrack,
     TripIdPatchError,
@@ -68,7 +68,7 @@ def cli(
     ctx
     """
     ctx.ensure_object(dict)
-    engine = create_engine(f"{db_server}://{db_user}:{password}@{db_url}/{db_name}")
+    engine = create_engine(build_dsn(db_server, db_user, password, db_url, db_name))
 
     ctx.obj["engine"] = engine
     ctx.obj["Session"] = sessionmaker(autocommit=False, autoflush=False, bind=engine)

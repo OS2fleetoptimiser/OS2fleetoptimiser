@@ -20,6 +20,7 @@ from fleetmanager.data_access import (
     RoundTrips,
     SimulationSettings,
     RoundTripSegments,
+    build_dsn,
 )
 from fleetmanager.extractors.skyhost.updatedb import (
     sanitise_for_overlaps,
@@ -102,7 +103,7 @@ def cli(
     ctx
     """
     ctx.ensure_object(dict)
-    engine = create_engine(f"{db_server}://{db_user}:{password}@{db_url}/{db_name}")
+    engine = create_engine(build_dsn(db_server, db_user, password, db_url, db_name))
     # todo multiple api keys for mileagebook is not implemented
     ctx.obj["engine"] = engine
     ctx.obj["Session"] = sessionmaker(autocommit=False, autoflush=False, bind=engine)

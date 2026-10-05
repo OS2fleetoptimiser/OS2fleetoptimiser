@@ -15,7 +15,8 @@ from fleetmanager.data_access import (
     Cars,
     RoundTrips,
     SimulationSettings,
-    Trips
+    Trips,
+    build_dsn
 )
 from fleetmanager.data_access.dbschema import RoundTripSegments
 from fleetmanager.extractors.util import (
@@ -77,7 +78,7 @@ def cli(
             raise ValueError("Account ids and api keys must have the same split length")
 
     ctx.ensure_object(dict)
-    engine = create_engine(f"{db_server}://{db_user}:{password}@{db_url}/{db_name}")
+    engine = create_engine(build_dsn(db_server, db_user, password, db_url, db_name))
 
     ctx.obj["engine"] = engine
     ctx.obj["Session"] = sessionmaker(autocommit=False, autoflush=False, bind=engine)

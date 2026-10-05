@@ -24,6 +24,7 @@ from fleetmanager.data_access import (
     SimulationSettings,
     Trips,
     VehicleTypes,
+    build_dsn,
 )
 from fleetmanager.data_access.dbschema import RoundTripSegments
 from fleetmanager.extractors.util import (
@@ -65,7 +66,7 @@ def cli(
     ctx
     """
     ctx.ensure_object(dict)
-    engine = create_engine(f"{db_server}://{db_user}:{password}@{db_url}/{db_name}")
+    engine = create_engine(build_dsn(db_server, db_user, password, db_url, db_name))
     # todo multiple api keys for fleetcomplete is not implemented
     ctx.obj["engine"] = engine
     ctx.obj["Session"] = sessionmaker(autocommit=False, autoflush=False, bind=engine)
