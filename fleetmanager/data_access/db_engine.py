@@ -1,7 +1,7 @@
 import os
 
 import sqlalchemy
-from sqlalchemy import create_engine, select, inspect, Engine
+from sqlalchemy import create_engine, select, Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -86,52 +86,24 @@ def engine_creator(
 
 def create_defaults(engine_: Engine) -> None:
     """
-    Function to load in the defaults defined in dbschema
+    Function to load in the defaults defined in dbschema. Idempotent - rows that are
+    already there are left alone, so new defaults reach existing databases. Types are
+    matched on id since cars references them; settings are matched on name.
     """
+    defaults = (
+        (VehicleTypes, "id", get_default_vehicle_types()),
+        (LeasingTypes, "id", get_default_leasing_types()),
+        (FuelTypes, "id", get_default_fuel_types()),
+        (SimulationSettings, "name", get_default_simulation_settings()),
+    )
     Session = sessionmaker(bind=engine_)
     with Session.begin() as sess:
-        for vehicle_type in get_default_vehicle_types():
-            if (
-                len(
-                    sess.execute(
-                        select(VehicleTypes).where(VehicleTypes.id == vehicle_type.id)
-                    ).all()
-                )
-                == 0
-            ):
-                sess.add(vehicle_type)
-
-        for leasing_type in get_default_leasing_types():
-            if (
-                len(
-                    sess.execute(
-                        select(LeasingTypes).where(LeasingTypes.id == leasing_type.id)
-                    ).all()
-                )
-                == 0
-            ):
-                sess.add(leasing_type)
-
-        for fuel_type in get_default_fuel_types():
-            if (
-                len(
-                    sess.execute(
-                        select(FuelTypes).where(FuelTypes.id == fuel_type.id)
-                    ).all()
-                )
-                == 0
-            ):
-                sess.add(fuel_type)
-
-        for setting in get_default_simulation_settings():
-            if (
-                len(
-                    sess.execute(
-                        select(SimulationSettings).where(
-                            SimulationSettings.id == setting.id
-                        )
-                    ).all()
-                )
-                == 0
-            ):
-                sess.add(setting)
+        for model, key, rows in defaults:
+            existing = set(sess.execute(select(getattr(model, key))).scalars().all())
+            missing = [row for row in rows if getattr(row, key) not in existing]
+            if model is SimulationSettings:
+                # settings are never looked up by id, and the number a default was
+                # given may already be taken by a vagt_ row the user created
+                for row in missing:
+                    row.id = None
+            sess.add_all(missing)

@@ -21,6 +21,9 @@ export const nivoTheme = {
   },
 }
 
+// kept as parts so a gradient can be interpolated from the same source as the swatch
+export const heatmapWarningHsl = { hue: 0, saturation: 55, lightness: 58 }
+
 export const chartPalette = {
   blue100: 'hsl(210, 50%, 85%)',
   blue200: 'hsl(210, 50%, 75%)',
@@ -33,8 +36,10 @@ export const chartPalette = {
   vehicleFossil: 'hsl(0, 55%, 58%)',
   vehicleUnassigned: 'hsl(220, 20%, 42%)',
   heatmap: 'hsl(210, 50%, 55%)',
-  heatmapWarning: 'hsl(0, 55%, 58%)',
+  heatmapWarning: `hsl(${heatmapWarningHsl.hue}, ${heatmapWarningHsl.saturation}%, ${heatmapWarningHsl.lightness}%)`,
   heatmapEmpty: 'hsl(220, 20%, 88%)',
+  heatmapWorkshop: 'hsl(265, 50%, 62%)',
+  heatmapFull: '#ffffff',
 }
 
 export const vehicleTypeColors: Record<string, string> = {
@@ -45,8 +50,8 @@ export const vehicleTypeColors: Record<string, string> = {
   'Ikke tildelt': chartPalette.vehicleUnassigned,
 }
 
-export const heatmapGradient = [chartPalette.heatmap, '#ffffff'] as const
-export const heatmapWarningGradient = [chartPalette.heatmapWarning, '#ffffff'] as const
+export const heatmapGradient = [chartPalette.heatmap, chartPalette.heatmapFull] as const
+export const heatmapWarningGradient = [chartPalette.heatmapWarning, chartPalette.heatmapFull] as const
 
 export const shiftGradient = [
   chartPalette.blue100,

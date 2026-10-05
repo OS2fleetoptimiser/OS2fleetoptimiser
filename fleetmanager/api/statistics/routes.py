@@ -23,6 +23,7 @@ from fleetmanager.statistics import (
     get_daily_driving_data,
     group_by_vehicle_location,
     to_plot_data,
+    get_workshop_visit_intervals,
     grouped_driving_data_to_excel,
     get_availability,
     eligible_saved_vehicles,
@@ -167,12 +168,18 @@ async def get_grouped_driving_data(
             filter(lambda trip: trip.get("shift_id") in selected_shifts, driving_data)
         )
 
+    vehicle_ids = [veh["id"] for veh in query_data.get("query_vehicles")]
+    workshop_visits = get_workshop_visit_intervals(
+        session, vehicle_ids, start_date, end_date
+    )
+
     vehicle_grouped, location_grouped = group_by_vehicle_location(
         driving_data,
         start_date,
         end_date,
         locations=[loc["id"] for loc in query_data.get("query_locations")],
-        vehicles=[veh["id"] for veh in query_data.get("query_vehicles")],
+        vehicles=vehicle_ids,
+        workshop_visits=workshop_visits,
     )
 
     location_grouped = to_plot_data(

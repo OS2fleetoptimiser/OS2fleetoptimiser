@@ -11,6 +11,7 @@ from .util import (
     date_duration_getter,
     group_by_vehicle_location,
     to_plot_data,
+    get_workshop_visit_intervals,
     get_availability,
     eligible_saved_vehicles,
     active_vehicles,

@@ -1,20 +1,25 @@
+import { VehicleStatusLabel } from '@/app/(logged-in)/configuration/VehicleStatus';
+
+// one row of the vehicle export; the headers must match METADATA_COLUMNS in the backend import
 export type FormattedData = {
-    capacity_decrease?: number | null;
-    end_leasing?: string | null;
-    fuel?: string | null;
-    id?: number | null;
-    km_aar?: number | null;
-    department?: string | null;
-    leasing_type?: string | null;
-    location?: string | null;
-    make?: string | null;
-    model?: string | null;
-    omkostning_aar?: number | null;
-    plate?: string | null;
-    range?: number | null;
-    sleep?: number | null;
-    start_leasing?: string | null;
-    type?: string | null;
-    wltp_el?: number | null;
-    wltp_fossil?: number | null;
+    Status: VehicleStatusLabel;
+    id: number;
+    Nummerplade: string | null;
+    Mærke: string | null;
+    Model: string | null;
+    Type: string | undefined;
+    Drivmiddel: string | undefined;
+    'Wltp (Fossil)': number | null;
+    'Wltp (El)': number | null;
+    'Procentvis WLTP': number | null;
+    'Rækkevidde (km)': number | null;
+    'Omk./år': number | null;
+    Lokation: string | undefined;
+    Afdeling: string | null;
+    Forvaltning: string | null;
+    'Start leasing': string | null;
+    'Slut leasing': string | null;
+    'Leasing type': string | undefined;
+    'Kilometer pr/år': number | null;
+    Hvile: number | null;
 };

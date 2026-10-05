@@ -5,7 +5,7 @@ import { Button, Card, InputAdornment, Paper, Skeleton, Tab, TextField, Typograp
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { useState } from 'react';
-import { HeatMapGroupWithMetaData, DrivingHeatmapKm } from './DrivingHeatmap';
+import { HeatMapGroupWithMetaData, DrivingHeatmapKm, DrivingHeatmapLegend } from './DrivingHeatmap';
 import ApiError from '@/components/ApiError';
 import { ComputedCell } from '@nivo/heatmap';
 import TabList from '@mui/lab/TabList';
@@ -78,6 +78,8 @@ const VehicleActivityDashboard = ({
         }
     };
 
+    // the threshold doubles as the top of the colour scale, so the legend labels it too
+    const maxHeatValue = isNaN(parseFloat(colorThreshold)) ? undefined : +colorThreshold;
     const fileNameAppendix = `${start}-${end}-${locations?.length ?? 'alle'}_lokationer-${vehicles?.length ?? 'alle'}_koeretoejer`;
     const impliedCellHeight = 40;
     const impliedBaseHeight = 210;
@@ -141,8 +143,9 @@ const VehicleActivityDashboard = ({
                         Køretøjsaktivitet
                     </Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
-                        Køretøjsaktivitet viser hvor mange kilometer der er kørt i den valgte periode, enten samlet på lokationen eller enkeltvis pr køretøj. Skift mellem lokationer - og køretøjer fanen. Justér grænseværdien for at fremhæve lavere eller højere antal kørte kilometer. Hvis et felt er gråt indikerer det, at køretøjet har en igangværende tur, men ikke har været aktiv - altså står den stille et andet sted end sin hjemmelokation.
+                        Køretøjsaktivitet viser hvor mange kilometer der er kørt i den valgte periode, enten samlet på lokationen eller enkeltvis pr køretøj. Skift mellem lokationer - og køretøjer fanen. Justér grænseværdien for at fremhæve lavere eller højere antal kørte kilometer. Hvis et felt er gråt indikerer det, at køretøjet har en igangværende tur, men ikke har været aktiv - altså står den stille et andet sted end sin hjemmelokation. Felter markeret med værkstedsfarven angiver dage, hvor køretøjet har været på værksted (kun på køretøjer fanen).
                     </Typography>
+                    <DrivingHeatmapLegend maxHeatValue={maxHeatValue} />
                     <TabContext value={tab}>
                         <div className="w-full border-b">
                             <TabList onChange={(event, value) => setTab(value)}>
@@ -156,7 +159,7 @@ const VehicleActivityDashboard = ({
                                     <DrivingHeatmapKm
                                         setLocationZoom={goToLocation}
                                         data={heatMapData.data.locationGroup.km}
-                                        maxHeatValue={isNaN(parseFloat(colorThreshold as string)) ? undefined : +colorThreshold}
+                                        maxHeatValue={maxHeatValue}
                                     />
                                 </DownloadableGraph>
                             </div>
@@ -167,7 +170,7 @@ const VehicleActivityDashboard = ({
                                     <DrivingHeatmapKm
                                         setLocationZoom={goToLocation}
                                         data={heatMapData.data.vehicleGroup.km}
-                                        maxHeatValue={isNaN(parseFloat(colorThreshold as string)) ? undefined : +colorThreshold}
+                                        maxHeatValue={maxHeatValue}
                                     />
                                 </DownloadableGraph>
                             </div>

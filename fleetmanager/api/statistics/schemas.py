@@ -121,6 +121,7 @@ class PlotData(BaseModel):
     y: int | None
     startDate: date
     endDate: date
+    workshop: bool = False
 
 
 class VehicleLocationPlotData(BaseModel):

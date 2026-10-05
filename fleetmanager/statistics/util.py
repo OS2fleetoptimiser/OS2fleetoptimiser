@@ -31,6 +31,7 @@ from fleetmanager.data_access import (
     RoundTrips,
     RoundTripSegments,
     SimulationSettings,
+    WorkshopVisits,
     get_default_fuel_types,
 )
 from fleetmanager.logging import logging
@@ -1431,6 +1432,7 @@ def group_by_vehicle_location(
     end_date: datetime.datetime | datetime.date,
     vehicles: list[int],
     locations: list[int],
+    workshop_visits: list[dict] | None = None,
 ):
     """
     Aggregate driving data by vehicle and location over time periods.
@@ -1481,7 +1483,7 @@ def group_by_vehicle_location(
     }
 
     vehicle_grouped = {
-        (vehicle, it[0]): {"distance": 0, "startDate": it[1], "endDate": it[2]}
+        (vehicle, it[0]): {"distance": 0, "startDate": it[1], "endDate": it[2], "workshop": False}
         for vehicle in vehicles
         for it in unique_keys
     }
@@ -1532,6 +1534,19 @@ def group_by_vehicle_location(
             vehicle_grouped[(vehicle_id, aggregation_key)]["distance"] += record["distance"]
             location_grouped[(location_id, aggregation_key)]["distance"] += record["distance"]
 
+    # mark the periods that contain a workshop visit for the vehicle. iterate each
+    # calendar day the visit spans (inclusive) so same-day visits are covered too
+    for visit in workshop_visits or []:
+        vehicle_id = visit["vehicle_id"]
+        day = datetime.datetime.combine(visit["start_time"].date(), datetime.time())
+        last_day = visit["end_time"].date()
+        while day.date() <= last_day:
+            aggregation_key, _, _ = get_aggregation_key(day, aggregation_level)
+            cell = vehicle_grouped.get((vehicle_id, aggregation_key))
+            if cell is not None:
+                cell["workshop"] = True
+            day += datetime.timedelta(days=1)
+
     return vehicle_grouped, location_grouped
 
 
@@ -1559,10 +1574,40 @@ def to_plot_data(data_dict, filter_data):
                 "y": data["distance"],
                 "startDate": data["startDate"],
                 "endDate": data["endDate"],
+                "workshop": data.get("workshop", False),
             }
         )
 
     return list(data_id_grouped.values())
+
+
+def get_workshop_visit_intervals(
+    session: Session,
+    vehicles: list[int],
+    start_date: datetime.date,
+    end_date: datetime.date,
+) -> list[dict]:
+    """Return workshop visit time spans for the given vehicles within the range."""
+    if not vehicles:
+        return []
+    rows = (
+        session.query(
+            WorkshopVisits.car_id,
+            WorkshopVisits.start_time,
+            WorkshopVisits.end_time,
+        )
+        .filter(
+            WorkshopVisits.car_id.in_(vehicles),
+            WorkshopVisits.end_time >= start_date,
+            # end_date is inclusive, so cover the whole day rather than its midnight
+            WorkshopVisits.start_time < end_date + datetime.timedelta(days=1),
+        )
+        .all()
+    )
+    return [
+        {"vehicle_id": row.car_id, "start_time": row.start_time, "end_time": row.end_time}
+        for row in rows
+    ]
 
 
 def calc_possible(selected: list[int], shift_vals: list[dict]):

@@ -19,6 +19,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
 import CommuteIcon from '@mui/icons-material/Commute';
+import BuildIcon from '@mui/icons-material/Build';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import HighlightIcon from '@mui/icons-material/Highlight';
@@ -52,7 +53,7 @@ const TopNavigation = ({ logoutRedirect }: Props) => {
     };
 
     const isConfSelected = () => {
-        return pathname.includes('location') || pathname.includes('configuration')
+        return pathname.includes('location') || pathname.includes('configuration') || pathname.includes('workshops')
     }
 
     const isSimSelect = () => {
@@ -418,6 +419,16 @@ const ConfigurationNav = ({ isSelected }: { isSelected: (s: string, c: boolean) 
                             <MapsHomeWorkIcon />
                         </ListItemIcon>
                         <ListItemText className="text-black" primary="Lokationer" />
+                    </ListItemButton>
+                </ListItem>
+            </Link>
+                <Link className="no-underline" href={'/workshops'}>
+                <ListItem disablePadding>
+                    <ListItemButton selected={isSelected('/workshops', true)}>
+                        <ListItemIcon className="ml-4">
+                            <BuildIcon />
+                        </ListItemIcon>
+                        <ListItemText className="text-black" primary="Værksteder" />
                     </ListItemButton>
                 </ListItem>
             </Link>

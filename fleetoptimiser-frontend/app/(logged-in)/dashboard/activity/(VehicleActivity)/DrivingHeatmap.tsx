@@ -1,6 +1,6 @@
 import { ComputedCell, ResponsiveHeatMapCanvas } from '@nivo/heatmap';
 import 'd3-scale-chromatic';
-import { nivoTheme, heatmapWarningGradient, chartPalette } from '@/theme/nivoTheme';
+import { nivoTheme, chartPalette, heatmapWarningGradient, heatmapWarningHsl } from '@/theme/nivoTheme';
 import dayjs from 'dayjs';
 import { useMediaQuery } from 'react-responsive';
 import ChartTooltip from '@/components/ChartTooltip';
@@ -10,6 +10,17 @@ export type HeatMapGroupWithMetaData = {
     y: number | null | undefined;
     startDate: dayjs.Dayjs;
     endDate: dayjs.Dayjs;
+    workshop?: boolean;
+};
+
+// red (no driving) -> white (max driving); interpolated from the same palette values
+// as heatmapWarningGradient so the cells and the legend strip cannot drift apart
+const drivingColor = (value: number | null | undefined, maxHeatValue?: number) => {
+    if (value === null || value === undefined) return chartPalette.heatmapEmpty;
+    const max = maxHeatValue && maxHeatValue > 0 ? maxHeatValue : 1;
+    const t = Math.max(0, Math.min(1, value / max));
+    const { hue, saturation, lightness } = heatmapWarningHsl;
+    return `hsl(${hue}, ${saturation * (1 - t)}%, ${lightness + (100 - lightness) * t}%)`;
 };
 
 export type heatmapData = {
@@ -65,33 +76,45 @@ export const DrivingHeatmapKm = ({
                     tickRotation: 30,
                     format: (tick) => (typeof tick === 'string' && tick.length > 30 ? tick.slice(0, 30) + '...' : tick),
                 }}
-                colors={{
-                    type: 'sequential',
-                    colors: [...heatmapWarningGradient],
-                    minValue: 0,
-                    maxValue: maxHeatValue,
-                }}
+                colors={(cell) =>
+                    cell.data.workshop ? chartPalette.heatmapWorkshop : drivingColor(cell.value, maxHeatValue)
+                }
                 theme={nivoTheme}
                 emptyColor={chartPalette.heatmapEmpty}
-                legends={[
-                    {
-                        anchor: 'top',
-                        translateX: -20,
-                        translateY: -100,
-                        length: 400,
-                        thickness: 8,
-                        direction: 'row',
-                        tickPosition: 'after',
-                        tickSize: 3,
-                        tickSpacing: 4,
-                        tickOverlap: false,
-                        tickFormat: '>-.2s',
-                        title: 'Kørte km →',
-                        titleAlign: 'start',
-                        titleOffset: 4,
-                    },
-                ]}
             />
         </div>
     );
 };
+
+// the categories the km scale cannot express; the scale itself is the gradient strip
+const legendItems = [
+    { color: chartPalette.heatmapEmpty, label: 'Aktiv rundtur, ingen kørsel' },
+    { color: chartPalette.heatmapWorkshop, label: 'Værkstedsbesøg' },
+];
+
+export const DrivingHeatmapLegend = ({ maxHeatValue }: { maxHeatValue?: number }) => (
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-2">
+        <div className="flex items-center gap-1.5">
+            <span className="text-xs text-gray-600">Kørte km</span>
+            <span className="text-xs text-gray-600">0</span>
+            <span
+                className="inline-block w-24 h-2.5 rounded-sm border border-gray-300"
+                style={{
+                    backgroundImage: `linear-gradient(to right, ${heatmapWarningGradient[0]}, ${heatmapWarningGradient[1]})`,
+                }}
+            />
+            {maxHeatValue !== undefined && (
+                <span className="text-xs text-gray-600">{maxHeatValue.toLocaleString('da-DK')}+</span>
+            )}
+        </div>
+        {legendItems.map((item) => (
+            <div key={item.label} className="flex items-center gap-1.5">
+                <span
+                    className="inline-block w-3 h-3 rounded-sm border border-gray-300"
+                    style={{ backgroundColor: item.color }}
+                />
+                <span className="text-xs text-gray-600">{item.label}</span>
+            </div>
+        ))}
+    </div>
+);
