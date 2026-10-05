@@ -139,6 +139,12 @@ def set_vehicles(ctx, description_fields=None):
             # known vehicle
             saved_vehicle = saved_vehicle.iloc[0]
             id_ = saved_vehicle.id
+            if pd.isna(saved_vehicle.external_id) or pd.isna(saved_vehicle.source):
+                # plate-matched row without vendor ids, link it to puma
+                saved_vehicle_object = session.get(Cars, int(id_))
+                saved_vehicle_object.external_id = str(vehicle.nummer)
+                saved_vehicle_object.source = "puma"
+                session.commit()
             if any(
                 [
                     pd.isna(getattr(saved_vehicle, key)) is False

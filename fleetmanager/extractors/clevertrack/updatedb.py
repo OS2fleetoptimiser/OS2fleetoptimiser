@@ -128,6 +128,9 @@ def set_vehicles(ctx, description_fields=None):
 
         # plate already exist in data
         saved_vehicle = saved_vehicle.iloc[0]
+        if pd.notna(saved_vehicle.source) and saved_vehicle.source != "clevertrack":
+            logger.warning(f"Skipping plate {plate}, it belongs to a {saved_vehicle.source} vehicle")
+            continue
         if (
             (str(saved_vehicle.external_id) == str(vid))
             and (str(saved_vehicle.source) == "clevertrack")
@@ -141,8 +144,8 @@ def set_vehicles(ctx, description_fields=None):
         # update data
         stmt = (
             update(Cars)
-            .where((Cars.external_id == str(vid)) & (Cars.source == "clevertrack"))
-            .values(plate=plate, imei=imei, description=description)
+            .where(Cars.id == int(saved_vehicle.id))
+            .values(external_id=str(vid), source="clevertrack", plate=plate, imei=imei, description=description)
         )
         session.execute(stmt)
         session.commit()

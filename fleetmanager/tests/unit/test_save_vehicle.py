@@ -1,3 +1,4 @@
+import pytest
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -19,21 +20,21 @@ def _session():
 
 def test_inserts_new_vehicle_with_db_assigned_id():
     s = _session()
-    save_vehicle({"external_id": "imei-1", "source": "skyhost", "plate": "AB12345"}, s)
+    save_vehicle({"external_id": "imei-1", "source": "skyhost-v1", "plate": "AB12345"}, s)
 
     car = s.query(Cars).one()
     assert car.external_id == "imei-1"
-    assert car.source == "skyhost"
+    assert car.source == "skyhost-v1"
     assert car.id is not None  # assigned by the database, not by us
 
 
 def test_updates_existing_match_on_external_id_and_source():
     s = _session()
-    save_vehicle({"external_id": "imei-1", "source": "skyhost", "plate": "AB12345"}, s)
+    save_vehicle({"external_id": "imei-1", "source": "skyhost-v1", "plate": "AB12345"}, s)
     first_id = s.query(Cars).one().id
 
     # same (external_id, source), new plate -> should update, not create a duplicate
-    save_vehicle({"external_id": "imei-1", "source": "skyhost", "plate": "XY99999"}, s)
+    save_vehicle({"external_id": "imei-1", "source": "skyhost-v1", "plate": "XY99999"}, s)
 
     cars = s.query(Cars).all()
     assert len(cars) == 1
@@ -43,8 +44,18 @@ def test_updates_existing_match_on_external_id_and_source():
 
 def test_same_external_id_different_source_are_distinct_cars():
     s = _session()
-    save_vehicle({"external_id": "5", "source": "skyhost"}, s)
+    save_vehicle({"external_id": "5", "source": "skyhost-v1"}, s)
     save_vehicle({"external_id": "5", "source": "puma"}, s)
 
     # same external id but different vendor -> two distinct cars
     assert s.query(Cars).count() == 2
+
+
+def test_rejects_vehicle_without_external_id_or_source():
+    s = _session()
+
+    # without both keys the lookup would match a manual vehicle and overwrite it
+    with pytest.raises(ValueError):
+        save_vehicle({"plate": "AB12345"}, s)
+    with pytest.raises(ValueError):
+        save_vehicle({"external_id": "imei-1", "plate": "AB12345"}, s)

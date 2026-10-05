@@ -389,6 +389,10 @@ def set_trackers_v2(ctx, description_fields=None):
 
         for vehicle_from_skyhost in complete_vehicle_list:
             imei = vehicle_from_skyhost.get("externalId")
+            if imei is None:
+                logger.warning(f"Skipping skyhost vehicle {vehicle_from_skyhost.get('id')} without externalId")
+                continue
+            imei = str(imei)
             skyhost_id = vehicle_from_skyhost.get("id")
             car_db = list(filter(lambda car: car.external_id == imei and car.source == "skyhost-v2", cars_in_db))
             if len(car_db) > 1:
@@ -430,8 +434,8 @@ def set_trackers_v2(ctx, description_fields=None):
             wltp_fossil = get_vehicle_wltp(vehicle_details.get("details", {}), "fossil")
             range_km = get_electrical_range(vehicle_details.get("details"))
             car = dict(
-                external_id = imei,
-                source = "skyhost-v2",
+                external_id=imei,
+                source="skyhost-v2",
                 imei=imei,
                 plate=plate,
                 make=make,

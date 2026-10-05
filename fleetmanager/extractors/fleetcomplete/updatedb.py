@@ -246,7 +246,7 @@ def set_roundtrips(ctx):
         collected_route_length = 0
         collected_route_count = 0
         cars = pd.read_sql(
-            Query(Cars).filter(Cars.omkostning_aar.isnot(None)).statement, engine
+            Query(Cars).filter(Cars.omkostning_aar.isnot(None), Cars.source == "fleetcomplete").statement, engine
         )
 
         banned_cars = [

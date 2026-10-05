@@ -305,7 +305,7 @@ def precision_test(
         "SKYHOST_V2": {"precision_function": precision_test_skyhost_v2, "keys_key": "SKYHOST_V2_KEYS"}
     }
 
-    source_to_extractor = {   
+    source_to_extractor = {
         "skyhost-v1": "SKYHOST",
         "skyhost-v2": "SKYHOST_V2",
         "mileagebook": "MILEAGEBOOK",
@@ -377,12 +377,16 @@ def precision_test(
 
         keys = keys.split(",")
 
+        extractor_cars = [car for car in cars if source_to_extractor.get(car.source) == extractor]
+        if len(extractor_cars) == 0:
+            continue
+
         for k, car_result in enumerate(
                 precision_function(
                     session,
                     keys=keys,
                     location=location,
-                    cars=cars,
+                    cars=extractor_cars,
                     test_specific_start=test_specific_start,
                     start_date=start_date
                 )

@@ -131,25 +131,6 @@ def update_car(vehicle, saved_car):
     return False
 
 
-def get_or_create(Session, model, parameters):
-    """
-    Search for an object in the db, create it if it doesn't exist
-    return on both scenarios
-    """
-    with Session.begin() as session:
-        instance = session.query(model).filter_by(id=parameters["id"]).first()
-        if instance:
-            session.expunge_all()
-    if instance:
-        return instance
-    else:
-        instance = model(**parameters)
-        with Session.begin() as session:
-            session.add(instance)
-            session.commit()
-        return instance
-
-
 def to_list(env_string):
     if type(env_string) is str:
         return ast.literal_eval(env_string)
@@ -427,6 +408,8 @@ def save_vehicle(car_dict: dict, session: Session, dmr_keys: list[str] = None):
 
     external_id = car_dict.get("external_id")
     source = car_dict.get("source")
+    if not external_id or not source:
+        raise ValueError("save_vehicle requires external_id and source")
     saved_car = session.query(Cars).filter_by(external_id=external_id, source=source).first()
     car_columns = set(Cars.__table__.columns.keys())
 
