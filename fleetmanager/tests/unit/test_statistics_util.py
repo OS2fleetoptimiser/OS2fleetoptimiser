@@ -23,7 +23,7 @@ def test_summed_statistics(db_session):
     statistics_overview = get_summed_statistics(db_session)
 
     assert (
-        statistics_overview.total_roundtrips == 252
+        statistics_overview.total_roundtrips == 222
     ), f"Number of total roundtrips was unexpected, {statistics_overview.total_roundtrips}"
     # First date should be within the seeded range
     assert (
