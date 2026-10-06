@@ -15,6 +15,8 @@ from fleetmanager.data_access.dbschema import (
     RoundTripSegments,
     RoundTrips,
     VehicleTypes,
+    WorkshopVisits,
+    Workshops,
     vehicle_type_to_fuel,
 )
 
@@ -42,6 +44,12 @@ fleet_spec = [
      "has_location": True},
 ]
 
+# day offsets are relative to the start of the seeded window
+workshop_visit_spec = [
+    {"car_id": 0, "first_day": 9, "days": 4},
+    {"car_id": 1, "first_day": 12, "days": 1},
+]
+
 def km_per_minute(car_type_id: int) -> float:
     base = _BASE_SPEED.get(car_type_id, 0.25)
     return base * random.uniform(0.85, 1.15)
@@ -63,6 +71,61 @@ def seed_allowed_starts(engine) -> None:
 
         s.add_all(starts)
         s.flush()
+
+
+def seed_workshops(engine) -> None:
+    Session = sessionmaker(bind=engine)
+
+    with Session.begin() as s:
+        existing_workshops = s.execute(select(Workshops).limit(1)).scalars().first()
+        if existing_workshops:
+            return
+
+        workshops = [
+            Workshops(name="Værksted 1", address="værkstedsvej 1", latitude=0.0, longitude=0.0),
+            Workshops(name="Værksted 2", address="værkstedsvej 2", latitude=0.0, longitude=0.0),
+        ]
+
+        s.add_all(workshops)
+
+
+def seed_workshop_visits(s, window_start: datetime, car_ids) -> dict[int, set[int]]:
+    """Insert the visits from workshop_visit_spec and return the visited day offsets per car."""
+    workshop_ids = (
+        s.execute(select(Workshops.id).order_by(Workshops.id.asc()))
+        .scalars()
+        .all()
+    )
+    if not workshop_ids:
+        return {}
+
+    visit_days = {}
+    for i, visit in enumerate(workshop_visit_spec):
+        car_id = visit["car_id"]
+        if car_id not in car_ids:
+            continue
+
+        first_day = (window_start + timedelta(days=visit["first_day"])).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        last_day = first_day + timedelta(days=visit["days"] - 1)
+        start = first_day.replace(hour=7, minute=30)
+        end = last_day.replace(hour=15)
+
+        s.execute(
+            insert(WorkshopVisits).values(
+                car_id=car_id,
+                workshop_id=workshop_ids[i % len(workshop_ids)],
+                start_time=start,
+                end_time=end,
+                duration=round((end - start).total_seconds() / 3600, 2),
+            )
+        )
+
+        visited = range(visit["first_day"], visit["first_day"] + visit["days"])
+        visit_days.setdefault(car_id, set()).update(visited)
+
+    return visit_days
 
 
 def seed_cars(
@@ -200,6 +263,12 @@ def seed_dynamic_roundtrips_and_segments(
             s.execute(delete(RoundTrips).where(RoundTrips.id.in_(seeded_ids)))
             s.commit()
 
+        seeded_visit_cars = [visit["car_id"] for visit in workshop_visit_spec]
+        s.execute(
+            delete(WorkshopVisits).where(WorkshopVisits.car_id.in_(seeded_visit_cars))
+        )
+        visit_days = seed_workshop_visits(s, window_start, cars.keys())
+
         for car in fleet_spec:
             trips_per_day = car.get("trips_per_day")
             if trips_per_day == 0:
@@ -210,6 +279,10 @@ def seed_dynamic_roundtrips_and_segments(
             start_location_id = cars.get(car_id)
 
             for day_offset in range(days_back):
+                # the car is parked at the workshop, so it does not drive that day
+                if day_offset in visit_days.get(car_id, set()):
+                    continue
+
                 day = (window_start + timedelta(days=day_offset)).replace(
                     hour=0, minute=0, second=0, microsecond=0
                 )
@@ -282,4 +355,5 @@ def seed_dynamic_roundtrips_and_segments(
 def seed_db(engine):
     seed_allowed_starts(engine)
     seed_cars(engine)
+    seed_workshops(engine)
     seed_dynamic_roundtrips_and_segments(engine)
