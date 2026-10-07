@@ -227,13 +227,14 @@ def set_vehicles(ctx, description_fields=None):
         car_id = vehicle.get("InternalVehicleID")
 
         if vehicle.get("Status") not in allowed_statuses:
-            if car_id in saved_vehicles.id.values:
+            if str(car_id) in saved_vehicles[saved_vehicles.source == "mileagebook"].external_id.values:
                 # it's a known vehicle that is no longer in active status
                 change_status_disabled = True
         if vehicle.get("VehicleCategory") in disallowed_vehicle_categories:
             continue
         current_car = {
-            "id": car_id,
+            "external_id": str(car_id),
+            "source": "mileagebook",
             "leasing_type": (
                 None
                 if vehicle.get("LeasingType") == "None"
@@ -313,6 +314,7 @@ def set_roundtrips(ctx):
     query_vehicles = (
         sess.query(
             Cars.id,
+            Cars.external_id,
             Cars.location,
             func.coalesce(func.max(RoundTrips.end_time), max_date),
         )
@@ -323,8 +325,9 @@ def set_roundtrips(ctx):
             ),
             Cars.omkostning_aar.isnot(None),
             or_(Cars.wltp_el.isnot(None), Cars.wltp_fossil.isnot(None)),
+            Cars.source == "mileagebook",
         )
-        .group_by(Cars.id, Cars.location)
+        .group_by(Cars.id, Cars.external_id, Cars.location)
         .outerjoin(RoundTrips, RoundTrips.car_id == Cars.id)
     )
 
@@ -335,12 +338,12 @@ def set_roundtrips(ctx):
     collected_route_length = 0
     collected_route_count = 0
 
-    for car_id, car_location, last_date in query_vehicles:
+    for car_id, car_external_id, car_location, last_date in query_vehicles:
         if pd.isna(car_location):
             # no associated location
             continue
         logger.info(f"{car_id}, {last_date}")
-        trips_since_last_roundtrip = get_logs(car_id, last_date, url, headers)
+        trips_since_last_roundtrip = get_logs(car_external_id, last_date, url, headers)
         car_trips = format_trip_logs(
             trips_since_last_roundtrip, start_location_id=car_location
         )
@@ -564,7 +567,7 @@ def location_precision_test(
     """
     function to test the precision with added parking spots
     """
-    carids = [str(car.id) for car in cars]
+    carids = [str(car.external_id) for car in cars]
     carid2key = {}
 
     car_url = "https://enterpriseapi.mileagebook.com/api/Fleet/Cars"
@@ -604,11 +607,11 @@ def location_precision_test(
     ]
 
     for car in cars:
-        if str(car.id) not in carid2key:
+        if str(car.external_id) not in carid2key:
             logger.info(f"Car id {car.id} not found in trackers amongst the keys")
             continue
-        headers = {"X-Access-Token": carid2key[str(car.id)]}
-        trips_since_last_roundtrip = get_logs(car.id, start_date, trips_url, headers)
+        headers = {"X-Access-Token": carid2key[str(car.external_id)]}
+        trips_since_last_roundtrip = get_logs(car.external_id, start_date, trips_url, headers)
         car_trips = format_trip_logs(
             trips_since_last_roundtrip, start_location_id=location
         )

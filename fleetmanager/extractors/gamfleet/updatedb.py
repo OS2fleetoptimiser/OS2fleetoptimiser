@@ -167,12 +167,12 @@ def set_vehicles(ctx, description_fields=None):
             continue
         vehicle_id = int(vehicle_id)
         saved_vehicle = None
-        if vehicle_id in saved_vehicles.id.values:
-            saved_vehicle = saved_vehicles[saved_vehicles.id == vehicle_id].iloc[0]
+        if str(vehicle_id) in saved_vehicles[saved_vehicles.source == "gamfleet"].external_id.values:
+            saved_vehicle = saved_vehicles[(saved_vehicles.external_id == str(vehicle_id)) & (saved_vehicles.source == "gamfleet")].iloc[0]
 
         if saved_vehicle is not None and int(vehicle.get("IsActive")) == 0:
             # disable the vehicle
-            db_car = sess.get(Cars, vehicle_id)
+            db_car = sess.query(Cars).filter_by(external_id=str(vehicle_id), source="gamfleet").first()
             db_car.disabled = 1
             sess.commit()
             logger.info(f"Disabled vehicle {vehicle_id}")
@@ -198,7 +198,8 @@ def set_vehicles(ctx, description_fields=None):
             drivkraft = vehicle_information.get("drivkraft")
             drivkraft = None if drivkraft is None else drivkraft.lower()
             motor_register_car = {
-                "id": vehicle_id,
+                "external_id": str(vehicle_id),
+                "source": "gamfleet",
                 "make": vehicle_information.get("make"),
                 "model": vehicle_information.get("model"),
                 "range": vehicle_information.get("elektrisk_rækkevidde"),
@@ -238,7 +239,7 @@ def set_vehicles(ctx, description_fields=None):
             if new_location is None:
                 logger.info(f"New district name does not exist: {district_name}, skipping update on vehicle id {vehicle_id}")
                 continue
-            save_vehicle({"id": vehicle_id, "location": new_location.id}, sess)
+            save_vehicle({"external_id": str(vehicle_id), "source": "gamfleet", "location": new_location.id}, sess)
 
 
 @cli.command()
@@ -261,6 +262,7 @@ def set_roundtrips(ctx):
     query_vehicles = (
         sess.query(
             Cars.id,
+            Cars.external_id,
             Cars.location,
             func.coalesce(func.max(RoundTrips.end_time), max_date),
         )
@@ -271,8 +273,9 @@ def set_roundtrips(ctx):
             ),
             Cars.omkostning_aar.isnot(None),
             or_(Cars.wltp_el.isnot(None), Cars.wltp_fossil.isnot(None)),
+            Cars.source == "gamfleet"
         )
-        .group_by(Cars.id, Cars.location)
+        .group_by(Cars.id, Cars.external_id, Cars.location)
         .outerjoin(RoundTrips, RoundTrips.car_id == Cars.id)
     )
 
@@ -293,8 +296,8 @@ def set_roundtrips(ctx):
         logger.info("Initiating a new load record")
         load_record = {}
 
-    for car_id, car_location, last_date in query_vehicles:
-        if int(car_id) not in vehicle_ids:
+    for car_id, car_external_id, car_location, last_date in query_vehicles:
+        if int(car_external_id) not in vehicle_ids:
             continue
         if pd.isna(car_location):
             # no associated location
@@ -311,7 +314,7 @@ def set_roundtrips(ctx):
 
         logger.info(f"Updating car: {car_id}, last seen: {last_date}")
 
-        car_trips = get_logs(vehicle_id=car_id, from_date=last_date, to_date=now, url=url, params=params)
+        car_trips = get_logs(vehicle_id=int(car_external_id), from_date=last_date, to_date=now, url=url, params=params)
         if len(car_trips) == 0:
             continue
 
@@ -432,7 +435,7 @@ def location_precision_test(
     """
     function to test precision with new parking spots
     """
-    carids = [str(car.id) for car in cars]
+    carids = [str(car.external_id) for car in cars]
     carid2key = {}
 
     # for now only Helsingoer uses Gamfleet, hence the specifically created endpoint
@@ -471,16 +474,16 @@ def location_precision_test(
     ]
     now_date = datetime.combine(date.today(), dttime(0))
     for car in cars:
-        if str(car.id) not in carid2key:
+        if str(car.external_id) not in carid2key:
             logger.info(f"Car id {car.id} not found in trackers amongst the keys")
             continue
 
         car_trips = get_logs(
-            vehicle_id=car.id,
+            vehicle_id=car.external_id,
             from_date=start_date,
             to_date=now_date,
             url=trips_url,
-            params={"ApiKey": carid2key[str(car.id)]}
+            params={"ApiKey": carid2key[str(car.external_id)]}
         )
 
         if len(car_trips) == 0:

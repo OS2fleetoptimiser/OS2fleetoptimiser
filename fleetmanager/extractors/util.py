@@ -131,25 +131,6 @@ def update_car(vehicle, saved_car):
     return False
 
 
-def get_or_create(Session, model, parameters):
-    """
-    Search for an object in the db, create it if it doesn't exist
-    return on both scenarios
-    """
-    with Session.begin() as session:
-        instance = session.query(model).filter_by(id=parameters["id"]).first()
-        if instance:
-            session.expunge_all()
-    if instance:
-        return instance
-    else:
-        instance = model(**parameters)
-        with Session.begin() as session:
-            session.add(instance)
-            session.commit()
-        return instance
-
-
 def to_list(env_string):
     if type(env_string) is str:
         return ast.literal_eval(env_string)
@@ -425,8 +406,11 @@ def save_vehicle(car_dict: dict, session: Session, dmr_keys: list[str] = None):
     if dmr_keys is None:
         dmr_keys = []
 
-    car_id = car_dict.get("id")
-    saved_car = session.get(Cars, car_id)
+    external_id = car_dict.get("external_id")
+    source = car_dict.get("source")
+    if not external_id or not source:
+        raise ValueError("save_vehicle requires external_id and source")
+    saved_car = session.query(Cars).filter_by(external_id=external_id, source=source).first()
     car_columns = set(Cars.__table__.columns.keys())
 
     if saved_car is None:
@@ -434,13 +418,16 @@ def save_vehicle(car_dict: dict, session: Session, dmr_keys: list[str] = None):
         for key, ref_type in BACK_REF_TYPES.items():
             if (val := insert_dict.get(key)) is not None:
                 insert_dict[f"{key}_obj"] = session.get(ref_type, val)
-        session.add(Cars(**insert_dict))
+        new_car = Cars(**insert_dict)
+        session.add(new_car)
+        session.flush()
+        new_id = new_car.id
         session.commit()
-        logger.info(f"Inserted new vehicle id={car_id}")
+        logger.info(f"Inserted new vehicle id={new_id} external_id={external_id} source={source}")
         return
 
     for key, value in car_dict.items():
-        if key not in car_columns or key == "id":
+        if key not in car_columns or key in ("id", "external_id", "source"):
             continue
         try:
             if pd.isna(value):

@@ -122,14 +122,18 @@ def set_vehicles(ctx, description_fields=None):
         # plate is not seen before, add to database
         # if plate not in saved_vehicles.plate.tolist():
         if saved_vehicle.empty:
-            session.add(Cars(id=vid, plate=plate, imei=imei, description=description))
+            session.add(Cars(external_id=str(vid), source="clevertrack", plate=plate, imei=imei, description=description))
             # session.commit() ----
             continue
 
         # plate already exist in data
         saved_vehicle = saved_vehicle.iloc[0]
+        if pd.notna(saved_vehicle.source) and saved_vehicle.source != "clevertrack":
+            logger.warning(f"Skipping plate {plate}, it belongs to a {saved_vehicle.source} vehicle")
+            continue
         if (
-            (str(saved_vehicle.id) == vid)
+            (str(saved_vehicle.external_id) == str(vid))
+            and (str(saved_vehicle.source) == "clevertrack")
             and (saved_vehicle.plate == plate)
             and (saved_vehicle.imei == imei)
             and (saved_vehicle.description == description)
@@ -140,8 +144,8 @@ def set_vehicles(ctx, description_fields=None):
         # update data
         stmt = (
             update(Cars)
-            .where(Cars.id == vid)
-            .values(plate=plate, imei=imei, description=description)
+            .where(Cars.id == int(saved_vehicle.id))
+            .values(external_id=str(vid), source="clevertrack", plate=plate, imei=imei, description=description)
         )
         session.execute(stmt)
         session.commit()

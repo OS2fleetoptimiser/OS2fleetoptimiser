@@ -127,7 +127,8 @@ def set_vehicles(ctx, description_fields=None):
             continue
 
         saved_vehicle = cars_in_db[
-            (cars_in_db.plate == vehicle.registreringsnummer.replace(" ", "")) | (cars_in_db.id == vehicle.nummer)
+            (cars_in_db.plate == vehicle.registreringsnummer.replace(" ", "")) | ((cars_in_db.external_id == str(vehicle.nummer)) &
+            (cars_in_db.source == "puma"))
         ]
         if len(saved_vehicle) > 1:
             logger.warning(
@@ -138,6 +139,12 @@ def set_vehicles(ctx, description_fields=None):
             # known vehicle
             saved_vehicle = saved_vehicle.iloc[0]
             id_ = saved_vehicle.id
+            if pd.isna(saved_vehicle.external_id) or pd.isna(saved_vehicle.source):
+                # plate-matched row without vendor ids, link it to puma
+                saved_vehicle_object = session.get(Cars, int(id_))
+                saved_vehicle_object.external_id = str(vehicle.nummer)
+                saved_vehicle_object.source = "puma"
+                session.commit()
             if any(
                 [
                     pd.isna(getattr(saved_vehicle, key)) is False
@@ -184,7 +191,8 @@ def set_vehicles(ctx, description_fields=None):
                 continue
             drivkraft = vehicle_attributes.get("drivkraft")
             new_car_object = {
-                "id": vehicle.nummer,
+                "external_id": str(vehicle.nummer),
+                "source": "puma",
                 "plate": plate,
                 "make": vehicle_attributes.get("make"),
                 "model": vehicle_attributes.get("model"),
