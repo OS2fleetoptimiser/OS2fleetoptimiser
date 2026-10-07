@@ -214,7 +214,8 @@ def set_roundtrips_v2(ctx):
             ),
             Cars.omkostning_aar.isnot(None),
             or_(Cars.wltp_el.isnot(None), Cars.wltp_fossil.isnot(None)),
-            Cars.location.isnot(None)
+            Cars.location.isnot(None),
+            Cars.source == "skyhost-v2",
         )
         .group_by(Cars.id, Cars.location, Cars.external_id)
         .outerjoin(RoundTrips, RoundTrips.car_id == Cars.id)
@@ -288,6 +289,7 @@ def set_roundtrips(ctx):
     cars = pd.read_sql(
         Query(Cars)
         .filter(Cars.omkostning_aar.isnot(None), Cars.location.isnot(None),
+                Cars.source == "skyhost-v1",
                 and_(
                     or_(Cars.disabled.is_(None), Cars.disabled == False),
                     or_(Cars.deleted.is_(None), Cars.deleted == False))
@@ -542,7 +544,7 @@ def set_trackers(ctx, description_fields=None):
                 "Description" in trackers.frame.columns and
                 (
                     tracker.Description in default_cars.plate.values
-                    or str(tracker.ID) in default_cars.external_id.values
+                    or str(tracker.ID) in default_cars[default_cars.source == "skyhost-v1"].external_id.values
                 )
             ):
                 # we already know the car
