@@ -1,0 +1,13 @@
+Alembic migrations for the fleetmanager database.
+
+Run from the repository root (running from inside fleetmanager/ breaks imports):
+
+    # after changing dbschema.py, against a database that is at head
+    alembic -c fleetmanager/alembic.ini revision --autogenerate -m "describe the change"
+
+    # verify the models and the migration chain agree (also run in CI)
+    alembic -c fleetmanager/alembic.ini check
+
+Read every generated script before committing it, and commit it together with the
+model change. The baseline (99445ea7335e) is frozen; never edit it to follow the models.
+Deployments apply migrations through the one-shot migrate service in docker-compose.

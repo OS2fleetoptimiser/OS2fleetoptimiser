@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, MetaData
 from sqlalchemy.orm import (
     relationship,
     Mapped,
@@ -12,12 +12,19 @@ from datetime import datetime
 
 
 class Base(MappedAsDataclass, DeclarativeBase):
-    pass
-
+    metadata = MetaData(
+        naming_convention={
+            "ix": "ix_%(column_0_label)s",
+            "uq": "uq_%(table_name)s_%(column_0_name)s",
+            "ck": "ck_%(table_name)s_%(constraint_name)s",
+            "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+            "pk": "pk_%(table_name)s",
+        }
+    )
 
 class Trips(Base):
     __tablename__ = "trips"
-    id: Mapped[int | None] = mapped_column(primary_key=True)
+    id: Mapped[int | None] = mapped_column(primary_key=True, nullable=False)
     car_id: Mapped[int] = mapped_column(ForeignKey("cars.id"), index=True)
     distance: Mapped[Optional[float]]
     start_time: Mapped[Optional[datetime]] = mapped_column(index=True)
@@ -141,7 +148,9 @@ class VehicleTypes(Base):
 
 class Cars(Base):
     __tablename__ = "cars"
-    id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, nullable=False, autoincrement=True, default=None)
+    external_id: Mapped[Optional[str]] = mapped_column(String(64), default=None)
+    source: Mapped[Optional[str]] = mapped_column(String(64), default=None)
     imei: Mapped[str] = mapped_column(String(20), nullable=True, default=None)
     plate: Mapped[Optional[str]] = mapped_column(String(128), default=None)
     make: Mapped[Optional[str]] = mapped_column(String(128), default=None)
