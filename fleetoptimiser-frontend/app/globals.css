@@ -1,27 +1,26 @@
-@import 'leaflet/dist/leaflet.css';
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css';
+@config '../tailwind.config.js';
 
+@layer base {
+    * {
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+    }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-* {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
+    *,
+    ::before,
+    ::after {
+        border-width: 0;
+        border-style: solid;
+        border-color: rgba(194, 199, 208, 0.4);
+    }
 }
 
 html,
 body {
     max-width: 100vw;
-}
-
-*,
-::before,
-::after {
-    border-width: 0;
-    border-style: solid;
-    border-color: rgba(194, 199, 208, 0.4);
 }
 
 

@@ -98,7 +98,7 @@ export const DrivingHeatmapLegend = ({ maxHeatValue }: { maxHeatValue?: number }
             <span className="text-xs text-gray-600">Kørte km</span>
             <span className="text-xs text-gray-600">0</span>
             <span
-                className="inline-block w-24 h-2.5 rounded-sm border border-gray-300"
+                className="inline-block w-24 h-2.5 rounded-xs border border-gray-300"
                 style={{
                     backgroundImage: `linear-gradient(to right, ${heatmapWarningGradient[0]}, ${heatmapWarningGradient[1]})`,
                 }}
@@ -110,7 +110,7 @@ export const DrivingHeatmapLegend = ({ maxHeatValue }: { maxHeatValue?: number }
         {legendItems.map((item) => (
             <div key={item.label} className="flex items-center gap-1.5">
                 <span
-                    className="inline-block w-3 h-3 rounded-sm border border-gray-300"
+                    className="inline-block w-3 h-3 rounded-xs border border-gray-300"
                     style={{ backgroundColor: item.color }}
                 />
                 <span className="text-xs text-gray-600">{item.label}</span>

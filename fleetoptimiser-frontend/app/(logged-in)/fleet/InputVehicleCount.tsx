@@ -82,7 +82,7 @@ export const InputVehicleCount = ({ reducedVehicleGroup, restrict }: InputVehicl
                 onChange={(e) => handleChange(e.target.value)}
                 min={0}
                 max={restrict ? availableCount : 9999}
-                className="w-10 text-center text-sm rounded bg-gray-100 py-1 border-none outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-10 text-center text-sm rounded-sm bg-gray-100 py-1 border-none outline-hidden [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
             <Tooltip title={tooltipText}>
                 <span>

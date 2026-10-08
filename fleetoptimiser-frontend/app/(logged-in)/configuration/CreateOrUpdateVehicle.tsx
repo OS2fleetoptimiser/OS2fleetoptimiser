@@ -152,7 +152,7 @@ export const VehicleFormContent = ({ onClose, submit, dropDownData, initialValue
                 </Alert>
             )}
             <form onSubmit={formik.handleSubmit}>
-                <div className="space-y-4">
+                <div className="flex flex-col gap-4">
                     {isUpdate && !initialValues.test_vehicle && (
                         <TextField
                             fullWidth
