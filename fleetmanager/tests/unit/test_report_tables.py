@@ -208,3 +208,16 @@ def test_editing_a_subscription_moves_updated_at(session):
 
     assert subscription.updated_at > datetime(2020, 1, 1), "onupdate should have fired"
     assert subscription.created_at != subscription.updated_at
+
+
+def test_a_scope_row_names_exactly_one_target(session):
+    car, location = make_car(session)
+    subscription = make_subscription(session)
+    session.add(
+        ReportSubscriptionScope(
+            subscription_id=subscription.id, location_id=location.id, car_id=car.id
+        )
+    )
+
+    with pytest.raises(IntegrityError):
+        session.flush()

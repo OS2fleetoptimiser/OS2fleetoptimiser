@@ -76,7 +76,13 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['car_id'], ['cars.id'], name=op.f('fk_report_subscription_scope_car_id_cars')),
     sa.ForeignKeyConstraint(['location_id'], ['allowed_starts.id'], name=op.f('fk_report_subscription_scope_location_id_allowed_starts')),
     sa.ForeignKeyConstraint(['subscription_id'], ['report_subscriptions.id'], name=op.f('fk_report_subscription_scope_subscription_id_report_subscriptions'), ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_report_subscription_scope'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_report_subscription_scope')),
+    sa.CheckConstraint(
+        "(CASE WHEN location_id IS NULL THEN 0 ELSE 1 END"
+        " + CASE WHEN car_id IS NULL THEN 0 ELSE 1 END"
+        " + CASE WHEN forvaltning IS NULL THEN 0 ELSE 1 END) = 1",
+        name=op.f('ck_report_subscription_scope_one_target'),
+    )
     )
     with op.batch_alter_table('report_subscription_scope', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_report_subscription_scope_subscription_id'), ['subscription_id'], unique=False)
