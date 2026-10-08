@@ -18,7 +18,7 @@ export const ShiftsPage = () => {
     if (!locationIds || locationIds.length === 0) return null;
 
     return (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
             <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
                 Vagtlag bestemmer, hvornår køretøjer er tilgængelige i simuleringen. Alle valgte lokationer skal have ens vagtlag for at kunne simulere.
             </Typography>

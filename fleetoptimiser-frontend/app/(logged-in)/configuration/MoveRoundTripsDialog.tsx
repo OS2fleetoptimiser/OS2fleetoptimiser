@@ -77,7 +77,7 @@ const MoveRoundTripsDialog = ({ isOpen, onClose, idValue, plateValue, makeValue,
                     </div>
 
                     <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
-                        <div className="p-4 space-y-3">
+                        <div className="p-4 flex flex-col gap-3">
                             <TextField
                                 fullWidth
                                 size="small"

@@ -358,7 +358,7 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                     {hasMultipleForvaltninger && (
                         <Box
                             sx={{ borderRight: '1px solid', borderColor: 'divider', bgcolor: 'grey.50' }}
-                            className="w-56 flex-shrink-0 overflow-auto flex flex-col"
+                            className="w-56 shrink-0 overflow-auto flex flex-col"
                         >
                             <Typography
                                 variant="caption"
@@ -386,7 +386,7 @@ export default function LocationPicker({ preSelectedLocations, locations, forval
                         {activeForvaltning && (
                             <Box
                                 sx={{ px: 2.5, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}
-                                className="flex items-center justify-between flex-shrink-0"
+                                className="flex items-center justify-between shrink-0"
                             >
                                 <div>
                                     <Typography variant="body2" sx={{ fontWeight: 600 }} color="text.primary">

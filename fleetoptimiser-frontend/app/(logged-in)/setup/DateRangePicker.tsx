@@ -80,7 +80,7 @@ export const DateRangePicker = ({ range, onChange }: DateRangePickerProps) => {
                         weekdayDisplayFormat="EE"
                         showDateDisplay={false}
                     />
-                    <div className="flex justify-end p-1 space-x-2 mb-1 mr-1">
+                    <div className="flex justify-end p-1 gap-2 mb-1 mr-1">
                         <Button onClick={() => setOpen(false)} variant="outlined">
                             Luk
                         </Button>

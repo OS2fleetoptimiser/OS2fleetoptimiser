@@ -1,3 +1,4 @@
+import 'leaflet/dist/leaflet.css';
 import './globals.css';
 import ProviderWrapper from './providers/providerWrapper';
 import React from 'react';
