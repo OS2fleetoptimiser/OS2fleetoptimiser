@@ -106,8 +106,6 @@ export default function Page() {
         () => [
             { field: 'name', headerName: 'Navn', flex: 1.5, minWidth: 160 },
             { field: 'address', headerName: 'Adresse', flex: 1.5, minWidth: 160 },
-            { field: 'latitude', headerName: 'Breddegrad', flex: 1, minWidth: 110, type: 'number' },
-            { field: 'longitude', headerName: 'Længdegrad', flex: 1, minWidth: 110, type: 'number' },
             {
                 field: 'actions',
                 headerName: '',

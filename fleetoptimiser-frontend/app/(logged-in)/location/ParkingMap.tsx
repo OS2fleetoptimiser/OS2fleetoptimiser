@@ -1,25 +1,14 @@
 'use client';
 
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
+import { MapContainer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
 import { useGetLatLonAddress } from "@/components/hooks/useAddressSearch";
 import 'leaflet/dist/leaflet.css';
-
-import L from 'leaflet';
-
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import { OsmTileLayer } from "@/components/LeafletBase";
 import {AllowedStart} from "@/components/hooks/useGetLocationPrecision";
 import {Alert, Button, Chip, TextField} from "@mui/material";
 import dayjs from "dayjs";
 import {useEffect, useState} from "react";
 import { gray } from '@/theme/themePrimitives';
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: typeof markerIcon2x === 'string' ? markerIcon2x : markerIcon2x.src,
-  iconUrl: typeof markerIcon === 'string' ? markerIcon : markerIcon.src,
-  shadowUrl: typeof markerShadow === 'string' ? markerShadow : markerShadow.src,
-});
 
 type ParkingMapProps = {
     setNoChanges: (unchanged: boolean) => void;
@@ -99,7 +88,7 @@ const ParkingMap = ({
                         lat={data && data.lat ? data.lat : parkingSpots.latitude}
                         lng={data && data.lon ? data.lon : parkingSpots.longitude}
                     />
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
+                    <OsmTileLayer />
                     {parkingSpots.latitude && parkingSpots.longitude &&
                         <Marker position={[parkingSpots.latitude, parkingSpots.longitude]}>
                             <Popup>
