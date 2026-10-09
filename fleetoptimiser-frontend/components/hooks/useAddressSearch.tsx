@@ -1,20 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 type LatLon = {
   lat: number;
   lon: number;
+  displayName: string;
 };
 
 const fetchLatLon = async (address: string): Promise<LatLon | null> => {
   const osmUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
     address
-  )}&format=jsonv2`;
+  )}&format=jsonv2&countrycodes=dk`;
 
-  const headers = {
-    'User-Agent': 'FleetOptimiser/1.0',
-  };
-
-  const response = await fetch(osmUrl, { headers });
+  const response = await fetch(osmUrl);
 
   if (!response.ok) {
     console.error(
@@ -33,6 +30,7 @@ const fetchLatLon = async (address: string): Promise<LatLon | null> => {
   return {
     lat: parseFloat(data[0].lat),
     lon: parseFloat(data[0].lon),
+    displayName: data[0].display_name,
   };
 };
 
@@ -41,5 +39,11 @@ export const useGetLatLonAddress = (address: string) => {
     queryKey: ['latlon', address],
     queryFn: () => fetchLatLon(address),
     enabled: !!address
+  });
+};
+
+export const useSearchAddress = () => {
+  return useMutation({
+    mutationFn: fetchLatLon,
   });
 };

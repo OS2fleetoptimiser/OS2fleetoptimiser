@@ -1,8 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField } from '@mui/material';
+import { useState } from 'react';
+import dynamic from 'next/dynamic';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Skeleton, Stack, TextField } from '@mui/material';
 import { Workshop } from '@/components/hooks/useGetWorkshops';
+import { useSearchAddress } from '@/components/hooks/useAddressSearch';
+
+const WorkshopMap = dynamic(() => import('@/app/(logged-in)/workshops/WorkshopMap'), {
+    ssr: false,
+    loading: () => <Skeleton variant="rounded" height={240} />,
+});
 
 type Props = {
     open: boolean;
@@ -12,19 +19,19 @@ type Props = {
     onSave: (workshop: Workshop) => void;
 };
 
-// coordinates are kept as strings so they can start out empty. defaulting them to 0
-// would be a valid coordinate, so a forgotten field would save a workshop in the Gulf
-// of Guinea that never matches a vehicle. it also keeps all four labels aligned, since
-// an empty field renders its label unshrunk like the text fields do
+type Position = {
+    latitude: number;
+    longitude: number;
+};
+
 type FormState = {
     id: number | null;
     name: string;
     address: string;
-    latitude: string;
-    longitude: string;
+    savedPosition: Position | null;
 };
 
-const emptyForm: FormState = { id: null, name: '', address: '', latitude: '', longitude: '' };
+const emptyForm: FormState = { id: null, name: '', address: '', savedPosition: null };
 
 const toForm = (workshop: Workshop | null): FormState =>
     workshop
@@ -32,45 +39,68 @@ const toForm = (workshop: Workshop | null): FormState =>
               id: workshop.id,
               name: workshop.name ?? '',
               address: workshop.address ?? '',
-              latitude: String(workshop.latitude),
-              longitude: String(workshop.longitude),
+              savedPosition: { latitude: workshop.latitude, longitude: workshop.longitude },
           }
         : emptyForm;
 
 export default function WorkshopDialog({ open, workshop, saving, onClose, onSave }: Props) {
-    const [form, setForm] = useState<FormState>(emptyForm);
+    return (
+        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+            <WorkshopForm workshop={workshop} saving={saving} onClose={onClose} onSave={onSave} />
+        </Dialog>
+    );
+}
 
-    useEffect(() => {
-        setForm(toForm(workshop));
-    }, [workshop, open]);
+function WorkshopForm({ workshop, saving, onClose, onSave }: Omit<Props, 'open'>) {
+    const [form, setForm] = useState<FormState>(() => toForm(workshop));
+    const searchAddress = useSearchAddress();
 
-    const latitude = parseFloat(form.latitude);
-    const longitude = parseFloat(form.longitude);
-    const latValid = Number.isFinite(latitude) && latitude >= -90 && latitude <= 90;
-    const lonValid = Number.isFinite(longitude) && longitude >= -180 && longitude <= 180;
-    const canSave = !!form.name.trim() && latValid && lonValid;
+    const foundAddress = searchAddress.data;
+    const position = foundAddress
+        ? { latitude: foundAddress.lat, longitude: foundAddress.lon }
+        : form.savedPosition;
 
-    // only complain about what the user has actually filled in; a still-empty required
-    // field is signalled by the asterisk and the disabled save button
-    const latError = form.latitude.trim() !== '' && !latValid;
-    const lonError = form.longitude.trim() !== '' && !lonValid;
+    const canSearch = !!form.address.trim() && !position && !searchAddress.isPending;
+    const canSave = !!form.name.trim() && !!form.address.trim() && position !== null;
+
+    const addressNotFound = searchAddress.isSuccess && foundAddress === null;
+    const addressError = addressNotFound || searchAddress.isError;
+
+    let addressHelperText: string | undefined;
+    if (searchAddress.isError) {
+        addressHelperText = 'Søgningen kunne ikke gennemføres. Prøv igen.';
+    } else if (addressNotFound) {
+        addressHelperText = 'Adressen blev ikke fundet. Tjek stavningen eller tilføj postnummer og by.';
+    } else if (foundAddress) {
+        addressHelperText = `Fundet: ${foundAddress.displayName}`;
+    } else if (!position) {
+        addressHelperText = 'Søg efter adressen for at finde placeringen.';
+    }
+
+    const handleAddressChange = (address: string) => {
+        setForm({ ...form, address, savedPosition: null });
+        searchAddress.reset();
+    };
+
+    const handleSearch = () => {
+        if (!canSearch) return;
+        searchAddress.mutate(form.address.trim());
+    };
 
     const handleSave = () => {
-        if (!canSave) return;
+        if (!canSave || !position) return;
         onSave({
             id: form.id,
             name: form.name.trim(),
-            // '' rather than null, so clearing the address actually clears it: the
-            // backend patch skips fields that arrive as null
             address: form.address.trim(),
-            latitude: latitude,
-            longitude: longitude,
+            latitude: position.latitude,
+            longitude: position.longitude,
             addition_date: workshop?.addition_date ?? null,
         });
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+        <>
             <DialogTitle>{workshop ? 'Redigér værksted' : 'Tilføj værksted'}</DialogTitle>
             <DialogContent>
                 <Stack spacing={2} sx={{ mt: 1 }}>
@@ -81,32 +111,30 @@ export default function WorkshopDialog({ open, workshop, saving, onClose, onSave
                         fullWidth
                         required
                     />
-                    <TextField
-                        label="Adresse"
-                        value={form.address}
-                        onChange={(e) => setForm({ ...form, address: e.target.value })}
-                        fullWidth
-                    />
-                    <TextField
-                        label="Breddegrad"
-                        type="number"
-                        value={form.latitude}
-                        onChange={(e) => setForm({ ...form, latitude: e.target.value })}
-                        error={latError}
-                        helperText={latError ? 'Angiv en breddegrad mellem -90 og 90' : undefined}
-                        fullWidth
-                        required
-                    />
-                    <TextField
-                        label="Længdegrad"
-                        type="number"
-                        value={form.longitude}
-                        onChange={(e) => setForm({ ...form, longitude: e.target.value })}
-                        error={lonError}
-                        helperText={lonError ? 'Angiv en længdegrad mellem -180 og 180' : undefined}
-                        fullWidth
-                        required
-                    />
+                    <Stack direction="row" spacing={2} alignItems="flex-start">
+                        <TextField
+                            label="Adresse"
+                            value={form.address}
+                            onChange={(e) => handleAddressChange(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleSearch();
+                            }}
+                            error={addressError}
+                            helperText={addressHelperText}
+                            fullWidth
+                            required
+                        />
+                        <Button
+                            variant="outlined"
+                            size="medium"
+                            onClick={handleSearch}
+                            disabled={!canSearch}
+                            loading={searchAddress.isPending}
+                        >
+                            Søg
+                        </Button>
+                    </Stack>
+                    {position && <WorkshopMap latitude={position.latitude} longitude={position.longitude} />}
                 </Stack>
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -117,6 +145,6 @@ export default function WorkshopDialog({ open, workshop, saving, onClose, onSave
                     Gem
                 </Button>
             </DialogActions>
-        </Dialog>
+        </>
     );
 }
