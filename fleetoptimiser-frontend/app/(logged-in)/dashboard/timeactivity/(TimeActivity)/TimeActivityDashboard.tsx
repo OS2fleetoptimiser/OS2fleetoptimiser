@@ -106,7 +106,10 @@ function TimeActivityDashboard({ end, locations, forvaltninger, start, departmen
                         Tidsaktivitet viser den procentvise udnyttelse af køretøjerne i den valgte periode pr. dag. 100% indikerer at køretøjet har været aktiv i rundtur i hele perioden. Justér grænseværdien for at fremhæve lavere eller højere udnyttelse af køretøjerne.
                     </Typography>
                     <div style={{height: `${computedHeight}px`}}>
-                        <DownloadableGraph filename={`tidsaktivitet-${fileNameAppendix}.png`}>
+                        <DownloadableGraph
+                            filename={`tidsaktivitet-${fileNameAppendix}.png`}
+                            header={{ title: 'Tidsaktivitet', stats: [{ label: 'Grænseværdi', value: `${colorThreshold} %` }] }}
+                        >
                             <TimeActivityHeatMap data={heatMapData.data} threshold={colorThreshold} />
                         </DownloadableGraph>
                     </div>

@@ -155,7 +155,13 @@ const VehicleActivityDashboard = ({
                         </div>
                         <TabPanel value="locations">
                             <div style={{ height: `${locationHeight}px` }}>
-                                <DownloadableGraph filename={`loktaionsaktivitet-${fileNameAppendix}.png`}>
+                                <DownloadableGraph
+                                    filename={`loktaionsaktivitet-${fileNameAppendix}.png`}
+                                    header={{
+                                        title: 'Køretøjsaktivitet - lokationer',
+                                        stats: [{ label: 'Grænseværdi', value: `${colorThreshold} km` }],
+                                    }}
+                                >
                                     <DrivingHeatmapKm
                                         setLocationZoom={goToLocation}
                                         data={heatMapData.data.locationGroup.km}
@@ -166,7 +172,13 @@ const VehicleActivityDashboard = ({
                         </TabPanel>
                         <TabPanel value="vehicles">
                             <div style={{ height: `${vehicleHeight}px` }}>
-                                <DownloadableGraph filename={`koeretoejsaktivitet-${fileNameAppendix}.png`}>
+                                <DownloadableGraph
+                                    filename={`koeretoejsaktivitet-${fileNameAppendix}.png`}
+                                    header={{
+                                        title: 'Køretøjsaktivitet - køretøjer',
+                                        stats: [{ label: 'Grænseværdi', value: `${colorThreshold} km` }],
+                                    }}
+                                >
                                     <DrivingHeatmapKm
                                         setLocationZoom={goToLocation}
                                         data={heatMapData.data.vehicleGroup.km}
