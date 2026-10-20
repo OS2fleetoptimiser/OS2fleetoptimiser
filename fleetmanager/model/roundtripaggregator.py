@@ -329,6 +329,8 @@ def aggregator(
     alternative_trip_duration = timedelta(
         hours=10
     )  # the alternative trip duration for trips that stays within vicinity
+    home_park_km = 0.3  # a long park this close to a start counts as home, regardless of home_criteria
+    home_park_duration = timedelta(hours=8)
 
     if pre_process:
         car_trips["start_time"] = car_trips.start_time.apply(
@@ -397,6 +399,7 @@ def aggregator(
         most_frequent_location = 0
 
     force_end = False
+    parked_before = (car_trips.start_time - car_trips.end_time.shift(1)).reset_index(drop=True)
     for k, trip in enumerate(car_trips.itertuples()):
         current_start, current_end = (trip.start_latitude, trip.start_longitude), (
             trip.end_latitude,
@@ -414,6 +417,17 @@ def aggregator(
         closest_home, closest_distance = get_closest_home_distance(
             allowed_starts, current_start
         )
+        # a long park close to a start counts as home, so parking just outside home_criteria doesn't make multi-day roundtrips
+        home_park = (
+            closest_distance < home_park_km
+            and pd.notna(parked_before.iloc[k])
+            and parked_before.iloc[k] >= home_park_duration
+        )
+        frequency_criteria = home_criteria
+        if home_park and (current_home is None or pd.isna(current_home)) and closest_distance >= home_criteria:
+            # lets a roundtrip start from here
+            closest_distance = 0
+            frequency_criteria = home_park_km
 
         # if the roundtrip has not yet started
         if (current_home is None or pd.isna(current_home)) and (
@@ -453,7 +467,7 @@ def aggregator(
                         & (car_trips.end_time <= rt_starter + allowed_trip_duration)
                     ].to_dict("records"),
                     allowed_starts,
-                    home_criteria,
+                    frequency_criteria,
                 )
                 location_frequency_sorted = sorted(
                     eligible_trips_location_frequency.items(),
@@ -556,14 +570,20 @@ def aggregator(
                 (
                     (closest_home == current_home and closest_distance < home_criteria)
                     or force_end
+                    # parked long near where the roundtrip started
+                    or (
+                        home_park
+                        and len(current_roundtrip) >= 1
+                        and calc_distance(
+                            current_start,
+                            (current_roundtrip[0].start_latitude, current_roundtrip[0].start_longitude),
+                        ) < home_park_km
+                    )
                 )
                 and sum(a.distance for a in current_roundtrip) > distance_criteria
                 and len(current_roundtrip) >= 1
             ):
-                if force_end and not (
-                    closest_home == current_home and closest_distance < home_criteria
-                ):
-                    force_end = False
+                force_end = False
                 aggregating_types.append(f"complete")
                 allowed_trip_duration = original_allowed_trip_duration
                 car_roundtrips.append(current_roundtrip)
@@ -857,13 +877,16 @@ def aggregator(
     if not roundtrips:
         return []
     roundtrips = pd.DataFrame(roundtrips).sort_values("start_time")
-    if (
-        "complete" not in roundtrips.iloc[-1]["aggregation_type"]
-        and use_most_frequent_location is False
-    ):
+    if use_most_frequent_location is False:
         # we don't want to save the last roundtrip if it's not a complete one,
         # i.e. don't save a potential open roundtrip
-        roundtrips = roundtrips.iloc[:-1]
+        completable_after = car_trips.end_time.max() - original_allowed_trip_duration
+        while (
+            not roundtrips.empty
+            and "complete" not in roundtrips.iloc[-1]["aggregation_type"]
+            and roundtrips.iloc[-1]["start_time"] > completable_after
+        ):
+            roundtrips = roundtrips.iloc[:-1]
     if roundtrips.empty:
         return []
     roundtrips["start_location_id"] = car.get("location")
