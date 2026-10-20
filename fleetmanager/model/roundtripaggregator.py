@@ -296,7 +296,7 @@ def aggregator(
         Calculate the stop duration between trips.
 
     3. Initialisation: Initialise variables to store the state of the aggregation process, including lists to hold the
-        current and completed routes, and variables to track the current home location and roundtrip distance.
+        current and completed routes, and a variable to track the current home location.
 
     4. Main Loop: Iterate through the trips in `car_trips`.
         a. GPS Validity Check: Skip trips with invalid GPS coordinates.
@@ -353,9 +353,6 @@ def aggregator(
     car_roundtrips = []  # list for holding the roundtrips
     current_roundtrip = []  # list for holding the current roundtrip
     current_home = None  # variable to hold the currently recorded home/location id
-    roundtrip_distance = (
-        0  # value for holding the travelled distance of the current roundtrip
-    )
     anonymise_location = next(
         filter(lambda start: start["id"] == car["location"], allowed_starts)
     )
@@ -509,7 +506,6 @@ def aggregator(
                     <= location_frequency_sorted[0][1]
                 ):
                     # we account the trip, but don't define it as a new current home
-                    roundtrip_distance += trip.distance
                     current_roundtrip.append(trip)
                     continue
 
@@ -525,7 +521,6 @@ def aggregator(
                 )
                 current_home = closest_home
                 current_roundtrip.append(trip)
-                roundtrip_distance += trip.distance
 
             elif only_natural_aggregation is False:
                 # we account for the in between natural aggregated roundtrips if allowed
@@ -551,7 +546,6 @@ def aggregator(
                         allowed_trip_duration = original_allowed_trip_duration
                         car_roundtrips += new_roundtrips
                     current_roundtrip = [trip]
-                    roundtrip_distance += trip.distance
                     allowed_trip_duration = vicinity_trip_duration(
                         current_start, trip.start_time, allowed_trip_duration
                     )
@@ -608,14 +602,12 @@ def aggregator(
                         car_roundtrips.append([trip])
                         aggregating_types.append("complete")
                     current_roundtrip = []
-                    roundtrip_distance = 0
                     current_home = None
                 else:
                     allowed_trip_duration = vicinity_trip_duration(
                         current_start, trip.start_time, allowed_trip_duration
                     )
                     current_roundtrip = [trip]
-                    roundtrip_distance = trip.distance
 
             # end current roundtrip and start a new on if the car has moved to a new home
             elif (
@@ -643,7 +635,6 @@ def aggregator(
                     allowed_trip_duration = original_allowed_trip_duration
 
                 current_roundtrip = [trip]
-                roundtrip_distance = trip.distance
                 allowed_trip_duration = vicinity_trip_duration(
                     current_start, trip.start_time, allowed_trip_duration
                 )
@@ -657,7 +648,6 @@ def aggregator(
                     closest_end_distance < home_criteria
                     and closest_end_home == current_home
                 )
-                roundtrip_distance += trip.distance
                 current_roundtrip.append(trip)
 
     roundtrips = [
