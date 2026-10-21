@@ -14,7 +14,8 @@ export type heatmapData = {
 }[];
 
 export default function TimeActivityHeatMap({ data, threshold }: { data: heatmapData; threshold: number }) {
-    const showLabels = useMediaQuery({ minWidth: '1280px' }) && data[0].data.length <= 31;
+    const showLabels = useMediaQuery({ minWidth: '1280px' }) && (data[0]?.data.length ?? 0) <= 31;
+    if(!data.length) return <p className="m-4">Ingen kørselsdata for de valgte filtre </p>
     // labels become cluttered if below 1280px or more than 31 days
     const lightTextMax = (threshold / 100) * 0.4;
     return (
