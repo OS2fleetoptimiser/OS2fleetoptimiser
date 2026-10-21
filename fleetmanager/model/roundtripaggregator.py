@@ -296,7 +296,7 @@ def aggregator(
         Calculate the stop duration between trips.
 
     3. Initialisation: Initialise variables to store the state of the aggregation process, including lists to hold the
-        current and completed routes, and variables to track the current home location and roundtrip distance.
+        current and completed routes, and a variable to track the current home location.
 
     4. Main Loop: Iterate through the trips in `car_trips`.
         a. GPS Validity Check: Skip trips with invalid GPS coordinates.
@@ -305,13 +305,17 @@ def aggregator(
             - If the car returns to home within the allowed trip duration, consider updating the allowed trip duration.
         d. Complete Current Route: If the car returns to home and the route is long enough, complete the current route.
             - If `only_natural_aggregation` is False, split the route if it exceeds the allowed trip duration.
+            - A park of at least 8 hours within 300 m of where the route started also counts as returning home,
+              so parking just outside `home_criteria` doesn't make multi-day routes.
         e. Change of Home Location: If the car moves to a new home location and does not return home, start a new route.
         f. In-Between Trips: If allowed, account for trips that occur between natural aggregations.
 
     5. Route Finalisation: Convert the aggregated routes into the desired output format, anonymising GPS coordinates
         if requested.
 
-    6. Post-processing: sanity of the roundtrips. Checks long duration trips and trips that has a low average km/h
+    6. Post-processing: sanity of the roundtrips. Checks long duration trips and trips that has a low average km/h.
+        Trailing non-complete routes that future trips could still complete (started within the allowed trip
+        duration of the last trip) are left out, so they're picked up again by the next run.
 
     7. Output: Return the list of aggregated routes.
     """
@@ -329,6 +333,8 @@ def aggregator(
     alternative_trip_duration = timedelta(
         hours=10
     )  # the alternative trip duration for trips that stays within vicinity
+    home_park_km = 0.3  # a long park this close to a start counts as home, regardless of home_criteria
+    home_park_duration = timedelta(hours=8)
 
     if pre_process:
         car_trips["start_time"] = car_trips.start_time.apply(
@@ -347,9 +353,6 @@ def aggregator(
     car_roundtrips = []  # list for holding the roundtrips
     current_roundtrip = []  # list for holding the current roundtrip
     current_home = None  # variable to hold the currently recorded home/location id
-    roundtrip_distance = (
-        0  # value for holding the travelled distance of the current roundtrip
-    )
     anonymise_location = next(
         filter(lambda start: start["id"] == car["location"], allowed_starts)
     )
@@ -396,7 +399,21 @@ def aggregator(
     else:
         most_frequent_location = 0
 
+    def vicinity_trip_duration(start, start_time, trip_duration):
+        # if the majority of logs and distance is driven within the vicinity of 5 km we define the allowed
+        # trip duration as the alternative to make the roundtrips shorter
+        log_ratio, distance_ratio = stays_within_vicinity(
+            start, car_trips, start_time, trip_duration
+        )
+        if (
+            log_ratio > vicinity_log_ratio
+            and distance_ratio > vicinity_distance_ratio
+        ):
+            return alternative_trip_duration
+        return trip_duration
+
     force_end = False
+    parked_before =(car_trips.start_time - car_trips.end_time.shift(1)).reset_index(drop=True)
     for k, trip in enumerate(car_trips.itertuples()):
         current_start, current_end = (trip.start_latitude, trip.start_longitude), (
             trip.end_latitude,
@@ -414,6 +431,21 @@ def aggregator(
         closest_home, closest_distance = get_closest_home_distance(
             allowed_starts, current_start
         )
+        # a long park close to a start counts as home, so parking just outside home_criteria doesn't make multi-day roundtrips
+        home_park = (
+            closest_distance < home_park_km
+            and pd.notna(parked_before.iloc[k])
+            and parked_before.iloc[k] >= home_park_duration
+        )
+        frequency_criteria = home_criteria
+        if (
+            home_park
+            and (current_home is None or pd.isna(current_home))
+            and closest_distance >= home_criteria
+        ):
+            # lets a roundtrip start from here
+            closest_distance = 0
+            frequency_criteria = home_park_km
 
         # if the roundtrip has not yet started
         if (current_home is None or pd.isna(current_home)) and (
@@ -453,7 +485,7 @@ def aggregator(
                         & (car_trips.end_time <= rt_starter + allowed_trip_duration)
                     ].to_dict("records"),
                     allowed_starts,
-                    home_criteria,
+                    frequency_criteria,
                 )
                 location_frequency_sorted = sorted(
                     eligible_trips_location_frequency.items(),
@@ -468,12 +500,12 @@ def aggregator(
                     and next(
                         filter(
                             lambda x: x[0] == closest_home, location_frequency_sorted
-                        )
+                        ),
+                        (None, 0),
                     )[1]
                     <= location_frequency_sorted[0][1]
                 ):
                     # we account the trip, but don't define it as a new current home
-                    roundtrip_distance += trip.distance
                     current_roundtrip.append(trip)
                     continue
 
@@ -484,20 +516,11 @@ def aggregator(
                 ) and trip.distance <= distance_criteria:
                     continue
 
-                log_ratio, distance_ratio = stays_within_vicinity(
-                    current_start, car_trips, trip.start_time, allowed_trip_duration
+                allowed_trip_duration = vicinity_trip_duration(
+                    current_start, trip.start_time, allowed_trip_duration
                 )
-                if (
-                    log_ratio > vicinity_log_ratio
-                    and distance_ratio > vicinity_distance_ratio
-                ):
-                    # if the majority of logs and distance is driven within the vicinity of 5 km we define the allowed
-                    # trip duration as the alternative to make the roundtrips shorter
-                    allowed_trip_duration = alternative_trip_duration
-
                 current_home = closest_home
                 current_roundtrip.append(trip)
-                roundtrip_distance += trip.distance
 
             elif only_natural_aggregation is False:
                 # we account for the in between natural aggregated roundtrips if allowed
@@ -523,18 +546,9 @@ def aggregator(
                         allowed_trip_duration = original_allowed_trip_duration
                         car_roundtrips += new_roundtrips
                     current_roundtrip = [trip]
-                    roundtrip_distance += trip.distance
-                    log_ratio, distance_ratio = stays_within_vicinity(
-                        current_start, car_trips, trip.start_time, allowed_trip_duration
+                    allowed_trip_duration = vicinity_trip_duration(
+                        current_start, trip.start_time, allowed_trip_duration
                     )
-                    if (
-                        log_ratio > vicinity_log_ratio
-                        and distance_ratio > vicinity_distance_ratio
-                    ):
-                        # if the majority of logs and distance is driven within the vicinity of 5 km we define the
-                        # allowed trip duration as the alternative to make the roundtrips shorter
-                        allowed_trip_duration = alternative_trip_duration
-
                     current_home = closest_home
                 else:
                     if only_natural_aggregation is False:
@@ -556,15 +570,25 @@ def aggregator(
                 (
                     (closest_home == current_home and closest_distance < home_criteria)
                     or force_end
+                    # parked long near where the roundtrip started
+                    or (
+                        home_park
+                        and len(current_roundtrip) >= 1
+                        and calc_distance(
+                            current_start,
+                            (
+                                current_roundtrip[0].start_latitude,
+                                current_roundtrip[0].start_longitude,
+                            ),
+                        )
+                        < home_park_km
+                    )
                 )
                 and sum(a.distance for a in current_roundtrip) > distance_criteria
                 and len(current_roundtrip) >= 1
             ):
-                if force_end and not (
-                    closest_home == current_home and closest_distance < home_criteria
-                ):
-                    force_end = False
-                aggregating_types.append(f"complete")
+                force_end = False
+                aggregating_types.append("complete")
                 allowed_trip_duration = original_allowed_trip_duration
                 car_roundtrips.append(current_roundtrip)
 
@@ -578,21 +602,12 @@ def aggregator(
                         car_roundtrips.append([trip])
                         aggregating_types.append("complete")
                     current_roundtrip = []
-                    roundtrip_distance = 0
                     current_home = None
                 else:
-                    log_ratio, distance_ratio = stays_within_vicinity(
-                        current_start, car_trips, trip.start_time, allowed_trip_duration
+                    allowed_trip_duration = vicinity_trip_duration(
+                        current_start, trip.start_time, allowed_trip_duration
                     )
-                    if (
-                        log_ratio > vicinity_log_ratio
-                        and distance_ratio > vicinity_distance_ratio
-                    ):
-                        # if the majority of logs and distance is driven within the vicinity of 5 km we define the
-                        # allowed trip duration as the alternative to make the roundtrips shorter
-                        allowed_trip_duration = alternative_trip_duration
                     current_roundtrip = [trip]
-                    roundtrip_distance = trip.distance
 
             # end current roundtrip and start a new on if the car has moved to a new home
             elif (
@@ -620,17 +635,9 @@ def aggregator(
                     allowed_trip_duration = original_allowed_trip_duration
 
                 current_roundtrip = [trip]
-                roundtrip_distance = trip.distance
-                log_ratio, distance_ratio = stays_within_vicinity(
-                    current_start, car_trips, trip.start_time, allowed_trip_duration
+                allowed_trip_duration = vicinity_trip_duration(
+                    current_start, trip.start_time, allowed_trip_duration
                 )
-                if (
-                    log_ratio > vicinity_log_ratio
-                    and distance_ratio > vicinity_distance_ratio
-                ):
-                    # if the majority of logs and distance is driven within the vicinity of 5 km we define the
-                    # allowed trip duration as the alternative to make the roundtrips shorter
-                    allowed_trip_duration = alternative_trip_duration
                 current_home = closest_home
             else:
                 # force end of next if the end is close... SKYHOST GPS SHIFT ISSUE
@@ -641,7 +648,6 @@ def aggregator(
                     closest_end_distance < home_criteria
                     and closest_end_home == current_home
                 )
-                roundtrip_distance += trip.distance
                 current_roundtrip.append(trip)
 
     roundtrips = [
@@ -857,13 +863,16 @@ def aggregator(
     if not roundtrips:
         return []
     roundtrips = pd.DataFrame(roundtrips).sort_values("start_time")
-    if (
-        "complete" not in roundtrips.iloc[-1]["aggregation_type"]
-        and use_most_frequent_location is False
-    ):
+    if use_most_frequent_location is False:
         # we don't want to save the last roundtrip if it's not a complete one,
         # i.e. don't save a potential open roundtrip
-        roundtrips = roundtrips.iloc[:-1]
+        completable_after = car_trips.end_time.max() - original_allowed_trip_duration
+        while (
+            not roundtrips.empty
+            and "complete" not in roundtrips.iloc[-1]["aggregation_type"]
+            and roundtrips.iloc[-1]["start_time"] > completable_after
+        ):
+            roundtrips = roundtrips.iloc[:-1]
     if roundtrips.empty:
         return []
     roundtrips["start_location_id"] = car.get("location")
