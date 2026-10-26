@@ -19,6 +19,8 @@ from typing import Sequence, Union
 import sqlalchemy as sa
 from alembic import op
 
+from fleetmanager.data_access.migration_types import match_foreign_key_types
+
 # revision identifiers, used by Alembic.
 revision: str = '99445ea7335e'
 down_revision: Union[str, Sequence[str], None] = None
@@ -236,9 +238,14 @@ def upgrade() -> None:
     inspector = sa.inspect(bind)
     existing_tables = set(inspector.get_table_names())
 
-    metadata.create_all(bind, checkfirst=True)
-
+    schema = sa.MetaData(naming_convention=metadata.naming_convention)
     for table in metadata.sorted_tables:
+        table.to_metadata(schema)
+    match_foreign_key_types(bind, schema)
+
+    schema.create_all(bind, checkfirst=True)
+
+    for table in schema.sorted_tables:
         if table.name not in existing_tables:
             continue
 
