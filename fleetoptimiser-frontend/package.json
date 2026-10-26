@@ -57,7 +57,7 @@
         "word-wrap": "^1.2.4",
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz",
         "yup": "^1.0.2",
-        "zod": "^4.3.6"
+        "zod": "^4.6.7"
     },
     "devDependencies": {
         "@tailwindcss/postcss": "^4.3.3",
