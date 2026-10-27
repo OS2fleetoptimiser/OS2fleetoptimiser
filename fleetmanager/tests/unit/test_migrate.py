@@ -180,3 +180,47 @@ def test_baseline_is_a_noop_on_a_complete_schema():
         if table != "alembic_version"
     }
     assert before == after, "Baseline must not change a schema that is already complete"
+
+
+def column_type(engine, table, column):
+    return next(
+        col["type"] for col in sa.inspect(engine).get_columns(table)
+        if col["name"] == column
+    )
+
+
+def test_foreign_keys_follow_a_legacy_bigint_id():
+    """
+    Some dbs have a BIGINT cars.id, so new FK columns must match it.
+    """
+    engine = make_engine()
+    with engine.begin() as conn:
+        conn.execute(sa.text("CREATE TABLE cars (id BIGINT NOT NULL PRIMARY KEY)"))
+
+    run_migrations(engine, "head")
+
+    for table in ("trips", "roundtrips", "workshop_visits", "report_alerts",
+                  "report_subscription_scope"):
+        assert isinstance(column_type(engine, table, "car_id"), sa.BigInteger), table
+    assert isinstance(column_type(engine, "report_alerts", "location_id"), sa.Integer)
+
+
+def test_foreign_keys_stay_integer_on_an_empty_database():
+    engine = make_engine()
+
+    run_migrations(engine, "head")
+
+    for table in ("workshop_visits", "report_alerts"):
+        car_id = column_type(engine, table, "car_id")
+        assert isinstance(car_id, sa.Integer) and not isinstance(car_id, sa.BigInteger)
+
+
+def test_baseline_leaves_the_frozen_schema_untouched():
+    engine = make_engine()
+    with engine.begin() as conn:
+        conn.execute(sa.text("CREATE TABLE cars (id BIGINT NOT NULL PRIMARY KEY)"))
+
+    run_baseline(engine)
+
+    car_id = baseline_metadata().tables["workshop_visits"].c.car_id
+    assert type(car_id.type) is sa.Integer, "Per-database types must not leak into the frozen schema"
