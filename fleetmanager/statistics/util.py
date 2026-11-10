@@ -1818,8 +1818,13 @@ def active_vehicles(since_date: datetime.date, session: Session):
         func.count(
             distinct(RoundTrips.car_id)
         )
+    ).join(
+        Cars, Cars.id == RoundTrips.car_id
     ).filter(
-        RoundTrips.start_time > since_date
+        RoundTrips.start_time > since_date,
+        or_(Cars.disabled.is_(None), Cars.disabled == False),
+        or_(Cars.deleted.is_(None), Cars.deleted == False),
+        or_(Cars.test_vehicle.is_(None), Cars.test_vehicle == False)
     ).scalar()
     return total_active_vehicles
 
