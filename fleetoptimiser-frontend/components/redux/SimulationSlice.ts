@@ -241,7 +241,7 @@ export const simulationSlice = createSlice({
         },
         setLocationForvaltning: (state, action: PayloadAction<SelectedLocation[]>) => {
             state.locationForvaltning = action.payload;
-            state.location_ids = action.payload.map((loc) => loc.id);
+            state.location_ids = [...new Set(action.payload.map((loc) => loc.id))];
             state.forvaltninger = action.payload.reduce((acc, loc) => {
                 (acc[loc.forvaltning] ||= []).push(loc.id);
                 return acc;

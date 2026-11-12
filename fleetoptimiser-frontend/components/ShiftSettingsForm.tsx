@@ -243,8 +243,8 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                             </Box>
                             {renderAlert(status)}
                             <Form>
-                                {values.shifts && values.shifts.length > 0 && (
-                                    <Box sx={{ p: 2.5 }}>
+                                <Box sx={{ p: 2.5 }}>
+                                    {values.shifts && values.shifts.length > 0 && (
                                         <div className="space-y-3">
                                             {values.shifts.map((shift, index) => (
                                                 <div key={index} className="flex items-center gap-3">
@@ -270,6 +270,7 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                                 </div>
                                             ))}
                                         </div>
+                                    )}
                                         {touched.shifts && errors.shifts && typeof errors.shifts === 'string' && (
                                             <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
                                                 {errors.shifts}
@@ -307,8 +308,7 @@ export const ShiftForm = ({ shifts, locationId, addressName, closeIt }: FormData
                                                 Gem for denne lokation
                                             </Button>
                                         </div>
-                                    </Box>
-                                )}
+                                </Box>
                             </Form>
                         </>
                     );
