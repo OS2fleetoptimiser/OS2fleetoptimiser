@@ -10,7 +10,9 @@ from fleetmanager.statistics.util import (
     total_driven,
     daily_driving,
     driving_data_to_excel,
+    active_vehicles,
 )
+from fleetmanager.data_access import Cars, RoundTrips
 
 # Use dynamic dates within the seeded data range (last 14 days)
 _today = date.today()
@@ -128,3 +130,18 @@ def test_daily_driving_and_export(db_session):
     assert (
         type(stream) == BytesIO
     ), f"Returned stream is not expected type BytesIO, but {type(stream)}"
+
+
+def test_active_vehicles_excludes_ineligible_cars(db_session):
+    since_date = _today - timedelta(days=30)
+    before = active_vehicles(since_date, db_session)
+
+    car_id = (
+        db_session.query(RoundTrips.car_id)
+        .filter(RoundTrips.start_time > since_date)
+        .first()[0]
+    )
+    db_session.query(Cars).filter(Cars.id == car_id).update({"disabled": True})
+    db_session.commit()
+
+    assert active_vehicles(since_date, db_session) == before - 1
