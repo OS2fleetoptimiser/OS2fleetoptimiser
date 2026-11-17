@@ -1778,12 +1778,15 @@ def get_availability(
     time_table: pd.DatetimeIndex = pd.date_range(start=start_date, end=end_date,
                                                  freq=datetime.timedelta(minutes=1), name="timestamp")
 
-    df = pd.DataFrame(np.zeros(len(time_table)), index=time_table, columns=['y'])
+    on_route = np.zeros(len(time_table) + 1, dtype=np.int64)
+    if result:
+        first = time_table.searchsorted(pd.DatetimeIndex([trip.start_time for trip in result]), side="left")
+        after_last = time_table.searchsorted(pd.DatetimeIndex([trip.end_time for trip in result]), side="right")
+        valid = after_last > first
+        np.add.at(on_route, first[valid], 1)
+        np.add.at(on_route, after_last[valid], -1)
 
-    def get_cars_in_period(row):
-        cars_on_route = len(list(filter(lambda trip: trip.start_time <= row.name and trip.end_time >= row.name, result)))
-        return cars_count - cars_on_route
-    df["y"] = df.apply(get_cars_in_period, axis=1)
+    df = pd.DataFrame({"y": cars_count - np.cumsum(on_route[:-1])}, index=time_table)
     df = df.resample("5Min").mean().round(0)
 
     df['x'] = df.index
